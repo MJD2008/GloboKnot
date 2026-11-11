@@ -1,0 +1,207 @@
+id,name,aliases,country
+AFG.kabul,Kabul,,AFG
+AGO.luanda,Luanda,,AGO
+ALB.tirana,Tirana,,ALB
+AND.andorra-la-vella,Andorra la Vella,,AND
+ARE.abu-dhabi,Abu Dhabi,,ARE
+ARG.buenos-aires,Buenos Aires,,ARG
+ARM.yerevan,Yerevan,,ARM
+ATG.saint-johns,Saint John's,,ATG
+AUS.canberra,Canberra,,AUS
+AUT.vienna,Vienna,,AUT
+AZE.baku,Baku,,AZE
+BDI.gitega,Gitega,,BDI
+BDI.gitega-bujumbura,"Gitega, Bujumbura",,BDI
+BEL.brussels,Brussels,,BEL
+BEN.cotonou,Cotonou,,BEN
+BEN.porto-novo,Porto-Novo,,BEN
+BFA.ouagadougou,Ouagadougou,,BFA
+BGD.dhaka,Dhaka,,BGD
+BGR.sofia,Sofia,,BGR
+BHR.manama,Manama,,BHR
+BHS.nassau,Nassau,,BHS
+BIH.sarajevo,Sarajevo,,BIH
+BLR.minsk,Minsk,,BLR
+BLZ.belmopan,Belmopan,,BLZ
+BOL.la-paz,La Paz,,BOL
+BOL.sucre,Sucre,,BOL
+BRA.brasilia,Brasília,Brasilia,BRA
+BRB.bridgetown,Bridgetown,,BRB
+BRN.bandar-seri-begawan,Bandar Seri Begawan,,BRN
+BTN.thimphu,Thimphu,,BTN
+BWA.gaborone,Gaborone,,BWA
+CAF.bangui,Bangui,,CAF
+CAN.ottawa,Ottawa,,CAN
+CHE.bern,Bern,,CHE
+CHL.santiago,Santiago,,CHL
+CHN.beijing,Beijing,,CHN
+CIV.yamoussoukro,Yamoussoukro,,CIV
+CIV.yamoussoukro-abidjan,"Yamoussoukro, Abidjan",,CIV
+CMR.yaounde,Yaoundé,,CMR
+COD.kinshasa,Kinshasa,,COD
+COG.brazzaville,Brazzaville,,COG
+COL.bogota,Bogotá,Bogota,COL
+COM.moroni,Moroni,,COM
+CPV.praia,Praia,,CPV
+CRI.san-jose,San José,,CRI
+CUB.havana,Havana,,CUB
+CYP.nicosia,Nicosia,,CYP
+CZE.prague,Prague,,CZE
+DEU.berlin,Berlin,,DEU
+DJI.djibouti,Djibouti,,DJI
+DMA.roseau,Roseau,,DMA
+DNK.copenhagen,Copenhagen,,DNK
+DOM.santo-domingo,Santo Domingo,,DOM
+DZA.algiers,Algiers,,DZA
+ECU.quito,Quito,,ECU
+EGY.cairo,Cairo,,EGY
+ERI.asmara,Asmara,,ERI
+ESP.madrid,Madrid,,ESP
+EST.tallinn,Tallinn,,EST
+ETH.addis-ababa,Addis Ababa,,ETH
+FIN.helsinki,Helsinki,,FIN
+FJI.suva,Suva,,FJI
+FRA.paris,Paris,,FRA
+FSM.palikir,Palikir,,FSM
+GAB.libreville,Libreville,,GAB
+GBR.london,London,,GBR
+GEO.tbilisi,Tbilisi,,GEO
+GHA.accra,Accra,,GHA
+GIN.conakry,Conakry,,GIN
+GMB.banjul,Banjul,,GMB
+GNB.bissau,Bissau,,GNB
+GNQ.ciudad-de-la-paz,Ciudad de la Paz,,GNQ
+GNQ.malabo,Malabo,,GNQ
+GRC.athens,Athens,,GRC
+GRD.saint-georges,St. George's,,GRD
+GTM.guatemala-city,Guatemala City,,GTM
+GUY.georgetown,Georgetown,,GUY
+HND.tegucigalpa,Tegucigalpa,,HND
+HRV.zagreb,Zagreb,,HRV
+HTI.port-au-prince,Port-au-Prince,,HTI
+HUN.budapest,Budapest,,HUN
+IDN.jakarta,Jakarta,,IDN
+IND.new-delhi,New Delhi,Delhi,IND
+IRL.dublin,Dublin,,IRL
+IRN.tehran,Tehran,,IRN
+IRQ.baghdad,Baghdad,,IRQ
+ISL.reykjavik,Reykjavik,,ISL
+ISR.jerusalem,Jerusalem,,ISR
+ITA.rome,Rome,,ITA
+JAM.kingston,Kingston,,JAM
+JOR.amman,Amman,,JOR
+JPN.tokyo,Tokyo,,JPN
+KAZ.astana,Astana,,KAZ
+KEN.nairobi,Nairobi,,KEN
+KGZ.bishkek,Bishkek,,KGZ
+KHM.phnom-penh,Phnom Penh,,KHM
+KIR.south-tarawa,South Tarawa,Tarawa,KIR
+KNA.basseterre,Basseterre,,KNA
+KOR.seoul,Seoul,,KOR
+KWT.kuwait-city,Kuwait City,,KWT
+LAO.vientiane,Vientiane,,LAO
+LBN.beirut,Beirut,,LBN
+LBR.monrovia,Monrovia,,LBR
+LBY.tripoli,Tripoli,,LBY
+LCA.castries,Castries,,LCA
+LIE.vaduz,Vaduz,,LIE
+LKA.colombo,Colombo,,LKA
+LKA.sri-jayewardenepura-kotte,Sri Jayewardenepura Kotte,,LKA
+LSO.maseru,Maseru,,LSO
+LTU.vilnius,Vilnius,,LTU
+LUX.luxembourg,Luxembourg,,LUX
+LVA.riga,Riga,,LVA
+MAR.rabat,Rabat,,MAR
+MCO.monaco,Monaco,,MCO
+MDA.chisinau,Chișinău,Chisinau|Kishinev,MDA
+MDA.chisinau-in-romanian,Chisinau in Romanian,,MDA
+MDG.antananarivo,Antananarivo,,MDG
+MDV.male,Malé,,MDV
+MEX.mexico-city,Mexico City,,MEX
+MHL.majuro,Majuro,,MHL
+MKD.skopje,Skopje,,MKD
+MLI.bamako,Bamako,,MLI
+MLT.valletta,Valletta,,MLT
+MMR.naypyidaw,Naypyidaw,Nay Pyi Taw|Naypyitaw,MMR
+MMR.rangoon,Rangoon,,MMR
+MNE.podgorica,Podgorica,,MNE
+MNG.ulan-bator,Ulaanbaatar,Ulan Bator,MNG
+MOZ.maputo,Maputo,,MOZ
+MRT.nouakchott,Nouakchott,,MRT
+MUS.port-louis,Port Louis,,MUS
+MWI.lilongwe,Lilongwe,,MWI
+MYS.kuala-lumpur,Kuala Lumpur,,MYS
+NAM.windhoek,Windhoek,,NAM
+NER.niamey,Niamey,,NER
+NGA.abuja,Abuja,,NGA
+NIC.managua,Managua,,NIC
+NLD.amsterdam,Amsterdam,,NLD
+NOR.oslo,Oslo,,NOR
+NPL.kathmandu,Kathmandu,,NPL
+NRU.no-official-capital,no official capital,,NRU
+NRU.yaren,Yaren,,NRU
+NZL.wellington,Wellington,,NZL
+OMN.muscat,Muscat,,OMN
+PAK.islamabad,Islamabad,,PAK
+PAN.panama-city,Panama City,,PAN
+PER.lima,Lima,,PER
+PHL.manila,Manila,,PHL
+PLW.ngerulmud,Ngerulmud,,PLW
+PNG.port-moresby,Port Moresby,,PNG
+POL.warsaw,Warsaw,,POL
+PRK.pyongyang,Pyongyang,,PRK
+PRT.lisbon,Lisbon,,PRT
+PRY.asuncion,Asunción,,PRY
+QAT.doha,Doha,,QAT
+ROU.bucharest,Bucharest,,ROU
+RUS.moscow,Moscow,,RUS
+RWA.kigali,Kigali,,RWA
+SAU.riyadh,Riyadh,,SAU
+SDN.khartoum,Khartoum,,SDN
+SEN.dakar,Dakar,,SEN
+SGP.singapore,Singapore,,SGP
+SLB.honiara,Honiara,,SLB
+SLE.freetown,Freetown,,SLE
+SLV.san-salvador,San Salvador,,SLV
+SMR.city-of-san-marino,San Marino,City of San Marino,SMR
+SOM.mogadishu,Mogadishu,,SOM
+SRB.belgrade,Belgrade,,SRB
+SSD.juba,Juba,,SSD
+STP.sao-tome,São Tomé,,STP
+SUR.paramaribo,Paramaribo,,SUR
+SVK.bratislava,Bratislava,,SVK
+SVN.ljubljana,Ljubljana,,SVN
+SWE.stockholm,Stockholm,,SWE
+SWZ.lobamba,Lobamba,,SWZ
+SWZ.mbabane,Mbabane,,SWZ
+SYC.victoria,Victoria,,SYC
+SYR.damascus,Damascus,,SYR
+TCD.ndjamena,N'Djamena,,TCD
+TGO.lome,Lomé,,TGO
+THA.bangkok,Bangkok,,THA
+TJK.dushanbe,Dushanbe,,TJK
+TKM.ashgabat,Ashgabat,,TKM
+TLS.dili,Dili,,TLS
+TON.nukualofa,Nuku'alofa,,TON
+TTO.port-of-spain,Port of Spain,,TTO
+TUN.tunis,Tunis,,TUN
+TUR.ankara,Ankara,,TUR
+TUV.funafuti,Funafuti,,TUV
+TZA.dodoma,Dodoma,,TZA
+UGA.kampala,Kampala,,UGA
+UKR.kyiv,Kyiv,Kiev,UKR
+URY.montevideo,Montevideo,,URY
+USA.washington-dc,Washington D.C.,Washington|Washington DC,USA
+UZB.tashkent,Tashkent,,UZB
+VAT.vatican-city,Vatican City,,VAT
+VCT.kingstown,Kingstown,,VCT
+VEN.caracas,Caracas,,VEN
+VNM.hanoi,Hanoi,,VNM
+VUT.port-vila,Port Vila,,VUT
+WSM.apia,Apia,,WSM
+YEM.sanaa,Sana'a,,YEM
+ZAF.bloemfontein,Bloemfontein,,ZAF
+ZAF.cape-town,Cape Town,,ZAF
+ZAF.pretoria,Pretoria,,ZAF
+ZMB.lusaka,Lusaka,,ZMB
+ZWE.harare,Harare,,ZWE
