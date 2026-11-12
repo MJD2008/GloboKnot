@@ -1,0 +1,90 @@
+id,name,aliases,length_km,course
+amazon,Amazon,,6400,naturalearth
+amu-darya,Amu Darya,,2620,naturalearth
+amur,Amur,,4444,naturalearth
+arkansas,Arkansas,,2348,naturalearth
+athabasca,Athabasca,,1231,naturalearth
+blue-nile,Blue Nile,,1600,naturalearth
+brahmaputra,Brahmaputra,Yarlung Zangbo Jiang,3969,naturalearth
+chenab,Chenab,,1086,naturalearth
+chindwin,Chindwin,,1158,naturalearth
+churchill,Churchill,,1600,naturalearth
+colorado,Colorado,,2333,naturalearth
+columbia,Columbia,,2250,naturalearth
+congo,Congo,Zaïre|Lualaba|Chambeshi,4700,naturalearth
+cooper-creek,Cooper Creek,,1113,
+danube,Danube,Donau|Dunav|Duna|Dunărea|Dunaj|Dunay,2888,naturalearth
+darling,Darling,,1545,naturalearth
+dnieper,Dnieper,Dnyapro|Dnepr|Dnipro,2287,naturalearth
+dniester,Dniester,Nistru|Dnister,1411,naturalearth
+don,Don,,1870,naturalearth
+draa,Draa,,1100,
+elbe,Elbe,Labe,1252,naturalearth
+euphrates,Euphrates,Al Furat|Firat,3596,naturalearth
+flinders,Flinders,,1004,
+fly,Fly,,1050,naturalearth
+fraser,Fraser,,1368,naturalearth
+gambia,Gambia,Gambie,1094,naturalearth
+ganges,Ganges,,2704,naturalearth
+ghaghara,Ghaghara,,1080,naturalearth
+godavari,Godavari,,1465,naturalearth
+helmand,Helmand,,1130,naturalearth
+huang-he,Huang He,Yellow|Huang,5464,naturalearth
+indus,Indus,Yin-tu Ho,3610,naturalearth
+irrawaddy,Irrawaddy,Ayeyarwady,2809,naturalearth
+kolyma,Kolyma,,2513,naturalearth
+lachlan,Lachlan,,1339,naturalearth
+lena,Lena,,4400,naturalearth
+liard,Liard,,1115,naturalearth
+limpopo,Limpopo,Rio Limpopo|Limpoporivier,1800,naturalearth
+loire,Loire,,1012,naturalearth
+mackenzie,Mackenzie,,4241,naturalearth
+mekong,Mekong,Lancang Jiang|Mènam Khong|Mae Nam Khong|Sông Tiên Giang,4350,naturalearth
+mississippi,Mississippi,,3544,naturalearth
+missouri,Missouri,,3768,naturalearth
+mun,Mun,,1162,naturalearth
+murray,Murray,,2508,naturalearth
+murrumbidgee,Murrumbidgee,,1485,
+narmada,Narmada,,1289,naturalearth
+nelson,Nelson,,2570,naturalearth
+niger,Niger,,4200,naturalearth
+nile,Nile,An Nīl|White Nile|Mountain Nile|Albert Nile|Victoria Nile|Kagera,6650,naturalearth
+north-saskatchewan,North Saskatchewan,,1220,naturalearth
+ob-irtysh,Ob-Irtysh,Ob|Irtysh,5410,naturalearth
+ohio,Ohio,,2102,naturalearth
+okavango,Okavango,Rio Cubango,1600,naturalearth
+orange,Orange,,2092,naturalearth
+orinoco,Orinoco,,2101,naturalearth
+ottawa,Ottawa,,1271,naturalearth
+paraguay,Paraguay,,2549,
+parana,Paraná,Río de la Plata/Paraná|Río de la Plata|Parana|Rio de la Plata/Parana|Rio de la Plata,4880,naturalearth
+pearl,Pearl,Zhu Jiang,2200,
+pechora,Pechora,,1809,naturalearth
+red-chn,Red,Yuan Jiang,1149,naturalearth
+red-usa,Red,,2188,naturalearth
+rhine,Rhine,Rhein|Rhin|Rijn,1233,naturalearth
+rio-grande,Rio Grande,,3057,naturalearth
+rio-negro,Rio Negro,,2250,naturalearth
+saint-lawrence,Saint Lawrence,St. Lawrence,3058,naturalearth
+salween,Salween,Nu Jiang,3060,naturalearth
+sao-francisco,São Francisco,,3180,naturalearth
+senegal,Senegal,,1641,naturalearth
+sepik,Sepik,,1126,naturalearth
+snake,Snake,,1670,naturalearth
+sutlej,Sutlej,,1372,naturalearth
+syr-darya,Syr Darya,,3078,naturalearth
+tagus,Tagus,Tajo|Tejo,1006,naturalearth
+tigris,Tigris,Dicle,1950,naturalearth
+tocantins,Tocantins,,3650,naturalearth
+ubangi,Ubangi,Oubangui,2270,naturalearth
+ural,Ural,,2428,naturalearth
+uruguay,Uruguay,,1610,naturalearth
+vaal,Vaal,,1210,naturalearth
+vistula,Vistula,Wisla,1213,naturalearth
+volga,Volga,,3645,naturalearth
+volta,Volta,,1600,naturalearth
+yamuna,Yamuna,,1370,naturalearth
+yangtze,Yangtze,,6300,naturalearth
+yenisey-angara,Yenisey-Angara,Yenisey|Angara|Yenisei,5539,naturalearth
+yukon,Yukon,,3190,naturalearth
+zambezi,Zambezi,Rio Zambeze,2740,naturalearth

@@ -26,16 +26,21 @@ const PREVIEW = true;
         <span>globoknot</span>
       </a>
       {PREVIEW && <span class="badge">preview</span>}
-      <button id="sound" class="icon-btn" type="button" aria-label="Sound" aria-pressed="true">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path class="spk" d="M4 9h4l5-4v14l-5-4H4z" /><path class="on" d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12" /><path class="off" d="M16.5 9.5l5 5M21.5 9.5l-5 5" /></svg>
-      </button>
+      <nav class="tools" aria-label="Menu">
+        <button id="open-about" class="icon-btn" type="button" aria-label="About" title="About">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" /><path d="M12 11v5.5M12 7.6v.2" /></svg>
+        </button>
+        <button id="open-settings" class="icon-btn" type="button" aria-label="Settings" title="Settings">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z" /></svg>
+        </button>
+        <button id="open-menu" class="icon-btn" type="button" aria-label="Choose what to play" title="Choose what to play">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16" /></svg>
+        </button>
+      </nav>
     </header>
     <slot />
     <footer class="foot">
-      <p>
-        Data edition <span id="edition">…</span> from <a href="https://github.com/mledoze/countries">mledoze/countries</a> (ODbL),
-        UN country codes and the CIA World Factbook. Map: Natural Earth. Flags: <a href="https://github.com/lipis/flag-icons">flag-icons</a> (MIT).
-      </p>
+      <p>Facts from two sources that agree · sources in About</p>
     </footer>
   </body>
 </html>

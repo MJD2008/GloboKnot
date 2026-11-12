@@ -1,8 +1,12 @@
 {
-  "fetched_on": "2026-11-11",
+  "fetched_on": "2026-11-12",
   "sources": {
     "mledoze-countries.json": "https://raw.githubusercontent.com/mledoze/countries/master/countries.json",
     "country-codes.csv": "https://raw.githubusercontent.com/datasets/country-codes/main/data/country-codes.csv",
+    "ne-populated-places.geojson": "https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_10m_populated_places_simple.geojson",
+    "ne-elevation-points.geojson": "https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_10m_geography_regions_elevation_points.geojson",
+    "ne-rivers.geojson": "https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_10m_rivers_lake_centerlines.geojson",
+    "udhr2": "https://raw.githubusercontent.com/nltk/nltk_data/gh-pages/packages/corpora/udhr2.zip",
     "factbook": "https://raw.githubusercontent.com/factbook/factbook.json/master/<region>/<fips>.json (234 files)"
   }
 }

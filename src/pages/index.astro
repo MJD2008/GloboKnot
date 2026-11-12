@@ -1,72 +1,165 @@
 ---
 import Base from '../layouts/Base.astro';
+const X = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg>';
 ---
-<Base title="Globoknot" description="A geography quiz: countries, capitals, flags and languages. Type your answers; typos are forgiven.">
+<Base title="Globoknot" description="A geography quiz: countries, capitals, flags, languages, mountains and rivers. Pick what you want, type your answers; typos are forgiven.">
   <main class="wrap">
     <section id="start" class="screen start">
       <canvas id="globe" class="globe" aria-hidden="true"></canvas>
       <h1 class="hero">The world,<br /><em>tied together.</em></h1>
-      <div class="modes">
-        <button class="mode primary" data-mode="mixed" type="button" disabled>
-          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" /><path d="M12 3c-3 3-3 15 0 18M12 3c3 3 3 15 0 18M3.5 9h17M3.5 15h17" /></svg>
-          <span>Mixed</span>
+      <div id="chips" class="chips" aria-label="Categories"></div>
+      <button id="play" class="btn-play" type="button" disabled>
+        <span>Play</span>
+        <small id="play-sub">…</small>
+      </button>
+      <div class="start-row">
+        <button id="daily" class="btn-soft" type="button" disabled>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5" width="16" height="15" rx="3" /><path d="M4 10h16M9 3v4M15 3v4" /></svg>
+          <span>Daily</span><small id="daily-sub"></small>
         </button>
-        <button class="mode" data-mode="map" type="button" disabled>
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2zM9 4v14M15 6v14" /></svg>
-          <span>Map</span>
-        </button>
-        <button class="mode" data-mode="capitals" type="button" disabled>
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21z" /><circle cx="12" cy="9.5" r="2.5" /></svg>
-          <span>Capitals</span>
-        </button>
-        <button class="mode" data-mode="flags" type="button" disabled>
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 21V4M5 4h11l-2 4 2 4H5" /></svg>
-          <span>Flags</span>
-        </button>
-        <button class="mode" data-mode="languages" type="button" disabled>
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v11H9l-5 4z" /><path d="M8 9h8M8 12h5" /></svg>
-          <span>Languages</span>
+        <button id="choose" class="btn-soft" type="button" disabled>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16" /></svg>
+          <span>Choose</span>
         </button>
       </div>
-      <p class="fine">10 questions · typos forgiven</p>
     </section>
 
-    <section id="play" class="screen play" hidden>
+    <section id="quiz" class="screen quiz" hidden>
       <div class="bar">
-        <div id="progress" class="progress" aria-hidden="true"></div>
+        <button id="quit" class="icon-btn" type="button" aria-label="Stop and see the answers" title="Stop" set:html={X} />
+        <div id="beads" class="beads" aria-hidden="true"></div>
         <span id="clock" class="clock" aria-label="Time">0:00</span>
       </div>
+      <div id="timer" class="timer" hidden><i></i></div>
       <div id="card" class="card">
         <div id="media" class="media" data-kind="none">
-          <svg id="map" class="map" role="img" aria-label="Map with one country highlighted"></svg>
+          <svg id="map" class="map" role="img" aria-label="Map"></svg>
           <img id="flag" class="flag" alt="A flag to name" />
+          <blockquote id="sample" class="sample" dir="auto"></blockquote>
         </div>
+        <div id="badge" class="badge-cat" aria-hidden="true"></div>
         <h2 id="prompt" class="prompt"></h2>
-        <form id="answer-form" class="answer" autocomplete="off">
-          <input id="answer" type="text" autocapitalize="words" autocorrect="off" spellcheck="false" enterkeyhint="go" aria-label="Your answer" />
-          <button class="go" type="submit" aria-label="Answer">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h13M13 6l6 6-6 6" /></svg>
-          </button>
-        </form>
-        <div id="choices" class="choices" hidden></div>
-        <p id="reveal" class="reveal" aria-live="polite"></p>
+        <div class="respond">
+          <form id="answer-form" class="answer" autocomplete="off">
+            <input id="answer" type="text" autocapitalize="words" autocorrect="off" spellcheck="false" enterkeyhint="go" aria-label="Your answer" />
+            <button class="go" type="submit" aria-label="Answer">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h13M13 6l6 6-6 6" /></svg>
+            </button>
+          </form>
+          <div id="choices" class="choices" hidden></div>
+          <div id="verdict" class="verdict" hidden aria-live="polite">
+            <span class="mark" aria-hidden="true"></span>
+            <span class="said"><s id="typed"></s><strong id="right"></strong></span>
+            <button id="next" class="next" type="button">Next <kbd>Enter</kbd></button>
+          </div>
+        </div>
       </div>
       <div class="under">
         <button id="skip" class="ghost" type="button">Skip <kbd>Esc</kbd></button>
       </div>
-      <ol id="log" class="log" aria-label="Your answers"></ol>
     </section>
 
     <section id="results" class="screen results" hidden>
-      <p id="score" class="score"></p>
-      <p id="time" class="time"></p>
-      <ul id="misses" class="misses" aria-label="Missed"></ul>
+      <div class="score">
+        <svg id="ring" class="ring" viewBox="0 0 220 220" aria-hidden="true"></svg>
+        <div class="score-in">
+          <b id="pct">0%</b>
+          <span id="rank"></span>
+        </div>
+      </div>
+      <p id="summary" class="summary"></p>
       <div class="actions">
         <button id="again" class="btn primary" type="button">Again</button>
-        <button id="home" class="btn" type="button">Modes</button>
+        <button id="change" class="btn" type="button">Change</button>
+        <button id="home" class="btn" type="button">Home</button>
       </div>
+      <h2 class="answers-title">Answers</h2>
+      <ol id="answers" class="answers"></ol>
     </section>
   </main>
+
+  <dialog id="menu" class="sheet" aria-labelledby="menu-title">
+    <div class="sheet-in">
+      <header class="sheet-head">
+        <h2 id="menu-title">Your quiz</h2>
+        <button class="icon-btn close" type="button" aria-label="Close" set:html={X} />
+      </header>
+      <div class="sheet-body">
+        <section>
+          <h3>What</h3>
+          <div id="menu-what" class="groups"></div>
+        </section>
+        <section>
+          <h3>Where</h3>
+          <div id="menu-where" class="groups"></div>
+        </section>
+        <section>
+          <h3>Questions</h3>
+          <div id="menu-size" class="seg" role="group" aria-label="Number of questions"></div>
+          <p id="size-hint" class="hint"></p>
+        </section>
+      </div>
+      <footer class="sheet-foot">
+        <button id="menu-play" class="btn primary wide" type="button">Play <small id="menu-count"></small></button>
+      </footer>
+    </div>
+  </dialog>
+
+  <dialog id="settings" class="sheet" aria-labelledby="settings-title">
+    <div class="sheet-in">
+      <header class="sheet-head">
+        <h2 id="settings-title">Settings</h2>
+        <button class="icon-btn close" type="button" aria-label="Close" set:html={X} />
+      </header>
+      <div class="sheet-body">
+        <div class="setting">
+          <span>Sound</span>
+          <button id="set-sound" class="switch" type="button" role="switch" aria-checked="true" aria-label="Sound"><i></i></button>
+        </div>
+        <div class="setting">
+          <span>Answer time <small>20 or 50 questions</small></span>
+          <div id="set-time" class="seg small" role="group" aria-label="Answer time"></div>
+        </div>
+        <div class="setting">
+          <span>Theme</span>
+          <div id="set-theme" class="seg small" role="group" aria-label="Theme"></div>
+        </div>
+        <div class="setting">
+          <span>Colour</span>
+          <div id="set-accent" class="swatches" role="group" aria-label="Accent colour"></div>
+        </div>
+      </div>
+    </div>
+  </dialog>
+
+  <dialog id="about" class="sheet" aria-labelledby="about-title">
+    <div class="sheet-in">
+      <header class="sheet-head">
+        <h2 id="about-title">About</h2>
+        <button class="icon-btn close" type="button" aria-label="Close" set:html={X} />
+      </header>
+      <div class="sheet-body about">
+        <p class="lead">A geography quiz on checked facts: everything it asks comes from two independent sources that agree, or from a recorded review.</p>
+        <ul class="how">
+          <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16" /></svg><span>Pick what and where in the menu, then play.</span></li>
+          <li><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="6" width="18" height="12" rx="2" /><path d="M7 10h1M11 10h1M15 10h1M8 14h8" /></svg><span>Type the answer. Small typos are fixed for you.</span></li>
+          <li><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="13" r="8" /><path d="M12 9v4l2.5 2M10 3h4" /></svg><span>10 questions have no time limit. 20 or 50 give you <span id="about-time">15</span> seconds each.</span></li>
+          <li><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5" /><path d="M8 12.5l2.5 2.5L16 9.5" /></svg><span>Your score is the share you got right. Get them all and the knot closes.</span></li>
+        </ul>
+        <p class="keys"><kbd>Enter</kbd> answer · <kbd>Esc</kbd> skip · <kbd>1</kbd>–<kbd>4</kbd> pick</p>
+        <h3>Sources</h3>
+        <ul class="sources">
+          <li><a href="https://github.com/mledoze/countries">mledoze/countries</a> <span>ODbL 1.0</span></li>
+          <li><a href="https://www.cia.gov/the-world-factbook/">CIA World Factbook</a> <span>public domain</span></li>
+          <li><a href="https://github.com/datasets/country-codes">UN country codes</a> <span>ODC-PDDL</span></li>
+          <li><a href="https://www.naturalearthdata.com/">Natural Earth</a>: maps, peaks, rivers <span>public domain</span></li>
+          <li><a href="https://www.ohchr.org/en/human-rights/universal-declaration/universal-declaration-human-rights/about-universal-declaration-human-rights-translation-project">Universal Declaration of Human Rights</a>: language texts (OHCHR translations)</li>
+          <li><a href="https://github.com/lipis/flag-icons">flag-icons</a> <span>MIT</span></li>
+        </ul>
+        <p class="fine">Data edition <span id="edition">…</span></p>
+      </div>
+    </div>
+  </dialog>
 </Base>
 
 <script>

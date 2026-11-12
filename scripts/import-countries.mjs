@@ -25,6 +25,7 @@ for (const c of Object.values(codes)) {
   if (!fips) continue;
   try { factbook[c['ISO3166-1-Alpha-3']] = JSON.parse(await read(`sources/cache/factbook/${fips}.json`)); } catch {}
 }
+const nePlaces = JSON.parse(await read('sources/cache/ne-populated-places.geojson')).features.map(f => f.properties);
 const decisions = parseCsv(await read('data/countries/decisions.csv').catch(() => 'subject,relation,object,decision,qualifier,note,by,date\n'));
 const decisionOf = (s, r, o) => decisions.find(d => d.relation === r && ((d.subject === s && d.object === o) || (r === 'borders' && d.subject === o && d.object === s)));
 const disputed = JSON.parse(await read('data/disputed.json'));
@@ -155,6 +156,30 @@ function fbOfficialLanguages(fb) {
   return found;
 }
 
+// Languages people speak, official or not (answers only): from the Factbook's shares of speakers. A language spoken by
+// 5% or more counts, or one of the first three listed where the Factbook gives no shares.
+function fbSpokenLanguages(fb) {
+  const L = fb?.['People and Society']?.Languages || {};
+  const main = decodeHtml(L.Languages?.text ?? L.text ?? '').split(/;\s*note\b|\bnote\s*[-:]/i)[0];
+  const items = [];
+  let depth = 0, cur = '';
+  for (const ch of main) {
+    if (ch === '(') depth++;
+    if (ch === ')') depth--;
+    if ((ch === ',' || ch === ';') && depth === 0) { items.push(cur); cur = ''; } else cur += ch;
+  }
+  items.push(cur);
+  const shares = /%/.test(main), out = [];
+  items.forEach((raw, i) => {
+    const pct = +(raw.match(/([\d.]+)%/) || [])[1] || 0;
+    const name = raw.replace(/\(.*?\)/g, '').replace(/[\d.]+%/g, '').replace(/\b(only|languages?|dialects?|est\.?)\b/gi, '').replace(/\s+/g, ' ').trim();
+    if (!name || /^(other|unspecified|none|and)\b/i.test(name) || /^(french )?creole$/i.test(name) || !(shares ? pct >= 5 : i < 3)) return; // "Creole" alone could be any creole
+    const id = [name, ...name.split(/\s+or\s+|\s*\/\s*/)].map(langId).find(Boolean);
+    if (id) out.push({ id, pct, raw: name });
+  });
+  return out;
+}
+
 const CITY_SAME = [['ulan bator', 'ulaanbaatar'], ['naypyidaw', 'nay pyi taw'], ['city of san marino', 'san marino'],
   ['south tarawa', 'tarawa'], ['washington dc', 'washington d c'], ['washington', 'washington d c']];
 const sameCity = (a, b) => {
@@ -225,6 +250,12 @@ for (const c of scope) {
     fact(id, 'official_language', l, ['mledoze', agree && 'factbook'].filter(Boolean), agree,
       { evidence: `factbook official=${fbl.map(x => x.raw).join(', ') || '-'}` });
   }
+  // spoken languages that are not official (answers only, one source is enough: it can only make answers count)
+  for (const x of fbSpokenLanguages(fb)) {
+    if (mlz.includes(x.id) || fbl.some(o => o.id === x.id) || facts.some(f => f.subject === id && f.relation === 'spoken_language' && f.object === x.id)) continue;
+    langsUsed.set(x.id, langName[x.id] || x.raw);
+    fact(id, 'spoken_language', x.id, ['factbook'], true, { qualifier: x.pct ? `${x.pct}%` : '', evidence: x.raw });
+  }
   for (const x of fbl) {
     if (!x.id) { fact(id, 'official_language', `?${x.raw}`, ['factbook'], false, { note: 'unmapped language name' }); continue; }
     if (mlz.includes(x.id)) continue;
@@ -282,6 +313,41 @@ for (const n of names) {
   target.aliases = [...al].join('|');
 }
 
+// ---------- Capital positions (for the dot on the map): the Factbook's coordinates and Natural Earth's populated
+// places must agree within 50 km. Then Natural Earth's (more precise) position is used; otherwise there is no dot.
+function fbCoords(fb) {
+  const t = decodeHtml(fb?.Government?.Capital?.['geographic coordinates']?.text || '');
+  const m = t.match(/(\d+)\s+(\d+)\s*([NS]),\s*(\d+)\s+(\d+)\s*([EW])/);
+  if (!m || +m[2] > 59 || +m[5] > 59) return null; // e.g. Belgium's "50 84 N" is not a valid position
+  const lat = (+m[1] + m[2] / 60) * (m[3] === 'S' ? -1 : 1), lng = (+m[4] + m[5] / 60) * (m[6] === 'W' ? -1 : 1);
+  return [lat, lng];
+}
+function km([a, b], [c, d]) {
+  const r = Math.PI / 180, x = Math.sin((c - a) * r / 2) ** 2 + Math.cos(a * r) * Math.cos(c * r) * Math.sin((d - b) * r / 2) ** 2;
+  return 12742 * Math.asin(Math.sqrt(x));
+}
+const positionDecisions = parseCsv(await read('data/countries/positions.csv'));
+const coordReview = [];
+for (const city of cities) {
+  // The Factbook gives one position: its first capital's ("Gitega (political capital), Bujumbura (...)" -> Gitega).
+  const fbFirst = decodeHtml(factbook[city.country]?.Government?.Capital?.name?.text || '').split(/[(;,]/)[0].trim();
+  const fb = fbFirst && sameCity(fbFirst, city.name) ? fbCoords(factbook[city.country]) : null;
+  const names = [city.name, ...(city.aliases || '').split('|')].filter(Boolean);
+  const candidates = nePlaces.filter(p => p.adm0_a3 === city.country || p.sov_a3 === city.country)
+    .filter(p => names.some(n => sameCity(n, p.name) || sameCity(n, p.nameascii) || (p.namealt || '').split('|').some(a => sameCity(n, a))));
+  const ne = candidates.sort((x, y) => (y.adm0cap - x.adm0cap) || (x.scalerank - y.scalerank))[0];
+  const nePos = ne ? [ne.latitude, ne.longitude] : null;
+  city.lat = city.lng = ''; city.position = '';
+  const decided = positionDecisions.find(d => d.id === city.id);
+  if (decided) {
+    city.lat = (+decided.lat).toFixed(3); city.lng = (+decided.lng).toFixed(3); city.position = `${decided.by}:${decided.date}`;
+  } else if (fb && nePos && km(fb, nePos) <= 50) {
+    city.lat = nePos[0].toFixed(3); city.lng = nePos[1].toFixed(3); city.position = 'factbook+naturalearth';
+  } else {
+    coordReview.push({ city, fb, ne: nePos, d: fb && nePos ? km(fb, nePos) : null });
+  }
+}
+
 // ---------- Difficulty tiers (tiers.csv): a play-balance setting, not a fact. 'core' = widely known; the rest 'other'.
 const tiers = Object.fromEntries(parseCsv(await read('data/countries/tiers.csv')).map(t => [t.id, t.tier]));
 for (const c of countries) c.tier = tiers[c.id] || 'other';
@@ -299,7 +365,7 @@ await fs.mkdir(root + 'data/countries', { recursive: true });
 const order = { approved: 0, draft: 1, rejected: 2, excluded: 3 };
 facts.sort((p, q) => p.relation.localeCompare(q.relation) || p.subject.localeCompare(q.subject) || p.object.localeCompare(q.object));
 await fs.writeFile(root + 'data/countries/countries.csv', toCsv(countries, ['id', 'wikidata', 'name', 'aliases', 'iso2', 'iso_numeric', 'flag', 'lat', 'lng', 'un_member', 'tier']));
-await fs.writeFile(root + 'data/countries/cities.csv', toCsv(cities.sort((a, b) => a.id.localeCompare(b.id)), ['id', 'name', 'aliases', 'country']));
+await fs.writeFile(root + 'data/countries/cities.csv', toCsv(cities.sort((a, b) => a.id.localeCompare(b.id)), ['id', 'name', 'aliases', 'country', 'lat', 'lng', 'position']));
 await fs.writeFile(root + 'data/countries/languages.csv', toCsv(langs, ['id', 'name', 'aliases']));
 await fs.writeFile(root + 'data/countries/facts.csv', toCsv(facts, ['subject', 'relation', 'object', 'qualifier', 'sources', 'status', 'checked', 'note']));
 
@@ -313,11 +379,18 @@ for (const rel of [...new Set(drafts.map(f => f.relation))]) {
   for (const f of drafts.filter(f => f.relation === rel))
     md += `| ${nameOf(f.subject)} (${f.subject}) | ${nameOf(f.object)} (${f.object}) | ${f.sources} | ${f.evidence.replace(/\|/g, '/')} |\n`;
 }
+const capitalIds = new Set(facts.filter(f => f.relation === 'capital' && f.status === 'approved').map(f => f.object));
+const missing = coordReview.filter(r => capitalIds.has(r.city.id));
+if (missing.length) {
+  md += `\n## Capital positions without a dot\n\nThe two sources must agree within 50 km. ${missing.length === 1 ? "This capital gets" : `These ${missing.length} capitals get`} no dot on the map until they do.\n\n| Capital | Factbook | Natural Earth | Apart |\n|---|---|---|---|\n`;
+  const f = p => (p ? p.map(x => x.toFixed(2)).join(', ') : '-');
+  for (const r of missing) md += `| ${r.city.name} (${r.city.country}) | ${f(r.fb)} | ${f(r.ne)} | ${r.d == null ? '-' : Math.round(r.d) + ' km'} |\n`;
+}
 await fs.mkdir(root + 'review', { recursive: true });
 await fs.writeFile(root + 'review/countries.md', md);
 
 const count = s => facts.filter(f => f.status === s).length;
-console.log(`countries ${countries.length}, cities ${cities.length}, languages ${langs.length}`);
+console.log(`countries ${countries.length}, cities ${cities.length} (${cities.filter(c => c.lat).length} with a checked position), languages ${langs.length}`);
 console.log(`facts: approved ${count('approved')}, draft ${count('draft')}, rejected ${count('rejected')}, excluded ${count('excluded')}`);
 for (const rel of ['continent', 'capital', 'official_language', 'borders'])
   console.log(` ${rel}: ${facts.filter(f => f.relation === rel && f.status === 'approved').length} approved / ${facts.filter(f => f.relation === rel && f.status === 'draft').length} draft`);

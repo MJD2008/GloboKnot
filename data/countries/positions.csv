@@ -1,0 +1,16 @@
+id,lat,lng,note,by,date
+BEL.brussels,50.846,4.352,"Factbook gives 50°84′N, which is not a valid position; Natural Earth's Brussels checked",claude,2026-11-12
+DNK.copenhagen,55.676,12.568,"Natural Earth names it København; same place as the Factbook's 55°40′N 12°35′E",claude,2026-11-12
+AND.andorra-la-vella,42.507,1.522,"Natural Earth names it Andorra; same place as the Factbook's 42°30′N 1°31′E",claude,2026-11-12
+BOL.sucre,-19.041,-65.260,"Factbook's position is for La Paz (its first capital); Natural Earth's Sucre checked",claude,2026-11-12
+CIV.yamoussoukro,6.818,-5.276,"Factbook names the capital with Abidjan in one line; Natural Earth's Yamoussoukro matches the Factbook's 6°49′N 5°16′W",claude,2026-11-12
+MDA.chisinau,47.005,28.858,"Factbook writes 'Chisinau in Romanian (Kishinev in Russian)'; same place as its 47°00′N 28°51′E",claude,2026-11-12
+MMR.naypyidaw,19.763,96.079,"Factbook's position is for Rangoon; Natural Earth's Naypyidaw checked",claude,2026-11-12
+SRB.belgrade,44.819,20.468,"no Factbook file for Serbia in the mirror; Natural Earth's Belgrade checked",claude,2026-11-12
+SWZ.lobamba,-26.467,31.200,"Factbook's position is for Mbabane; Natural Earth's Lobamba checked",claude,2026-11-12
+TZA.dodoma,-6.173,35.739,"Factbook's position (6°48′S 39°17′E) is Dar es Salaam; Natural Earth's Dodoma checked",claude,2026-11-12
+ZAF.bloemfontein,-29.120,26.230,"Factbook gives one position, for Pretoria; Natural Earth's Bloemfontein checked",claude,2026-11-12
+ZAF.cape-town,-33.918,18.433,"Factbook gives one position, for Pretoria; Natural Earth's Cape Town checked",claude,2026-11-12
+LKA.sri-jayewardenepura-kotte,6.900,79.950,"Natural Earth spells it Jayawardenepura; Factbook's position is for Colombo, 10 km away",claude,2026-11-12
+PLW.ngerulmud,7.500,134.624,"Natural Earth has the capital as Melekeok (the state Ngerulmud is in); matches the Factbook's 7°30′N 134°37′E",claude,2026-11-12
+NRU.yaren,-0.547,166.921,"Nauru has no official capital; government offices are in Yaren District (Factbook). Position of Yaren District",claude,2026-11-12

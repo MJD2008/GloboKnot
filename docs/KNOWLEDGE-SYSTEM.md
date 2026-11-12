@@ -121,3 +121,25 @@ Changing numbers are stored as **snapshots**, never live values:
 ## 11. What this changes in the plan
 - Interactions: typing, image ID and multiple choice. Map questions show a highlighted place and you type its name. **No painting and no dragging.**
 - Step 1 becomes: build this pipeline end to end for one module (countries: capitals, borders, languages, flags, continents), plus a prototype with highlighted-map typing, capital typing and multiple choice. After that, rivers, mountains, landmarks and provinces are each "just another module".
+
+## 12. Rules added with mountains, rivers and language texts (12 Nov)
+- **Answers-only facts may rest on one source.** A relation marked `answers_only` in `relations.yaml` (so far
+  `spoken_language`, from the Factbook's language lists) never decides what a question shows as *the* answer. It only
+  makes more answers count ("a country where this language is spoken"), so a single good source is enough.
+- **Highest points** (`data/geo/peaks.csv`): the Factbook names each country's highest point; Natural Earth gives the
+  position and is the second source when its peak lies in or within 25 km of the country, has a matching name and an
+  elevation within 5 % (at least 150 m). Everything else is a draft in `review/geo.md`, decided in
+  `data/geo/decisions.csv` like any other fact. Peaks are named as Natural Earth names them (a few overrides).
+- **Rivers** (`data/geo/rivers.csv`): the Factbook's "major rivers" lists name the countries; Natural Earth's
+  centrelines give the course. A country counts as crossed when at least 15 km of the course lies in it. A crossing
+  both sources support is approved; one only the Factbook names is kept as a draft with qualifier `also`: it is
+  accepted as an answer, never shown as the answer.
+- **Language texts** (`data/languages/samples.csv`): the opening words of Article 1 of the Universal Declaration of
+  Human Rights in each language (OHCHR translations), at most 12 words or 30 characters. The text question accepts
+  the language or any country where it is official or spoken.
+- **Language clusters** (`data/languages/clusters.csv`): written forms that a reader cannot tell apart (Croatian,
+  Bosnian, Serbian, Montenegrin; Malay and Indonesian; Persian and Dari...) all count for one another.
+- **One triangle, two countries:** when two countries' highest points are less than 25 km apart (Rysy and
+  Gerlachovsky stit, Khan Tengri and Jengish Chokusu), the map question accepts both countries.
+- **The same name for two things** (Tonga the country and the language): when the typed name matches an accepted
+  answer exactly, that one is meant.

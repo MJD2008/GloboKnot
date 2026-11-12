@@ -16,12 +16,12 @@
     "build": "astro build",
     "preview": "astro preview",
     "fetch": "node scripts/fetch-sources.mjs",
-    "import": "node scripts/import-countries.mjs",
+    "import": "node scripts/import-countries.mjs && node scripts/import-geo.mjs && node scripts/import-samples.mjs",
     "check": "node scripts/check.mjs",
     "build:data": "node scripts/build.mjs",
     "build:map": "node scripts/build-map.mjs",
     "build:flags": "node scripts/copy-flags.mjs",
-    "data": "node scripts/import-countries.mjs && node scripts/check.mjs && node scripts/build.mjs && node scripts/copy-flags.mjs",
+    "data": "node scripts/import-countries.mjs && node scripts/import-geo.mjs && node scripts/import-samples.mjs && node scripts/check.mjs && node scripts/build.mjs && node scripts/copy-flags.mjs",
     "test": "node --test"
   },
   "dependencies": {
