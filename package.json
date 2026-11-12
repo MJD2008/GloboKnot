@@ -1,0 +1,16 @@
+{
+  "name": "globoknot",
+  "private": true,
+  "type": "module",
+  "devDependencies": {
+    "yaml": "2.9.1"
+  },
+  "scripts": {
+    "fetch": "node scripts/fetch-sources.mjs",
+    "import": "node scripts/import-countries.mjs",
+    "check": "node scripts/check.mjs",
+    "build": "node scripts/build.mjs",
+    "data": "node scripts/import-countries.mjs && node scripts/check.mjs && node scripts/build.mjs",
+    "test": "node --test"
+  }
+}

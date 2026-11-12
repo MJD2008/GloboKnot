@@ -1,0 +1,8 @@
+{
+  "fetched_on": "2026-11-11",
+  "sources": {
+    "mledoze-countries.json": "https://raw.githubusercontent.com/mledoze/countries/master/countries.json",
+    "country-codes.csv": "https://raw.githubusercontent.com/datasets/country-codes/main/data/country-codes.csv",
+    "factbook": "https://raw.githubusercontent.com/factbook/factbook.json/master/<region>/<fips>.json (234 files)"
+  }
+}

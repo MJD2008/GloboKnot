@@ -1,0 +1,66 @@
+# Relation registry: every kind of fact is defined ONCE here.
+# The definition settles the ambiguous cases up front; facts that don't fit the definition are rejected.
+#
+#   from / to      entity types on each side
+#   many           a subject can have several objects
+#   symmetric      A-B means B-A (stored once)
+#   complete       every true fact of this relation is in the data for in-scope subjects,
+#                  so "which of these is NOT ..." questions are safe
+#   map            which map style a question about it uses (administrative / natural)
+#   forward/reverse  question wording; {s} = subject, {o} = object. Kept short on purpose.
+#   reverse_when   only ask the reverse when the object has exactly one subject
+
+continent:
+  from: country
+  to: continent
+  many: false
+  complete: true
+  map: administrative
+  definition: >
+    Six-continent model used for filters: Africa, Asia, Europe, North America (incl. Central America and
+    the Caribbean), South America, Oceania. Follows UN M49 regions. Transcontinental countries are listed
+    under one continent and carry a "transcontinental" qualifier; they are never asked in scored
+    "which continent" questions.
+  forward: "{s}: continent?"
+
+capital:
+  from: country
+  to: city
+  many: true
+  complete: true
+  map: administrative
+  definition: >
+    The capital named by the constitution or national law. Countries with split capitals list each with its
+    role (administrative, legislative, judicial). A seat of government that is not the capital is stored with
+    the qualifier "seat of government (also accepted)": it counts as a correct typed answer, but is never
+    shown as THE capital and never used in reverse questions. Disputed capitals are excluded (disputed.json).
+  forward: "Capital of {s}?"
+  reverse: "{o} is the capital of?"
+  reverse_when: one subject
+
+official_language:
+  from: country
+  to: language
+  many: true
+  complete: true
+  map: administrative
+  definition: >
+    Official at national level by the constitution or national law. Where no law names one, the de facto
+    national language counts and carries the qualifier "de facto". Regional, provincial, minority,
+    "national but not official" and "recognised" languages do NOT count.
+  forward: "Official language of {s}?"
+  reverse: "{o} is official in?"
+
+borders:
+  from: country
+  to: country
+  many: true
+  symmetric: true
+  complete: true
+  map: administrative
+  definition: >
+    A land border (including river and lake boundaries) between the main territories of two countries.
+    Maritime-only borders, bridges and tunnels do not count. Borders that exist only through overseas
+    regions or dependencies (French Guiana, Greenland, Gibraltar) do not count. Borders through
+    disputed territory (Kashmir, Western Sahara) are excluded.
+  forward: "Neighbours of {s}?"

@@ -1,0 +1,15 @@
+{
+  "rule": "Entities and facts listed here never appear in scored questions. They may still be drawn on the map as neutral areas.",
+  "entities": [
+    { "id": "PSE", "name": "Palestine", "why": "UN observer state, recognition and borders disputed" },
+    { "id": "UNK", "name": "Kosovo", "why": "independence not recognised by all UN members" },
+    { "id": "TWN", "name": "Taiwan", "why": "sovereignty disputed" },
+    { "id": "ESH", "name": "Western Sahara", "why": "sovereignty disputed" },
+    { "id": "CYN", "name": "Northern Cyprus", "why": "recognised only by Turkey" }
+  ],
+  "facts": [
+    { "about": "ISR capital", "why": "Jerusalem's status is disputed; no scored capital question for Israel" },
+    { "about": "Crimea", "why": "never used as a location fact for Ukraine or Russia" },
+    { "about": "Kashmir borders", "why": "China-Pakistan and India-Afghanistan borders run through disputed Kashmir" }
+  ]
+}
