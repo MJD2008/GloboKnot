@@ -36,7 +36,7 @@ interface Template {
   label: string;               // in the menu: what you see → what you answer
   subjects(kb: Knowledge, inPlace: (country: string) => boolean): string[];
   core(kb: Knowledge, id: string): boolean;
-  make(kb: Knowledge, id: string, rng: Rng): Question | null; // `cat` is filled in by buildRound
+  make(kb: Knowledge, id: string, rng: Rng): Omit<Question, 'cat'> | null; // `cat` is filled in by buildRound
 }
 
 export const CATS: { id: Cat; label: string }[] = [
@@ -311,8 +311,8 @@ export function buildRound(kb: Knowledge, sel: Selection, rng: Rng = Math.random
       for (const t of shuffle(templates.filter(t => t.cat === cat), rng)) {
         const queue = queues.get(t)!;
         for (let j = 0; j < queue.length && !q; j++) {
-          const cand = t.make(kb, queue[j], rng);
-          if (cand) cand.cat = t.cat;
+          const made = t.make(kb, queue[j], rng);
+          const cand: Question | null = made && { ...made, cat: t.cat };
           if (!cand || round.some(r => r.key === cand.key) || cand.countries.some(c => used.has(c)) || (pass && seen.has(cand.key))) continue;
           queue.splice(j, 1);
           q = cand;
