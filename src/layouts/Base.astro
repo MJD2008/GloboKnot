@@ -1,0 +1,41 @@
+---
+import '@fontsource-variable/inter';
+import '../styles/global.css';
+
+interface Props { title: string; description: string }
+const { title, description } = Astro.props;
+// Preview: the site is online but hidden from search engines until the public launch.
+const PREVIEW = true;
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    {PREVIEW && <meta name="robots" content="noindex, nofollow" />}
+    <meta name="theme-color" content="#f6f5f1" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#0f1318" media="(prefers-color-scheme: dark)" />
+    <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+  </head>
+  <body>
+    <header class="top">
+      <a class="brand" href="./" aria-label="Globoknot home">
+        <svg class="logo" viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="13" /><path d="M16 3c-4.5 4-4.5 22 0 26M16 3c4.5 4 4.5 22 0 26M3.5 12.5h25M3.5 19.5h25" /></svg>
+        <span>globoknot</span>
+      </a>
+      {PREVIEW && <span class="badge">preview</span>}
+      <button id="sound" class="icon-btn" type="button" aria-label="Sound" aria-pressed="true">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path class="spk" d="M4 9h4l5-4v14l-5-4H4z" /><path class="on" d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12" /><path class="off" d="M16.5 9.5l5 5M21.5 9.5l-5 5" /></svg>
+      </button>
+    </header>
+    <slot />
+    <footer class="foot">
+      <p>
+        Data edition <span id="edition">…</span> from <a href="https://github.com/mledoze/countries">mledoze/countries</a> (ODbL),
+        UN country codes and the CIA World Factbook. Map: Natural Earth. Flags: <a href="https://github.com/lipis/flag-icons">flag-icons</a> (MIT).
+      </p>
+    </footer>
+  </body>
+</html>

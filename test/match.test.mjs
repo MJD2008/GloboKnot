@@ -22,6 +22,8 @@ test('small typos are silently corrected', () => {
   assert.equal(r('Usbekistan'), 'UZB');
   assert.equal(r('Australa'), 'AUS');
   assert.equal(r('Austrlia'), null);  // one typo from both Australia and Austria: too ambiguous
+  assert.equal(r('Nambia'), 'NAM');   // one typo from Namibia, Gambia and Zambia: only Namibia starts with N
+  assert.equal(r('Seria'), null);     // Serbia or Syria: same first letter, too ambiguous
   assert.equal(r('Kyrgyztan'), 'KGZ');
   assert.equal(r('Phillipines'), 'PHL');
 });

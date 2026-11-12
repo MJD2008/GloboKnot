@@ -74,7 +74,7 @@ GNQ.ciudad-de-la-paz,Ciudad de la Paz,,GNQ
 GNQ.malabo,Malabo,,GNQ
 GRC.athens,Athens,,GRC
 GRD.saint-georges,St. George's,,GRD
-GTM.guatemala-city,Guatemala City,,GTM
+GTM.guatemala-city,Guatemala City,Guatemala,GTM
 GUY.georgetown,Georgetown,,GUY
 HND.tegucigalpa,Tegucigalpa,,HND
 HRV.zagreb,Zagreb,,HRV
@@ -98,7 +98,7 @@ KHM.phnom-penh,Phnom Penh,,KHM
 KIR.south-tarawa,South Tarawa,Tarawa,KIR
 KNA.basseterre,Basseterre,,KNA
 KOR.seoul,Seoul,,KOR
-KWT.kuwait-city,Kuwait City,,KWT
+KWT.kuwait-city,Kuwait City,Kuwait,KWT
 LAO.vientiane,Vientiane,,LAO
 LBN.beirut,Beirut,,LBN
 LBR.monrovia,Monrovia,,LBR
@@ -143,7 +143,7 @@ NRU.yaren,Yaren,,NRU
 NZL.wellington,Wellington,,NZL
 OMN.muscat,Muscat,,OMN
 PAK.islamabad,Islamabad,,PAK
-PAN.panama-city,Panama City,,PAN
+PAN.panama-city,Panama City,Panama,PAN
 PER.lima,Lima,,PER
 PHL.manila,Manila,,PHL
 PLW.ngerulmud,Ngerulmud,,PLW
@@ -193,7 +193,7 @@ UKR.kyiv,Kyiv,Kiev,UKR
 URY.montevideo,Montevideo,,URY
 USA.washington-dc,Washington D.C.,Washington|Washington DC,USA
 UZB.tashkent,Tashkent,,UZB
-VAT.vatican-city,Vatican City,,VAT
+VAT.vatican-city,Vatican City,Vatican,VAT
 VCT.kingstown,Kingstown,,VCT
 VEN.caracas,Caracas,,VEN
 VNM.hanoi,Hanoi,,VNM

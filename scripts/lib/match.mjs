@@ -25,13 +25,19 @@ export function resolve(input, entities) {
   const q = norm(input);
   if (!q) return null;
   for (const e of entities) if ([e.name, ...e.aliases].some(n => norm(n) === q)) return e;
-  let best = null, bestD = Infinity, tie = false;
+  let bestD = Infinity;
+  let near = new Map(); // entities at the best distance -> does one of their closest names start with the same letter?
   for (const e of entities) {
     for (const n of [e.name, ...e.aliases]) {
       const k = norm(n), dd = distance(q, k);
-      if (dd > tolerance(k)) continue;
-      if (dd < bestD) { best = e; bestD = dd; tie = false; } else if (dd === bestD && best !== e) tie = true;
+      if (dd > tolerance(k) || dd > bestD) continue;
+      if (dd < bestD) { bestD = dd; near = new Map(); }
+      near.set(e, near.get(e) || k[0] === q[0]);
     }
   }
-  return tie ? null : best; // two equally close names: too ambiguous to auto-correct
+  if (near.size <= 1) return near.keys().next().value ?? null;
+  // Equally close to two names: people rarely get the first letter wrong, so a single name that shares it wins
+  // ("Nambia" is Namibia, not Gambia or Zambia). Otherwise it is too ambiguous to auto-correct ("Seria").
+  const sameStart = [...near].filter(([, s]) => s);
+  return sameStart.length === 1 ? sameStart[0][0] : null;
 }

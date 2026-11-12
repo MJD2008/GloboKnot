@@ -1,4 +1,4 @@
-// Compiles the approved knowledge base into compact JSON for the website: build/data/countries.json.
+// Compiles the approved knowledge base into compact JSON for the website: public/data/countries.json.
 // Only approved facts are included. Run check.mjs first (npm run data does both).
 import fs from 'node:fs/promises';
 import YAML from 'yaml';
@@ -21,14 +21,14 @@ const out = {
   relations: Object.fromEntries(Object.entries(relations).map(([k, r]) =>
     [k, { from: r.from, to: r.to, many: r.many, symmetric: !!r.symmetric, complete: !!r.complete, map: r.map, forward: r.forward, reverse: r.reverse || null }])),
   countries: countries.map(c => ({ id: c.id, qid: c.wikidata, name: c.name, aliases: c.aliases, iso2: c.iso2,
-    num: c.iso_numeric, flag: c.flag, ll: [+c.lat, +c.lng] })),
+    num: c.iso_numeric, flag: c.flag, ll: [+c.lat, +c.lng], tier: c.tier })),
   cities: cities.filter(c => facts.some(f => f.object === c.id)).map(c => ({ id: c.id, name: c.name, aliases: c.aliases, country: c.country })),
   languages: languages.filter(l => facts.some(f => f.object === l.id)).map(l => ({ id: l.id, name: l.name, aliases: l.aliases })),
   // [subject, relation, object, qualifier?]
   facts: facts.map(f => f.qualifier ? [f.subject, f.relation, f.object, f.qualifier] : [f.subject, f.relation, f.object]),
   confusables: JSON.parse(await read('data/countries/confusables.json')),
 };
-await fs.mkdir(root + 'build/data', { recursive: true });
+await fs.mkdir(root + 'public/data', { recursive: true });
 const json = JSON.stringify(out);
-await fs.writeFile(root + 'build/data/countries.json', json);
-console.log(`build/data/countries.json: ${out.countries.length} countries, ${out.facts.length} facts, ${(json.length / 1024).toFixed(0)} KB`);
+await fs.writeFile(root + 'public/data/countries.json', json);
+console.log(`public/data/countries.json: ${out.countries.length} countries, ${out.facts.length} facts, ${(json.length / 1024).toFixed(0)} KB`);

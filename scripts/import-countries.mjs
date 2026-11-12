@@ -282,6 +282,10 @@ for (const n of names) {
   target.aliases = [...al].join('|');
 }
 
+// ---------- Difficulty tiers (tiers.csv): a play-balance setting, not a fact. 'core' = widely known; the rest 'other'.
+const tiers = Object.fromEntries(parseCsv(await read('data/countries/tiers.csv')).map(t => [t.id, t.tier]));
+for (const c of countries) c.tier = tiers[c.id] || 'other';
+
 // ---------- Write files
 const langs = [...langsUsed].filter(([k]) => k && !k.startsWith('?')).sort()
   .map(([id, name]) => {

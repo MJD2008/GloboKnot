@@ -72,6 +72,7 @@ Imports always arrive as **draft**, with the source attached. The importer only 
 - Normalise before comparing: case, accents, "the", punctuation, "St"/"Saint", "&"/"and".
 - Typo tolerance scaled by length: 0 typos up to 4 letters, 1 for 5 to 8, 2 for longer names.
 - **Confusable guard:** never accept a typo that is closer to another real entity of the same type (Niger/Nigeria, Austria/Australia, Iran/Iraq, Slovenia/Slovakia).
+- **Ties:** when a typo is equally close to two names, the one that starts with the same letter wins ("Nambia" is Namibia, not Gambia or Zambia), because people rarely get the first letter wrong. If that doesn't settle it ("Seria": Serbia or Syria), it is not corrected.
 - **Silent auto-correct (James, 11 Nov):** a typo within the tolerance is simply accepted and the answer is logged under its correct name (type "Usbekistan", the log shows "Uzbekistan"). No "Did you mean?" prompt, no message. Anything further off is wrong. Look-alike names (Niger/Nigeria) are never corrected: typing a real other name counts as that name.
 - **Minimal text everywhere (James, 11 Nov):** the player should understand what happened instantly without reading. Feedback is colour, a short animation and sound (green tick and the correct name in the log, red shake), not sentences. Questions are as short as possible, ideally a few words plus the image or highlighted map.
 - Several correct answers: the template says "Name one ..." (any approved one counts) or "Name all ..." (a typing list that ticks off answers).
