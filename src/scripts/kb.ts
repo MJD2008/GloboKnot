@@ -1,7 +1,8 @@
 // The knowledge base as the site sees it: public/data/countries.json (approved facts only, plus river crossings that
 // one source names, marked "also": they count as right answers but are never shown as THE answer).
 
-export interface Entity { id: string; name: string; aliases: string[] }
+/** `context`: names that only count when this entity is a right answer ("Congo" for DR Congo). */
+export interface Entity { id: string; name: string; aliases: string[]; context?: string[] }
 export interface Country extends Entity { qid: string; iso2: string; num: string; flag: string; ll: [number, number]; tier: string }
 export interface City extends Entity { country: string; ll?: [number, number] }
 export interface Language extends Entity { sample?: string; cluster?: string }

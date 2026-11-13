@@ -1,6 +1,6 @@
 // What the player chose, kept in this browser: the quiz selection and the settings. Everything works without
 // storage (private windows): the defaults are used and nothing is saved.
-import { LEVELS, TEMPLATES, type Level, type Selection } from './questions';
+import { ALL_KINDS, ANSWERS, LEVELS, TEMPLATES, type Level, type Selection } from './questions';
 
 function load<T>(key: string, fallback: T): T {
   try {
@@ -17,24 +17,35 @@ export const SIZES = [10, 20, 50] as const; // presets; any other number can be 
 export const MAX_SIZE = 9999;
 export const clampSize = (n: number) => (n === 0 ? 0 : Math.min(MAX_SIZE, Math.max(1, Math.round(n) || 10)));
 const SEL_KEY = 'gk-selection';
-type Saved = Partial<Selection> & { v?: number };
+type Saved = Omit<Partial<Selection>, 'level'> & { v?: number; level?: string };
 const saved: Saved = load<Saved>(SEL_KEY, {});
-// A new visitor starts on Easy. A selection kept from before the levels (v 3) was played as what is now Medium.
-const level: Level = saved.level && saved.level in LEVELS ? saved.level : Array.isArray(saved.kinds) ? 'medium' : 'easy';
-const kinds = Array.isArray(saved.kinds) ? saved.kinds.filter(k => TEMPLATES.some(t => t.id === k)) : [];
+// A new visitor starts on Easy. Up to v4 there were three levels; each moved one up when the new Easy came in below
+// them (the old Easy is now Medium, with languages added to its own question types). A selection from before the
+// levels (v3) was played as the old Medium, now Hard.
+const OLD_EASY = ['loc.map', 'nb.name', 'cap.name', 'cap.map', 'cap.reverse', 'flag.name', 'flag.pick'];
+const MOVED: Record<string, Level> = { easy: 'medium', medium: 'hard', hard: 'impossible' };
+const v = saved.v ?? 0;
+const level: Level = v >= 5 && saved.level && saved.level in LEVELS ? saved.level as Level
+  : v < 5 && saved.level && saved.level in MOVED ? MOVED[saved.level] : Array.isArray(saved.kinds) ? 'hard' : 'easy';
+let kinds = Array.isArray(saved.kinds) ? saved.kinds.filter(k => TEMPLATES.some(t => t.id === k)) : [];
 // Before v3, neighbours were a category of their own and off by default; now they belong to Locations.
-if (!saved.v && kinds.includes('loc.map') && !kinds.includes('nb.name')) kinds.push('nb.name');
+if (!v && kinds.includes('loc.map') && !kinds.includes('nb.name')) kinds.push('nb.name');
+if (v < 5 && saved.level === 'easy' && kinds.length === OLD_EASY.length && OLD_EASY.every(k => kinds.includes(k))) kinds = [...LEVELS.medium.kinds];
 export const selection: Selection & { level: Level } = {
   kinds: kinds.length ? kinds : [...LEVELS[level].kinds],
   places: Array.isArray(saved.places) ? saved.places : [],
   size: clampSize(saved.size ?? 10),
   level,
+  ...(ANSWERS.some(a => a.id === saved.answers) ? { answers: saved.answers } : {}),
 };
-export const saveSelection = () => save(SEL_KEY, { ...selection, v: 4 });
-/** A level ticks its own question types (anything the player had changed is replaced). */
+export const saveSelection = () => save(SEL_KEY, { ...selection, v: 5 });
+/** A level picks its own question types and answers (anything the player had changed is replaced). All (The Gordian
+ *  Knot) only exists under Impossible. */
 export function setLevel(l: Level) {
   selection.level = l;
   selection.kinds = [...LEVELS[l].kinds];
+  delete selection.answers;
+  if (l !== 'impossible' && selection.size === 0) selection.size = 10;
 }
 
 // ---------- settings
@@ -86,17 +97,26 @@ export function applySettings() {
   root.style.setProperty('--a-dark', a.dark);
 }
 
-// ---------- progress: rounds played, and the best results in The Gordian Knot (every question at once), which
+// ---------- progress: rounds played, and the record in The Gordian Knot (every question in the game at once), which
 // shows itself after a few rounds.
 export const UNLOCK_ROUNDS = 3;
-export interface Stats { rounds: number; gordianSeen: boolean; gordian: Record<string, { pct: number; ms: number }> }
+export interface Best { pct: number; ms: number }
+export interface Stats { rounds: number; gordianSeen: boolean; record?: Best; gordian?: Record<string, Best> }
 const STATS_KEY = 'gk-stats';
-export const stats: Stats = load<Stats>(STATS_KEY, { rounds: 0, gordianSeen: false, gordian: {} });
+export const stats: Stats = load<Stats>(STATS_KEY, { rounds: 0, gordianSeen: false });
 export const saveStats = () => save(STATS_KEY, stats);
 export const gordianOpen = () => stats.rounds >= UNLOCK_ROUNDS;
-if (!gordianOpen() && selection.size === 0) selection.size = 10;
-/** One key per configuration, for personal bests. */
-export const configKey = (sel: Selection) => `${[...sel.kinds].sort().join(',')}|${[...sel.places].sort().join(',')}`;
+// Until v5 The Gordian Knot kept a best per configuration; now it is one fixed challenge, and the best for everything
+// in the whole world is its record.
+if (stats.gordian) {
+  const all = stats.gordian[`${[...ALL_KINDS].sort().join(',')}|`];
+  if (all && !stats.record) stats.record = all;
+  delete stats.gordian;
+  saveStats();
+}
+if (selection.size === 0 && (!gordianOpen() || selection.level !== 'impossible')) selection.size = 10;
+/** Is `b` a better result than `a`: a higher score, or the same score faster? */
+export const better = (b: Best, a?: Best) => !a || b.pct > a.pct || (b.pct === a.pct && b.ms < a.ms);
 
 // ---------- the Daily: one result per day
 export const today = () => new Date().toISOString().slice(0, 10);

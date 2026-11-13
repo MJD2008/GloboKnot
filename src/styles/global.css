@@ -31,6 +31,8 @@
   --icon: #8a9099;
   --river: #2f7fd1;
   --chip-on: #15191e;
+  --crimson: #c8102e;
+  --crimson-deep: #a50d26;
   color-scheme: light;
 }
 /* Dark: the Dark theme, and the home screen in both themes (a night sky). */
@@ -66,6 +68,8 @@ body.home > .top {
   --icon: #7d8792;
   --river: #62a8ff;
   --chip-on: #eef1f4;
+  --crimson: #ff4565;
+  --crimson-deep: #e0284a;
   color-scheme: dark;
 }
 
@@ -875,11 +879,27 @@ kbd {
 .sizes .custom.on input, .sizes .custom input:focus { background: var(--surface); color: var(--ink); box-shadow: var(--shadow-sm); }
 /* All: The Gordian Knot, once found; a dot until it is tried. */
 .sizes .all { position: relative; }
-.sizes .all.new::after { content: ''; position: absolute; top: 4px; right: 4px; width: 7px; height: 7px; border-radius: 50%; background: var(--accent); }
+.sizes .all.new::after { content: ''; position: absolute; top: 4px; right: 4px; width: 7px; height: 7px; border-radius: 50%; }
 .hint { color: var(--muted); font-size: 0.88rem; margin: 6px 0 0; }
-/* The level: three steps and one line on what the level asks. */
-.levels { display: flex; }
-.levels button { flex: 1; }
+/* The level: three steps (four once Impossible shows itself, in crimson) and one line on what the level asks. */
+.levels, .modes { display: flex; }
+.levels button, .modes button { flex: 1 1 auto; min-width: 0; padding-left: 6px; padding-right: 6px; }
+@media (max-width: 420px) { .levels button { font-size: 0.92rem; padding-left: 4px; padding-right: 4px; } }
+.levels .impossible { color: var(--crimson); }
+.levels .impossible[aria-pressed="true"] { background: var(--crimson); color: #fff; }
+.sizes .all { color: var(--crimson); }
+.sizes .all[aria-pressed="true"] { background: var(--crimson); color: #fff; }
+.sizes .all.new::after { background: var(--crimson); }
+/* "Choose" is marked as the easier way to answer, with a small tag on its top edge. */
+.modes button { position: relative; }
+.modes small {
+  position: absolute; top: -9px; left: 50%; transform: translateX(-50%);
+  padding: 2px 6px 1px; border-radius: 6px; background: var(--ok); color: #fff;
+  font-size: 0.6rem; font-weight: 800; line-height: 1.2; text-transform: uppercase; letter-spacing: 0.06em; white-space: nowrap;
+}
+.modes { margin-top: 6px; }
+/* While All (The Gordian Knot) is picked, what it decides is shown but can't be changed. */
+.fixed { opacity: 0.45; }
 .hint .link { border: 0; background: none; padding: 0 2px; margin-left: 4px; font: inherit; font-weight: 700; color: var(--ink); text-decoration: underline; text-underline-offset: 2px; cursor: pointer; }
 
 .setting { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 0; border-bottom: 1px solid var(--line); font-weight: 650; flex-wrap: wrap; }
@@ -929,6 +949,27 @@ kbd {
   .globe { width: min(100%, 20vh); }
   .hero { font-size: min(1.7rem, 7.6vw); margin-bottom: 12px; }
 }
+
+/* ---------- The Gordian Knot: played in crimson, with a slow heartbeat at the edges of the screen. */
+body.gordian {
+  --accent: var(--crimson);
+  --accent-deep: var(--crimson-deep);
+  --hl: var(--crimson);
+}
+body.gordian::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  box-shadow: inset 0 0 18vmin rgba(200, 16, 46, 0.22);
+  animation: heartbeat 1.3s ease-out infinite;
+}
+:root[data-theme="dark"] body.gordian::before { box-shadow: inset 0 0 22vmin rgba(255, 40, 80, 0.3); }
+@keyframes heartbeat { 0% { opacity: 0.35; } 8% { opacity: 1; } 20% { opacity: 0.5; } 30% { opacity: 0.85; } 55%, 100% { opacity: 0.35; } }
+/* A stopped round: only the answers so far. */
+.results.stopped .score, .results.stopped .rank-line, .results.stopped #share { display: none; }
+.results.stopped .results-title { color: var(--muted); }
 
 /* ---------- motion */
 @keyframes shake {

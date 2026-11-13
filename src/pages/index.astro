@@ -81,8 +81,8 @@ const X = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 
       <p id="versus" class="versus" hidden></p>
       <p id="best" class="best" hidden></p>
       <p id="unlock" class="unlock" hidden>
-        <b>You found The Gordian Knot.</b>
-        <span>Every question in your configuration, in one go. Pick <em>All</em> under Configure.</span>
+        <b>Impossible is open.</b>
+        <span>And under it, The Gordian Knot: every question in the game, in one go. Pick <em>Impossible</em>, then <em>All</em>.</span>
       </p>
       <div class="actions">
         <button id="again" class="btn primary" type="button">New round</button>
@@ -128,11 +128,15 @@ const X = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 
           <div id="menu-level" class="seg levels" role="group" aria-label="Level"></div>
           <p id="menu-level-hint" class="hint" aria-live="polite"></p>
         </section>
-        <section>
+        <section class="fixed-by-all">
+          <h3>Answers</h3>
+          <div id="menu-answers" class="seg modes" role="group" aria-label="Answers"></div>
+        </section>
+        <section class="fixed-by-all">
           <h3>What</h3>
           <div id="menu-what" class="groups"></div>
         </section>
-        <section>
+        <section class="fixed-by-all">
           <h3>Where</h3>
           <div id="menu-where" class="groups"></div>
         </section>

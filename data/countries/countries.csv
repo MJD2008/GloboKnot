@@ -1,195 +1,195 @@
-id,wikidata,name,aliases,iso2,iso_numeric,flag,lat,lng,un_member,tier
-AFG,https://www.wikidata.org/wiki/Q889,Afghanistan,Islamic Republic of Afghanistan|Afġānistān,AF,004,af,33.00,65.00,yes,core
-AGO,https://www.wikidata.org/wiki/Q916,Angola,Republic of Angola|República de Angola|ʁɛpublika de an'ɡɔla,AO,024,ao,-12.50,18.50,yes,other
-ALB,https://www.wikidata.org/wiki/Q222,Albania,Republic of Albania|Shqipëri|Shqipëria|Shqipnia,AL,008,al,41.00,20.00,yes,other
-AND,https://www.wikidata.org/wiki/Q228,Andorra,Principality of Andorra|Principat d'Andorra,AD,020,ad,42.50,1.50,yes,other
-ARE,https://www.wikidata.org/wiki/Q878,United Arab Emirates,Emirates|UAE,AE,784,ae,24.00,54.00,yes,core
-ARG,https://www.wikidata.org/wiki/Q414,Argentina,Argentine Republic|República Argentina,AR,032,ar,-34.00,-64.00,yes,core
-ARM,https://www.wikidata.org/wiki/Q399,Armenia,Republic of Armenia|Hayastan,AM,051,am,40.00,45.00,yes,other
-ATG,https://www.wikidata.org/wiki/Q781,Antigua and Barbuda,,AG,028,ag,17.05,-61.80,yes,other
-AUS,https://www.wikidata.org/wiki/Q408,Australia,Commonwealth of Australia,AU,036,au,-27.00,133.00,yes,core
-AUT,https://www.wikidata.org/wiki/Q40,Austria,Republic of Austria|Osterreich|Oesterreich,AT,040,at,47.33,13.33,yes,core
-AZE,https://www.wikidata.org/wiki/Q227,Azerbaijan,Republic of Azerbaijan|Azərbaycan Respublikası,AZ,031,az,40.50,47.50,yes,other
-BDI,https://www.wikidata.org/wiki/Q967,Burundi,Republic of Burundi|Republika y'Uburundi|République du Burundi,BI,108,bi,-3.50,30.00,yes,other
-BEL,https://www.wikidata.org/wiki/Q31,Belgium,Kingdom of Belgium|België|Belgie|Belgien|Belgique|Koninkrijk België|Royaume de Belgique|Königreich Belgien,BE,056,be,50.83,4.00,yes,core
-BEN,https://www.wikidata.org/wiki/Q962,Benin,Republic of Benin|République du Bénin,BJ,204,bj,9.50,2.25,yes,other
-BFA,https://www.wikidata.org/wiki/Q965,Burkina Faso,,BF,854,bf,13.00,-2.00,yes,other
-BGD,https://www.wikidata.org/wiki/Q902,Bangladesh,People's Republic of Bangladesh|Gônôprôjatôntri Bangladesh,BD,050,bd,24.00,90.00,yes,core
-BGR,https://www.wikidata.org/wiki/Q219,Bulgaria,Republic of Bulgaria,BG,100,bg,43.00,25.00,yes,other
-BHR,https://www.wikidata.org/wiki/Q398,Bahrain,Kingdom of Bahrain|Mamlakat al-Baḥrayn,BH,048,bh,26.00,50.55,yes,other
-BHS,https://www.wikidata.org/wiki/Q778,Bahamas,Commonwealth of the Bahamas,BS,044,bs,24.25,-76.00,yes,other
-BIH,https://www.wikidata.org/wiki/Q225,Bosnia and Herzegovina,Bosnia|Bosnia-Herzegovina,BA,070,ba,44.00,18.00,yes,other
-BLR,https://www.wikidata.org/wiki/Q184,Belarus,Republic of Belarus|Bielaruś,BY,112,by,53.00,28.00,yes,other
-BLZ,https://www.wikidata.org/wiki/Q242,Belize,,BZ,084,bz,17.25,-88.75,yes,other
-BOL,https://www.wikidata.org/wiki/Q750,Bolivia,"Plurinational State of Bolivia|Bolivia (Plurinational State of)|Buliwya|Wuliwya|Bolivia, Plurinational State of|Estado Plurinacional de Bolivia|Buliwya Mamallaqta|Wuliwya Suyu|Tetã Volívia",BO,068,bo,-17.00,-65.00,yes,other
-BRA,https://www.wikidata.org/wiki/Q155,Brazil,Federative Republic of Brazil|Brasil|República Federativa do Brasil,BR,076,br,-10.00,-55.00,yes,core
-BRB,https://www.wikidata.org/wiki/Q244,Barbados,,BB,052,bb,13.17,-59.53,yes,other
-BRN,https://www.wikidata.org/wiki/Q921,Brunei,"Nation of Brunei, Abode of Peace|Brunei Darussalam|Nation of Brunei|Abode of Peace",BN,096,bn,4.50,114.67,yes,other
-BTN,https://www.wikidata.org/wiki/Q917,Bhutan,Kingdom of Bhutan,BT,064,bt,27.50,90.50,yes,other
-BWA,https://www.wikidata.org/wiki/Q963,Botswana,Republic of Botswana|Lefatshe la Botswana,BW,072,bw,-22.00,24.00,yes,other
-CAF,https://www.wikidata.org/wiki/Q929,Central African Republic,République centrafricaine|CAR,CF,140,cf,7.00,21.00,yes,other
-CAN,https://www.wikidata.org/wiki/Q16,Canada,,CA,124,ca,60.00,-95.00,yes,core
-CHE,https://www.wikidata.org/wiki/Q39,Switzerland,Swiss Confederation|Schweiz|Suisse|Svizzera|Svizra,CH,756,ch,47.00,8.00,yes,core
-CHL,https://www.wikidata.org/wiki/Q298,Chile,Republic of Chile|República de Chile,CL,152,cl,-30.00,-71.00,yes,core
-CHN,https://www.wikidata.org/wiki/Q148,China,People's Republic of China|Zhōngguó|Zhongguo|Zhonghua|Zhōnghuá Rénmín Gònghéguó,CN,156,cn,35.00,105.00,yes,core
-CIV,https://www.wikidata.org/wiki/Q1008,Ivory Coast,Republic of Côte d'Ivoire|Côte d’Ivoire|Côte d'Ivoire|Cote d'Ivoire|République de Côte d'Ivoire|Cote dIvoire,CI,384,ci,8.00,-5.00,yes,other
-CMR,https://www.wikidata.org/wiki/Q1009,Cameroon,Republic of Cameroon|République du Cameroun,CM,120,cm,6.00,12.00,yes,other
-COD,https://www.wikidata.org/wiki/Q974,DR Congo,"Democratic Republic of the Congo|Congo - Kinshasa|Congo-Kinshasa|Congo, the Democratic Republic of the|Democratic Republic of Congo|DRC",CD,180,cd,0.00,25.00,yes,core
-COG,https://www.wikidata.org/wiki/Q971,Republic of the Congo,Congo - Brazzaville|Congo (Brazzaville)|Congo-Brazzaville|Congo,CG,178,cg,-1.00,15.00,yes,other
-COL,https://www.wikidata.org/wiki/Q739,Colombia,Republic of Colombia|República de Colombia,CO,170,co,4.00,-72.00,yes,core
-COM,https://www.wikidata.org/wiki/Q970,Comoros,Union of the Comoros|Union des Comores|Udzima wa Komori|al-Ittiḥād al-Qumurī,KM,174,km,-12.17,44.25,yes,other
-CPV,https://www.wikidata.org/wiki/Q1011,Cape Verde,Republic of Cabo Verde|Cabo Verde|República de Cabo Verde,CV,132,cv,16.00,-24.00,yes,other
-CRI,https://www.wikidata.org/wiki/Q800,Costa Rica,Republic of Costa Rica|República de Costa Rica,CR,188,cr,10.00,-84.00,yes,other
-CUB,https://www.wikidata.org/wiki/Q241,Cuba,Republic of Cuba|República de Cuba,CU,192,cu,21.50,-80.00,yes,core
-CYP,https://www.wikidata.org/wiki/Q229,Cyprus,Republic of Cyprus|Kýpros|Kıbrıs|Kıbrıs Cumhuriyeti,CY,196,cy,35.00,33.00,yes,other
-CZE,https://www.wikidata.org/wiki/Q213,Czechia,Czech Republic|Česká republika|Česko,CZ,203,cz,49.75,15.50,yes,core
-DEU,https://www.wikidata.org/wiki/Q183,Germany,Federal Republic of Germany|Bundesrepublik Deutschland,DE,276,de,51.00,9.00,yes,core
-DJI,https://www.wikidata.org/wiki/Q977,Djibouti,Republic of Djibouti|Jabuuti|Gabuuti|République de Djibouti|Gabuutih Ummuuno|Jamhuuriyadda Jabuuti,DJ,262,dj,11.50,43.00,yes,other
-DMA,https://www.wikidata.org/wiki/Q784,Dominica,Commonwealth of Dominica|Dominique,DM,212,dm,15.42,-61.33,yes,other
-DNK,https://www.wikidata.org/wiki/Q35,Denmark,Kingdom of Denmark|Danmark|Kongeriget Danmark,DK,208,dk,56.00,10.00,yes,core
-DOM,https://www.wikidata.org/wiki/Q786,Dominican Republic,Dominican,DO,214,do,19.00,-70.67,yes,other
-DZA,https://www.wikidata.org/wiki/Q262,Algeria,People's Democratic Republic of Algeria|Dzayer|Algérie,DZ,012,dz,28.00,3.00,yes,core
-ECU,https://www.wikidata.org/wiki/Q736,Ecuador,Republic of Ecuador|República del Ecuador,EC,218,ec,-2.00,-77.50,yes,other
-EGY,https://www.wikidata.org/wiki/Q79,Egypt,Arab Republic of Egypt,EG,818,eg,27.00,30.00,yes,core
-ERI,https://www.wikidata.org/wiki/Q986,Eritrea,State of Eritrea|Dawlat Iritriyá|Iritriyā,ER,232,er,15.00,39.00,yes,other
-ESP,https://www.wikidata.org/wiki/Q29,Spain,Kingdom of Spain|Reino de España,ES,724,es,40.00,-4.00,yes,core
-EST,https://www.wikidata.org/wiki/Q191,Estonia,Republic of Estonia|Eesti|Eesti Vabariik,EE,233,ee,59.00,26.00,yes,other
-ETH,https://www.wikidata.org/wiki/Q115,Ethiopia,Federal Democratic Republic of Ethiopia,ET,231,et,8.00,38.00,yes,core
-FIN,https://www.wikidata.org/wiki/Q33,Finland,Republic of Finland|Suomi|Suomen tasavalta|Republiken Finland,FI,246,fi,64.00,26.00,yes,core
-FJI,https://www.wikidata.org/wiki/Q712,Fiji,Republic of Fiji|Viti|Matanitu ko Viti|Fijī Gaṇarājya,FJ,242,fj,-18.00,175.00,yes,other
-FRA,https://www.wikidata.org/wiki/Q142,France,French Republic|République française,FR,250,fr,46.00,2.00,yes,core
-FSM,https://www.wikidata.org/wiki/Q702,Micronesia,"Federated States of Micronesia|Micronesia (Federated States of)|Micronesia, Federated States of",FM,583,fm,6.92,158.25,yes,other
-GAB,https://www.wikidata.org/wiki/Q1000,Gabon,Gabonese Republic|République Gabonaise,GA,266,ga,-1.00,11.75,yes,other
-GBR,https://www.wikidata.org/wiki/Q145,United Kingdom,United Kingdom of Great Britain and Northern Ireland|Great Britain|UK|Britain,GB,826,gb,54.00,-2.00,yes,core
-GEO,https://www.wikidata.org/wiki/Q230,Georgia,Sakartvelo,GE,268,ge,42.00,43.50,yes,other
-GHA,https://www.wikidata.org/wiki/Q117,Ghana,Republic of Ghana,GH,288,gh,8.00,-2.00,yes,core
-GIN,https://www.wikidata.org/wiki/Q1006,Guinea,Republic of Guinea|République de Guinée,GN,324,gn,11.00,-10.00,yes,other
-GMB,https://www.wikidata.org/wiki/Q1005,Gambia,Republic of the Gambia,GM,270,gm,13.47,-16.57,yes,other
-GNB,https://www.wikidata.org/wiki/Q1007,Guinea-Bissau,Republic of Guinea-Bissau|República da Guiné-Bissau,GW,624,gw,12.00,-15.00,yes,other
-GNQ,https://www.wikidata.org/wiki/Q983,Equatorial Guinea,Republic of Equatorial Guinea|República de Guinea Ecuatorial|République de Guinée équatoriale|República da Guiné Equatorial,GQ,226,gq,2.00,10.00,yes,other
-GRC,https://www.wikidata.org/wiki/Q41,Greece,Hellenic Republic|Elláda,GR,300,gr,39.00,22.00,yes,core
-GRD,https://www.wikidata.org/wiki/Q769,Grenada,,GD,308,gd,12.12,-61.67,yes,other
-GTM,https://www.wikidata.org/wiki/Q774,Guatemala,Republic of Guatemala,GT,320,gt,15.50,-90.25,yes,other
-GUY,https://www.wikidata.org/wiki/Q734,Guyana,Co-operative Republic of Guyana,GY,328,gy,5.00,-59.00,yes,other
-HND,https://www.wikidata.org/wiki/Q783,Honduras,Republic of Honduras|República de Honduras,HN,340,hn,15.00,-86.50,yes,other
-HRV,https://www.wikidata.org/wiki/Q224,Croatia,Republic of Croatia|Hrvatska|Republika Hrvatska,HR,191,hr,45.17,15.50,yes,core
-HTI,https://www.wikidata.org/wiki/Q790,Haiti,Republic of Haiti|République d'Haïti|Repiblik Ayiti,HT,332,ht,19.00,-72.42,yes,other
-HUN,https://www.wikidata.org/wiki/Q28,Hungary,,HU,348,hu,47.00,20.00,yes,core
-IDN,https://www.wikidata.org/wiki/Q252,Indonesia,Republic of Indonesia|Republik Indonesia,ID,360,id,-5.00,120.00,yes,core
-IND,https://www.wikidata.org/wiki/Q668,India,Republic of India|Bhārat|Bharat Ganrajya,IN,356,in,20.00,77.00,yes,core
-IRL,https://www.wikidata.org/wiki/Q27,Ireland,Republic of Ireland|Éire|Poblacht na hÉireann,IE,372,ie,53.00,-8.00,yes,core
-IRN,https://www.wikidata.org/wiki/Q794,Iran,"Islamic Republic of Iran|Iran (Islamic Republic of)|Iran, Islamic Republic of|Jomhuri-ye Eslāmi-ye Irān",IR,364,ir,32.00,53.00,yes,core
-IRQ,https://www.wikidata.org/wiki/Q796,Iraq,Republic of Iraq,IQ,368,iq,33.00,44.00,yes,core
-ISL,https://www.wikidata.org/wiki/Q189,Iceland,Island|Republic of Iceland|Lýðveldið Ísland,IS,352,is,65.00,-18.00,yes,core
-ISR,https://www.wikidata.org/wiki/Q801,Israel,State of Israel|Medīnat Yisrā'el,IL,376,il,31.47,35.13,yes,core
-ITA,https://www.wikidata.org/wiki/Q38,Italy,Italian Republic|Repubblica italiana,IT,380,it,42.83,12.83,yes,core
-JAM,https://www.wikidata.org/wiki/Q766,Jamaica,,JM,388,jm,18.25,-77.50,yes,core
-JOR,https://www.wikidata.org/wiki/Q810,Jordan,Hashemite Kingdom of Jordan|al-Mamlakah al-Urdunīyah al-Hāshimīyah,JO,400,jo,31.00,36.00,yes,other
-JPN,https://www.wikidata.org/wiki/Q17,Japan,Nippon|Nihon,JP,392,jp,36.00,138.00,yes,core
-KAZ,https://www.wikidata.org/wiki/Q232,Kazakhstan,Republic of Kazakhstan|Qazaqstan|Qazaqstan Respublïkası|Respublika Kazakhstan,KZ,398,kz,48.00,68.00,yes,core
-KEN,https://www.wikidata.org/wiki/Q114,Kenya,Republic of Kenya|Jamhuri ya Kenya,KE,404,ke,1.00,38.00,yes,core
-KGZ,https://www.wikidata.org/wiki/Q813,Kyrgyzstan,Kyrgyz Republic|Kyrgyz Respublikasy,KG,417,kg,41.00,75.00,yes,other
-KHM,https://www.wikidata.org/wiki/Q424,Cambodia,Kingdom of Cambodia,KH,116,kh,13.00,105.00,yes,other
-KIR,https://www.wikidata.org/wiki/Q710,Kiribati,Independent and Sovereign Republic of Kiribati|Republic of Kiribati|Ribaberiki Kiribati,KI,296,ki,1.42,173.00,yes,other
-KNA,https://www.wikidata.org/wiki/Q763,Saint Kitts and Nevis,Federation of Saint Christopher and Nevis,KN,659,kn,17.33,-62.75,yes,other
-KOR,https://www.wikidata.org/wiki/Q884,South Korea,"Republic of Korea|Korea, Republic of",KR,410,kr,37.00,127.50,yes,core
-KWT,https://www.wikidata.org/wiki/Q817,Kuwait,State of Kuwait|Dawlat al-Kuwait,KW,414,kw,29.50,45.75,yes,other
-LAO,https://www.wikidata.org/wiki/Q819,Laos,Lao People's Democratic Republic|Lao|Sathalanalat Paxathipatai Paxaxon Lao,LA,418,la,18.00,105.00,yes,other
-LBN,https://www.wikidata.org/wiki/Q822,Lebanon,Lebanese Republic|Al-Jumhūrīyah Al-Libnānīyah,LB,422,lb,33.83,35.83,yes,other
-LBR,https://www.wikidata.org/wiki/Q1014,Liberia,Republic of Liberia,LR,430,lr,6.50,-9.50,yes,other
-LBY,https://www.wikidata.org/wiki/Q1016,Libya,State of Libya|Dawlat Libya,LY,434,ly,25.00,17.00,yes,other
-LCA,https://www.wikidata.org/wiki/Q760,Saint Lucia,St. Lucia,LC,662,lc,13.88,-60.97,yes,other
-LIE,https://www.wikidata.org/wiki/Q347,Liechtenstein,Principality of Liechtenstein|Fürstentum Liechtenstein,LI,438,li,47.27,9.53,yes,other
-LKA,https://www.wikidata.org/wiki/Q854,Sri Lanka,Democratic Socialist Republic of Sri Lanka|ilaṅkai,LK,144,lk,7.00,81.00,yes,core
-LSO,https://www.wikidata.org/wiki/Q1013,Lesotho,Kingdom of Lesotho|Muso oa Lesotho,LS,426,ls,-29.50,28.50,yes,other
-LTU,https://www.wikidata.org/wiki/Q37,Lithuania,Republic of Lithuania|Lietuvos Respublika,LT,440,lt,56.00,24.00,yes,other
-LUX,https://www.wikidata.org/wiki/Q32,Luxembourg,Grand Duchy of Luxembourg|Grand-Duché de Luxembourg|Großherzogtum Luxemburg|Groussherzogtum Lëtzebuerg,LU,442,lu,49.75,6.17,yes,core
-LVA,https://www.wikidata.org/wiki/Q211,Latvia,Republic of Latvia|Latvijas Republika,LV,428,lv,57.00,25.00,yes,other
-MAR,https://www.wikidata.org/wiki/Q1028,Morocco,Kingdom of Morocco|Al-Mamlakah al-Maġribiyah,MA,504,ma,32.00,-5.00,yes,core
-MCO,https://www.wikidata.org/wiki/Q235,Monaco,Principality of Monaco|Principauté de Monaco,MC,492,mc,43.73,7.40,yes,other
-MDA,https://www.wikidata.org/wiki/Q217,Moldova,"Republic of Moldova|Moldova, Republic of|Republica Moldova",MD,498,md,47.00,29.00,yes,other
-MDG,https://www.wikidata.org/wiki/Q1019,Madagascar,Republic of Madagascar|Repoblikan'i Madagasikara|République de Madagascar,MG,450,mg,-20.00,47.00,yes,core
-MDV,https://www.wikidata.org/wiki/Q826,Maldives,Republic of the Maldives|Maldive Islands|Dhivehi Raajjeyge Jumhooriyya,MV,462,mv,3.25,73.00,yes,other
-MEX,https://www.wikidata.org/wiki/Q96,Mexico,United Mexican States|Mexicanos|Estados Unidos Mexicanos,MX,484,mx,23.00,-102.00,yes,core
-MHL,https://www.wikidata.org/wiki/Q709,Marshall Islands,Republic of the Marshall Islands,MH,584,mh,9.00,168.00,yes,other
-MKD,https://www.wikidata.org/wiki/Q221,North Macedonia,"Republic of North Macedonia|former Yugoslav Republic of Macedonia|Macedonia, The Former Yugoslav Republic of|Macedonia",MK,807,mk,41.83,22.00,yes,other
-MLI,https://www.wikidata.org/wiki/Q912,Mali,Republic of Mali|République du Mali,ML,466,ml,17.00,-4.00,yes,other
-MLT,https://www.wikidata.org/wiki/Q233,Malta,Republic of Malta|Repubblika ta' Malta,MT,470,mt,35.83,14.58,yes,other
-MMR,https://www.wikidata.org/wiki/Q836,Myanmar,Republic of the Union of Myanmar|Burma|Pyidaunzu Thanmăda Myăma Nainngandaw,MM,104,mm,22.00,98.00,yes,other
-MNE,https://www.wikidata.org/wiki/Q236,Montenegro,Crna Gora,ME,499,me,42.50,19.30,yes,other
-MNG,https://www.wikidata.org/wiki/Q711,Mongolia,,MN,496,mn,46.00,105.00,yes,core
-MOZ,https://www.wikidata.org/wiki/Q1029,Mozambique,Republic of Mozambique|República de Moçambique,MZ,508,mz,-18.25,35.00,yes,other
-MRT,https://www.wikidata.org/wiki/Q1025,Mauritania,Islamic Republic of Mauritania,MR,478,mr,20.00,-12.00,yes,other
-MUS,https://www.wikidata.org/wiki/Q1027,Mauritius,Republic of Mauritius|République de Maurice,MU,480,mu,-20.28,57.55,yes,other
-MWI,https://www.wikidata.org/wiki/Q1020,Malawi,Republic of Malawi,MW,454,mw,-13.50,34.00,yes,other
-MYS,https://www.wikidata.org/wiki/Q833,Malaysia,,MY,458,my,2.50,112.50,yes,core
-NAM,,Namibia,Republic of Namibia|Namibië,NA,516,na,-22.00,17.00,yes,other
-NER,https://www.wikidata.org/wiki/Q1032,Niger,Republic of Niger|Nijar,NE,562,ne,16.00,8.00,yes,other
-NGA,https://www.wikidata.org/wiki/Q1033,Nigeria,Federal Republic of Nigeria|Nijeriya|Naíjíríà,NG,566,ng,10.00,8.00,yes,core
-NIC,https://www.wikidata.org/wiki/Q811,Nicaragua,Republic of Nicaragua|República de Nicaragua,NI,558,ni,13.00,-85.00,yes,other
-NLD,https://www.wikidata.org/wiki/Q55,Netherlands,Kingdom of the Netherlands|Holland|Nederland,NL,528,nl,52.50,5.75,yes,core
-NOR,https://www.wikidata.org/wiki/Q20,Norway,Kingdom of Norway|Norge|Noreg|Kongeriket Norge|Kongeriket Noreg,NO,578,no,62.00,10.00,yes,core
-NPL,https://www.wikidata.org/wiki/Q837,Nepal,Federal Democratic Republic of Nepal|Loktāntrik Ganatantra Nepāl,NP,524,np,28.00,84.00,yes,core
-NRU,https://www.wikidata.org/wiki/Q697,Nauru,Republic of Nauru|Naoero|Pleasant Island|Ripublik Naoero,NR,520,nr,-0.53,166.92,yes,other
-NZL,https://www.wikidata.org/wiki/Q664,New Zealand,Aotearoa|NZ,NZ,554,nz,-41.00,174.00,yes,core
-OMN,https://www.wikidata.org/wiki/Q842,Oman,Sultanate of Oman,OM,512,om,21.00,57.00,yes,other
-PAK,https://www.wikidata.org/wiki/Q843,Pakistan,Islamic Republic of Pakistan|Pākistān|Islāmī Jumhūriya'eh Pākistān,PK,586,pk,30.00,70.00,yes,core
-PAN,https://www.wikidata.org/wiki/Q804,Panama,Republic of Panama|República de Panamá,PA,591,pa,9.00,-80.00,yes,other
-PER,https://www.wikidata.org/wiki/Q419,Peru,Republic of Peru|República del Perú,PE,604,pe,-10.00,-76.00,yes,core
-PHL,https://www.wikidata.org/wiki/Q928,Philippines,Republic of the Philippines|Repúblika ng Pilipinas,PH,608,ph,13.00,122.00,yes,core
-PLW,https://www.wikidata.org/wiki/Q695,Palau,Republic of Palau|Beluu er a Belau,PW,585,pw,7.50,134.50,yes,other
-PNG,https://www.wikidata.org/wiki/Q691,Papua New Guinea,Independent State of Papua New Guinea|Independen Stet bilong Papua Niugini|PNG,PG,598,pg,-6.00,147.00,yes,other
-POL,https://www.wikidata.org/wiki/Q36,Poland,Republic of Poland|Rzeczpospolita Polska,PL,616,pl,52.00,20.00,yes,core
-PRK,https://www.wikidata.org/wiki/Q423,North Korea,"Democratic People's Republic of Korea|DPRK|Chosŏn Minjujuŭi Inmin Konghwaguk|Korea, Democratic People's Republic of",KP,408,kp,40.00,127.00,yes,core
-PRT,https://www.wikidata.org/wiki/Q45,Portugal,Portuguese Republic|Portuguesa|República Portuguesa,PT,620,pt,39.50,-8.00,yes,core
-PRY,https://www.wikidata.org/wiki/Q733,Paraguay,Republic of Paraguay|República del Paraguay|Tetã Paraguái,PY,600,py,-23.00,-58.00,yes,other
-QAT,https://www.wikidata.org/wiki/Q846,Qatar,State of Qatar|Dawlat Qaṭar,QA,634,qa,25.50,51.25,yes,other
-ROU,https://www.wikidata.org/wiki/Q218,Romania,Rumania|Roumania|România,RO,642,ro,46.00,25.00,yes,core
-RUS,https://www.wikidata.org/wiki/Q159,Russia,Russian Federation,RU,643,ru,60.00,100.00,yes,core
-RWA,https://www.wikidata.org/wiki/Q1037,Rwanda,Republic of Rwanda|Repubulika y'u Rwanda|République du Rwanda,RW,646,rw,-2.00,30.00,yes,other
-SAU,https://www.wikidata.org/wiki/Q851,Saudi Arabia,Kingdom of Saudi Arabia|Saudi|KSA,SA,682,sa,25.00,45.00,yes,core
-SDN,https://www.wikidata.org/wiki/Q1049,Sudan,Republic of the Sudan|Jumhūrīyat as-Sūdān,SD,729,sd,15.00,30.00,yes,other
-SEN,https://www.wikidata.org/wiki/Q1041,Senegal,Republic of Senegal|République du Sénégal,SN,686,sn,14.00,-14.00,yes,core
-SGP,https://www.wikidata.org/wiki/Q334,Singapore,Republic of Singapore|Singapura|Republik Singapura,SG,702,sg,1.37,103.80,yes,core
-SLB,https://www.wikidata.org/wiki/Q685,Solomon Islands,,SB,090,sb,-8.00,159.00,yes,other
-SLE,https://www.wikidata.org/wiki/Q1044,Sierra Leone,Republic of Sierra Leone,SL,694,sl,8.50,-11.50,yes,other
-SLV,https://www.wikidata.org/wiki/Q792,El Salvador,Republic of El Salvador|República de El Salvador,SV,222,sv,13.83,-88.92,yes,other
-SMR,https://www.wikidata.org/wiki/Q238,San Marino,Most Serene Republic of San Marino|Republic of San Marino|Repubblica di San Marino,SM,674,sm,43.77,12.42,yes,other
-SOM,https://www.wikidata.org/wiki/Q1045,Somalia,Federal Republic of Somalia|aṣ-Ṣūmāl|Jamhuuriyadda Federaalka Soomaaliya|Jumhūriyyat aṣ-Ṣūmāl al-Fiderāliyya,SO,706,so,10.00,49.00,yes,other
-SRB,https://www.wikidata.org/wiki/Q403,Serbia,Republic of Serbia|Srbija|Republika Srbija,RS,688,rs,44.00,21.00,yes,other
-SSD,https://www.wikidata.org/wiki/Q958,South Sudan,Republic of South Sudan,SS,728,ss,7.00,30.00,yes,other
-STP,https://www.wikidata.org/wiki/Q1039,São Tomé and Príncipe,Democratic Republic of São Tomé and Príncipe|Sao Tome and Principe|República Democrática de São Tomé e Príncipe,ST,678,st,1.00,7.00,yes,other
-SUR,https://www.wikidata.org/wiki/Q730,Suriname,Republic of Suriname|Sarnam|Sranangron|Republiek Suriname,SR,740,sr,4.00,-56.00,yes,other
-SVK,https://www.wikidata.org/wiki/Q214,Slovakia,Slovak Republic|Slovenská republika,SK,703,sk,48.67,19.50,yes,other
-SVN,https://www.wikidata.org/wiki/Q215,Slovenia,Republic of Slovenia|Republika Slovenija,SI,705,si,46.12,14.82,yes,other
-SWE,https://www.wikidata.org/wiki/Q34,Sweden,Kingdom of Sweden|Konungariket Sverige,SE,752,se,62.00,15.00,yes,core
-SWZ,https://www.wikidata.org/wiki/Q1050,Eswatini,Kingdom of Eswatini|Swaziland|weSwatini|Swatini|Ngwane|Umbuso weSwatini,SZ,748,sz,-26.50,31.50,yes,other
-SYC,https://www.wikidata.org/wiki/Q1042,Seychelles,Republic of Seychelles|Repiblik Sesel|République des Seychelles,SC,690,sc,-4.58,55.67,yes,other
-SYR,https://www.wikidata.org/wiki/Q858,Syria,Syrian Arab Republic,SY,760,sy,35.00,38.00,yes,other
-TCD,https://www.wikidata.org/wiki/Q657,Chad,Republic of Chad|Tchad|République du Tchad,TD,148,td,15.00,19.00,yes,other
-TGO,https://www.wikidata.org/wiki/Q945,Togo,Togolese Republic|Togolese|République Togolaise,TG,768,tg,8.00,1.17,yes,other
-THA,https://www.wikidata.org/wiki/Q869,Thailand,Kingdom of Thailand|Prathet|Thai|Ratcha Anachak Thai,TH,764,th,15.00,100.00,yes,core
-TJK,https://www.wikidata.org/wiki/Q863,Tajikistan,Republic of Tajikistan|Toçikiston|Çumhuriyi Toçikiston,TJ,762,tj,39.00,71.00,yes,other
-TKM,https://www.wikidata.org/wiki/Q874,Turkmenistan,,TM,795,tm,40.00,60.00,yes,other
-TLS,https://www.wikidata.org/wiki/Q574,Timor-Leste,Democratic Republic of Timor-Leste|East Timor|Timor|República Democrática de Timor-Leste|Repúblika Demokrátika Timór-Leste|Timór Lorosa'e|Timor Lorosae,TL,626,tl,-8.83,125.92,yes,other
-TON,https://www.wikidata.org/wiki/Q678,Tonga,Kingdom of Tonga,TO,776,to,-20.00,-175.00,yes,other
-TTO,https://www.wikidata.org/wiki/Q754,Trinidad and Tobago,Republic of Trinidad and Tobago,TT,780,tt,11.00,-61.00,yes,other
-TUN,https://www.wikidata.org/wiki/Q948,Tunisia,Tunisian Republic|Republic of Tunisia|al-Jumhūriyyah at-Tūnisiyyah,TN,788,tn,34.00,9.00,yes,core
-TUR,https://www.wikidata.org/wiki/Q43,Türkiye,Republic of Türkiye|Turkey|Turkiye|Republic of Turkey|Türkiye Cumhuriyeti,TR,792,tr,39.00,35.00,yes,core
-TUV,https://www.wikidata.org/wiki/Q672,Tuvalu,,TV,798,tv,-8.00,178.00,yes,other
-TZA,https://www.wikidata.org/wiki/Q924,Tanzania,"United Republic of Tanzania|Tanzania, United Republic of|Jamhuri ya Muungano wa Tanzania",TZ,834,tz,-6.00,35.00,yes,other
-UGA,https://www.wikidata.org/wiki/Q1036,Uganda,Republic of Uganda|Jamhuri ya Uganda,UG,800,ug,1.00,32.00,yes,other
-UKR,https://www.wikidata.org/wiki/Q212,Ukraine,Ukrayina,UA,804,ua,49.00,32.00,yes,core
-URY,https://www.wikidata.org/wiki/Q77,Uruguay,Oriental Republic of Uruguay|República Oriental del Uruguay,UY,858,uy,-33.00,-56.00,yes,other
-USA,https://www.wikidata.org/wiki/Q30,United States,United States of America|USA|US|America,US,840,us,38.00,-97.00,yes,core
-UZB,https://www.wikidata.org/wiki/Q265,Uzbekistan,Republic of Uzbekistan,UZ,860,uz,41.00,64.00,yes,other
-VAT,https://www.wikidata.org/wiki/Q237,Vatican City,Vatican City State|Holy See (Vatican City)|Holy See (Vatican City State)|Vatican|Stato della Città del Vaticano|Holy See,VA,336,va,41.90,12.45,yes,other
-VCT,https://www.wikidata.org/wiki/Q757,Saint Vincent and the Grenadines,,VC,670,vc,13.25,-61.20,yes,other
-VEN,https://www.wikidata.org/wiki/Q717,Venezuela,"Bolivarian Republic of Venezuela|Venezuela (Bolivarian Republic of)|Venezuela, Bolivarian Republic of|República Bolivariana de Venezuela",VE,862,ve,8.00,-66.00,yes,core
-VNM,https://www.wikidata.org/wiki/Q881,Vietnam,Socialist Republic of Vietnam|Viet Nam|Cộng hòa Xã hội chủ nghĩa Việt Nam,VN,704,vn,16.17,107.83,yes,core
-VUT,https://www.wikidata.org/wiki/Q686,Vanuatu,Republic of Vanuatu|Ripablik blong Vanuatu|République de Vanuatu,VU,548,vu,-16.00,167.00,yes,other
-WSM,https://www.wikidata.org/wiki/Q683,Samoa,Independent State of Samoa,WS,882,ws,-13.58,-172.33,yes,other
-YEM,https://www.wikidata.org/wiki/Q805,Yemen,Republic of Yemen|Yemeni Republic|al-Jumhūriyyah al-Yamaniyyah,YE,887,ye,15.00,48.00,yes,other
-ZAF,https://www.wikidata.org/wiki/Q258,South Africa,Republic of South Africa|Suid-Afrika,ZA,710,za,-29.00,24.00,yes,core
-ZMB,https://www.wikidata.org/wiki/Q953,Zambia,Republic of Zambia,ZM,894,zm,-15.00,30.00,yes,other
-ZWE,https://www.wikidata.org/wiki/Q954,Zimbabwe,Republic of Zimbabwe,ZW,716,zw,-20.00,30.00,yes,other
+id,wikidata,name,aliases,context,iso2,iso_numeric,flag,lat,lng,un_member,tier
+AFG,https://www.wikidata.org/wiki/Q889,Afghanistan,Islamic Republic of Afghanistan|Afġānistān,,AF,004,af,33.00,65.00,yes,core
+AGO,https://www.wikidata.org/wiki/Q916,Angola,Republic of Angola|República de Angola|ʁɛpublika de an'ɡɔla,,AO,024,ao,-12.50,18.50,yes,other
+ALB,https://www.wikidata.org/wiki/Q222,Albania,Republic of Albania|Shqipëri|Shqipëria|Shqipnia,,AL,008,al,41.00,20.00,yes,other
+AND,https://www.wikidata.org/wiki/Q228,Andorra,Principality of Andorra|Principat d'Andorra,,AD,020,ad,42.50,1.50,yes,other
+ARE,https://www.wikidata.org/wiki/Q878,United Arab Emirates,Emirates|UAE,,AE,784,ae,24.00,54.00,yes,core
+ARG,https://www.wikidata.org/wiki/Q414,Argentina,Argentine Republic|República Argentina,,AR,032,ar,-34.00,-64.00,yes,famous
+ARM,https://www.wikidata.org/wiki/Q399,Armenia,Republic of Armenia|Hayastan,,AM,051,am,40.00,45.00,yes,other
+ATG,https://www.wikidata.org/wiki/Q781,Antigua and Barbuda,,,AG,028,ag,17.05,-61.80,yes,other
+AUS,https://www.wikidata.org/wiki/Q408,Australia,Commonwealth of Australia,,AU,036,au,-27.00,133.00,yes,famous
+AUT,https://www.wikidata.org/wiki/Q40,Austria,Republic of Austria|Osterreich|Oesterreich,,AT,040,at,47.33,13.33,yes,famous
+AZE,https://www.wikidata.org/wiki/Q227,Azerbaijan,Republic of Azerbaijan|Azərbaycan Respublikası,,AZ,031,az,40.50,47.50,yes,other
+BDI,https://www.wikidata.org/wiki/Q967,Burundi,Republic of Burundi|Republika y'Uburundi|République du Burundi,,BI,108,bi,-3.50,30.00,yes,other
+BEL,https://www.wikidata.org/wiki/Q31,Belgium,Kingdom of Belgium|België|Belgie|Belgien|Belgique|Koninkrijk België|Royaume de Belgique|Königreich Belgien,,BE,056,be,50.83,4.00,yes,famous
+BEN,https://www.wikidata.org/wiki/Q962,Benin,Republic of Benin|République du Bénin,,BJ,204,bj,9.50,2.25,yes,other
+BFA,https://www.wikidata.org/wiki/Q965,Burkina Faso,,,BF,854,bf,13.00,-2.00,yes,other
+BGD,https://www.wikidata.org/wiki/Q902,Bangladesh,People's Republic of Bangladesh|Gônôprôjatôntri Bangladesh,,BD,050,bd,24.00,90.00,yes,core
+BGR,https://www.wikidata.org/wiki/Q219,Bulgaria,Republic of Bulgaria,,BG,100,bg,43.00,25.00,yes,other
+BHR,https://www.wikidata.org/wiki/Q398,Bahrain,Kingdom of Bahrain|Mamlakat al-Baḥrayn,,BH,048,bh,26.00,50.55,yes,other
+BHS,https://www.wikidata.org/wiki/Q778,Bahamas,Commonwealth of the Bahamas,,BS,044,bs,24.25,-76.00,yes,other
+BIH,https://www.wikidata.org/wiki/Q225,Bosnia and Herzegovina,Bosnia|Bosnia-Herzegovina,,BA,070,ba,44.00,18.00,yes,other
+BLR,https://www.wikidata.org/wiki/Q184,Belarus,Republic of Belarus|Bielaruś,,BY,112,by,53.00,28.00,yes,other
+BLZ,https://www.wikidata.org/wiki/Q242,Belize,,,BZ,084,bz,17.25,-88.75,yes,other
+BOL,https://www.wikidata.org/wiki/Q750,Bolivia,"Plurinational State of Bolivia|Bolivia (Plurinational State of)|Buliwya|Wuliwya|Bolivia, Plurinational State of|Estado Plurinacional de Bolivia|Buliwya Mamallaqta|Wuliwya Suyu|Tetã Volívia",,BO,068,bo,-17.00,-65.00,yes,other
+BRA,https://www.wikidata.org/wiki/Q155,Brazil,Federative Republic of Brazil|Brasil|República Federativa do Brasil,,BR,076,br,-10.00,-55.00,yes,famous
+BRB,https://www.wikidata.org/wiki/Q244,Barbados,,,BB,052,bb,13.17,-59.53,yes,other
+BRN,https://www.wikidata.org/wiki/Q921,Brunei,"Nation of Brunei, Abode of Peace|Brunei Darussalam|Nation of Brunei|Abode of Peace",,BN,096,bn,4.50,114.67,yes,other
+BTN,https://www.wikidata.org/wiki/Q917,Bhutan,Kingdom of Bhutan,,BT,064,bt,27.50,90.50,yes,other
+BWA,https://www.wikidata.org/wiki/Q963,Botswana,Republic of Botswana|Lefatshe la Botswana,,BW,072,bw,-22.00,24.00,yes,other
+CAF,https://www.wikidata.org/wiki/Q929,Central African Republic,République centrafricaine|CAR,,CF,140,cf,7.00,21.00,yes,other
+CAN,https://www.wikidata.org/wiki/Q16,Canada,,,CA,124,ca,60.00,-95.00,yes,famous
+CHE,https://www.wikidata.org/wiki/Q39,Switzerland,Swiss Confederation|Schweiz|Suisse|Svizzera|Svizra,,CH,756,ch,47.00,8.00,yes,famous
+CHL,https://www.wikidata.org/wiki/Q298,Chile,Republic of Chile|República de Chile,,CL,152,cl,-30.00,-71.00,yes,core
+CHN,https://www.wikidata.org/wiki/Q148,China,People's Republic of China|Zhōngguó|Zhongguo|Zhonghua|Zhōnghuá Rénmín Gònghéguó,,CN,156,cn,35.00,105.00,yes,famous
+CIV,https://www.wikidata.org/wiki/Q1008,Ivory Coast,Republic of Côte d'Ivoire|Côte d’Ivoire|Côte d'Ivoire|Cote d'Ivoire|République de Côte d'Ivoire|Cote dIvoire,,CI,384,ci,8.00,-5.00,yes,other
+CMR,https://www.wikidata.org/wiki/Q1009,Cameroon,Republic of Cameroon|République du Cameroun,,CM,120,cm,6.00,12.00,yes,other
+COD,https://www.wikidata.org/wiki/Q974,DR Congo,"Democratic Republic of the Congo|Congo - Kinshasa|Congo-Kinshasa|Congo, the Democratic Republic of the|Democratic Republic of Congo|DRC",Congo,CD,180,cd,0.00,25.00,yes,core
+COG,https://www.wikidata.org/wiki/Q971,Republic of the Congo,Congo - Brazzaville|Congo (Brazzaville)|Congo-Brazzaville|Congo,,CG,178,cg,-1.00,15.00,yes,other
+COL,https://www.wikidata.org/wiki/Q739,Colombia,Republic of Colombia|República de Colombia,,CO,170,co,4.00,-72.00,yes,core
+COM,https://www.wikidata.org/wiki/Q970,Comoros,Union of the Comoros|Union des Comores|Udzima wa Komori|al-Ittiḥād al-Qumurī,,KM,174,km,-12.17,44.25,yes,other
+CPV,https://www.wikidata.org/wiki/Q1011,Cape Verde,Republic of Cabo Verde|Cabo Verde|República de Cabo Verde,,CV,132,cv,16.00,-24.00,yes,other
+CRI,https://www.wikidata.org/wiki/Q800,Costa Rica,Republic of Costa Rica|República de Costa Rica,,CR,188,cr,10.00,-84.00,yes,other
+CUB,https://www.wikidata.org/wiki/Q241,Cuba,Republic of Cuba|República de Cuba,,CU,192,cu,21.50,-80.00,yes,core
+CYP,https://www.wikidata.org/wiki/Q229,Cyprus,Republic of Cyprus|Kýpros|Kıbrıs|Kıbrıs Cumhuriyeti,,CY,196,cy,35.00,33.00,yes,other
+CZE,https://www.wikidata.org/wiki/Q213,Czechia,Czech Republic|Česká republika|Česko,,CZ,203,cz,49.75,15.50,yes,core
+DEU,https://www.wikidata.org/wiki/Q183,Germany,Federal Republic of Germany|Bundesrepublik Deutschland,,DE,276,de,51.00,9.00,yes,famous
+DJI,https://www.wikidata.org/wiki/Q977,Djibouti,Republic of Djibouti|Jabuuti|Gabuuti|République de Djibouti|Gabuutih Ummuuno|Jamhuuriyadda Jabuuti,,DJ,262,dj,11.50,43.00,yes,other
+DMA,https://www.wikidata.org/wiki/Q784,Dominica,Commonwealth of Dominica|Dominique,,DM,212,dm,15.42,-61.33,yes,other
+DNK,https://www.wikidata.org/wiki/Q35,Denmark,Kingdom of Denmark|Danmark|Kongeriget Danmark,,DK,208,dk,56.00,10.00,yes,famous
+DOM,https://www.wikidata.org/wiki/Q786,Dominican Republic,Dominican,,DO,214,do,19.00,-70.67,yes,other
+DZA,https://www.wikidata.org/wiki/Q262,Algeria,People's Democratic Republic of Algeria|Dzayer|Algérie,,DZ,012,dz,28.00,3.00,yes,core
+ECU,https://www.wikidata.org/wiki/Q736,Ecuador,Republic of Ecuador|República del Ecuador,,EC,218,ec,-2.00,-77.50,yes,other
+EGY,https://www.wikidata.org/wiki/Q79,Egypt,Arab Republic of Egypt,,EG,818,eg,27.00,30.00,yes,famous
+ERI,https://www.wikidata.org/wiki/Q986,Eritrea,State of Eritrea|Dawlat Iritriyá|Iritriyā,,ER,232,er,15.00,39.00,yes,other
+ESP,https://www.wikidata.org/wiki/Q29,Spain,Kingdom of Spain|Reino de España,,ES,724,es,40.00,-4.00,yes,famous
+EST,https://www.wikidata.org/wiki/Q191,Estonia,Republic of Estonia|Eesti|Eesti Vabariik,,EE,233,ee,59.00,26.00,yes,other
+ETH,https://www.wikidata.org/wiki/Q115,Ethiopia,Federal Democratic Republic of Ethiopia,,ET,231,et,8.00,38.00,yes,core
+FIN,https://www.wikidata.org/wiki/Q33,Finland,Republic of Finland|Suomi|Suomen tasavalta|Republiken Finland,,FI,246,fi,64.00,26.00,yes,famous
+FJI,https://www.wikidata.org/wiki/Q712,Fiji,Republic of Fiji|Viti|Matanitu ko Viti|Fijī Gaṇarājya,,FJ,242,fj,-18.00,175.00,yes,other
+FRA,https://www.wikidata.org/wiki/Q142,France,French Republic|République française,,FR,250,fr,46.00,2.00,yes,famous
+FSM,https://www.wikidata.org/wiki/Q702,Micronesia,"Federated States of Micronesia|Micronesia (Federated States of)|Micronesia, Federated States of",,FM,583,fm,6.92,158.25,yes,other
+GAB,https://www.wikidata.org/wiki/Q1000,Gabon,Gabonese Republic|République Gabonaise,,GA,266,ga,-1.00,11.75,yes,other
+GBR,https://www.wikidata.org/wiki/Q145,United Kingdom,United Kingdom of Great Britain and Northern Ireland|Great Britain|UK|Britain,,GB,826,gb,54.00,-2.00,yes,famous
+GEO,https://www.wikidata.org/wiki/Q230,Georgia,Sakartvelo,,GE,268,ge,42.00,43.50,yes,other
+GHA,https://www.wikidata.org/wiki/Q117,Ghana,Republic of Ghana,,GH,288,gh,8.00,-2.00,yes,core
+GIN,https://www.wikidata.org/wiki/Q1006,Guinea,Republic of Guinea|République de Guinée,,GN,324,gn,11.00,-10.00,yes,other
+GMB,https://www.wikidata.org/wiki/Q1005,Gambia,Republic of the Gambia,,GM,270,gm,13.47,-16.57,yes,other
+GNB,https://www.wikidata.org/wiki/Q1007,Guinea-Bissau,Republic of Guinea-Bissau|República da Guiné-Bissau,,GW,624,gw,12.00,-15.00,yes,other
+GNQ,https://www.wikidata.org/wiki/Q983,Equatorial Guinea,Republic of Equatorial Guinea|República de Guinea Ecuatorial|République de Guinée équatoriale|República da Guiné Equatorial,,GQ,226,gq,2.00,10.00,yes,other
+GRC,https://www.wikidata.org/wiki/Q41,Greece,Hellenic Republic|Elláda,,GR,300,gr,39.00,22.00,yes,famous
+GRD,https://www.wikidata.org/wiki/Q769,Grenada,,,GD,308,gd,12.12,-61.67,yes,other
+GTM,https://www.wikidata.org/wiki/Q774,Guatemala,Republic of Guatemala,,GT,320,gt,15.50,-90.25,yes,other
+GUY,https://www.wikidata.org/wiki/Q734,Guyana,Co-operative Republic of Guyana,,GY,328,gy,5.00,-59.00,yes,other
+HND,https://www.wikidata.org/wiki/Q783,Honduras,Republic of Honduras|República de Honduras,,HN,340,hn,15.00,-86.50,yes,other
+HRV,https://www.wikidata.org/wiki/Q224,Croatia,Republic of Croatia|Hrvatska|Republika Hrvatska,,HR,191,hr,45.17,15.50,yes,core
+HTI,https://www.wikidata.org/wiki/Q790,Haiti,Republic of Haiti|République d'Haïti|Repiblik Ayiti,,HT,332,ht,19.00,-72.42,yes,other
+HUN,https://www.wikidata.org/wiki/Q28,Hungary,,,HU,348,hu,47.00,20.00,yes,core
+IDN,https://www.wikidata.org/wiki/Q252,Indonesia,Republic of Indonesia|Republik Indonesia,,ID,360,id,-5.00,120.00,yes,famous
+IND,https://www.wikidata.org/wiki/Q668,India,Republic of India|Bhārat|Bharat Ganrajya,,IN,356,in,20.00,77.00,yes,famous
+IRL,https://www.wikidata.org/wiki/Q27,Ireland,Republic of Ireland|Éire|Poblacht na hÉireann,,IE,372,ie,53.00,-8.00,yes,famous
+IRN,https://www.wikidata.org/wiki/Q794,Iran,"Islamic Republic of Iran|Iran (Islamic Republic of)|Iran, Islamic Republic of|Jomhuri-ye Eslāmi-ye Irān",,IR,364,ir,32.00,53.00,yes,core
+IRQ,https://www.wikidata.org/wiki/Q796,Iraq,Republic of Iraq,,IQ,368,iq,33.00,44.00,yes,core
+ISL,https://www.wikidata.org/wiki/Q189,Iceland,Island|Republic of Iceland|Lýðveldið Ísland,,IS,352,is,65.00,-18.00,yes,core
+ISR,https://www.wikidata.org/wiki/Q801,Israel,State of Israel|Medīnat Yisrā'el,,IL,376,il,31.47,35.13,yes,core
+ITA,https://www.wikidata.org/wiki/Q38,Italy,Italian Republic|Repubblica italiana,,IT,380,it,42.83,12.83,yes,famous
+JAM,https://www.wikidata.org/wiki/Q766,Jamaica,,,JM,388,jm,18.25,-77.50,yes,core
+JOR,https://www.wikidata.org/wiki/Q810,Jordan,Hashemite Kingdom of Jordan|al-Mamlakah al-Urdunīyah al-Hāshimīyah,,JO,400,jo,31.00,36.00,yes,other
+JPN,https://www.wikidata.org/wiki/Q17,Japan,Nippon|Nihon,,JP,392,jp,36.00,138.00,yes,famous
+KAZ,https://www.wikidata.org/wiki/Q232,Kazakhstan,Republic of Kazakhstan|Qazaqstan|Qazaqstan Respublïkası|Respublika Kazakhstan,,KZ,398,kz,48.00,68.00,yes,core
+KEN,https://www.wikidata.org/wiki/Q114,Kenya,Republic of Kenya|Jamhuri ya Kenya,,KE,404,ke,1.00,38.00,yes,famous
+KGZ,https://www.wikidata.org/wiki/Q813,Kyrgyzstan,Kyrgyz Republic|Kyrgyz Respublikasy,,KG,417,kg,41.00,75.00,yes,other
+KHM,https://www.wikidata.org/wiki/Q424,Cambodia,Kingdom of Cambodia,,KH,116,kh,13.00,105.00,yes,other
+KIR,https://www.wikidata.org/wiki/Q710,Kiribati,Independent and Sovereign Republic of Kiribati|Republic of Kiribati|Ribaberiki Kiribati,,KI,296,ki,1.42,173.00,yes,other
+KNA,https://www.wikidata.org/wiki/Q763,Saint Kitts and Nevis,Federation of Saint Christopher and Nevis,,KN,659,kn,17.33,-62.75,yes,other
+KOR,https://www.wikidata.org/wiki/Q884,South Korea,"Republic of Korea|Korea, Republic of",Korea,KR,410,kr,37.00,127.50,yes,famous
+KWT,https://www.wikidata.org/wiki/Q817,Kuwait,State of Kuwait|Dawlat al-Kuwait,,KW,414,kw,29.50,45.75,yes,other
+LAO,https://www.wikidata.org/wiki/Q819,Laos,Lao People's Democratic Republic|Lao|Sathalanalat Paxathipatai Paxaxon Lao,,LA,418,la,18.00,105.00,yes,other
+LBN,https://www.wikidata.org/wiki/Q822,Lebanon,Lebanese Republic|Al-Jumhūrīyah Al-Libnānīyah,,LB,422,lb,33.83,35.83,yes,other
+LBR,https://www.wikidata.org/wiki/Q1014,Liberia,Republic of Liberia,,LR,430,lr,6.50,-9.50,yes,other
+LBY,https://www.wikidata.org/wiki/Q1016,Libya,State of Libya|Dawlat Libya,,LY,434,ly,25.00,17.00,yes,other
+LCA,https://www.wikidata.org/wiki/Q760,Saint Lucia,St. Lucia,,LC,662,lc,13.88,-60.97,yes,other
+LIE,https://www.wikidata.org/wiki/Q347,Liechtenstein,Principality of Liechtenstein|Fürstentum Liechtenstein,,LI,438,li,47.27,9.53,yes,other
+LKA,https://www.wikidata.org/wiki/Q854,Sri Lanka,Democratic Socialist Republic of Sri Lanka|ilaṅkai,,LK,144,lk,7.00,81.00,yes,core
+LSO,https://www.wikidata.org/wiki/Q1013,Lesotho,Kingdom of Lesotho|Muso oa Lesotho,,LS,426,ls,-29.50,28.50,yes,other
+LTU,https://www.wikidata.org/wiki/Q37,Lithuania,Republic of Lithuania|Lietuvos Respublika,,LT,440,lt,56.00,24.00,yes,other
+LUX,https://www.wikidata.org/wiki/Q32,Luxembourg,Grand Duchy of Luxembourg|Grand-Duché de Luxembourg|Großherzogtum Luxemburg|Groussherzogtum Lëtzebuerg,,LU,442,lu,49.75,6.17,yes,core
+LVA,https://www.wikidata.org/wiki/Q211,Latvia,Republic of Latvia|Latvijas Republika,,LV,428,lv,57.00,25.00,yes,other
+MAR,https://www.wikidata.org/wiki/Q1028,Morocco,Kingdom of Morocco|Al-Mamlakah al-Maġribiyah,,MA,504,ma,32.00,-5.00,yes,famous
+MCO,https://www.wikidata.org/wiki/Q235,Monaco,Principality of Monaco|Principauté de Monaco,,MC,492,mc,43.73,7.40,yes,other
+MDA,https://www.wikidata.org/wiki/Q217,Moldova,"Republic of Moldova|Moldova, Republic of|Republica Moldova",,MD,498,md,47.00,29.00,yes,other
+MDG,https://www.wikidata.org/wiki/Q1019,Madagascar,Republic of Madagascar|Repoblikan'i Madagasikara|République de Madagascar,,MG,450,mg,-20.00,47.00,yes,core
+MDV,https://www.wikidata.org/wiki/Q826,Maldives,Republic of the Maldives|Maldive Islands|Dhivehi Raajjeyge Jumhooriyya,,MV,462,mv,3.25,73.00,yes,other
+MEX,https://www.wikidata.org/wiki/Q96,Mexico,United Mexican States|Mexicanos|Estados Unidos Mexicanos,,MX,484,mx,23.00,-102.00,yes,famous
+MHL,https://www.wikidata.org/wiki/Q709,Marshall Islands,Republic of the Marshall Islands,,MH,584,mh,9.00,168.00,yes,other
+MKD,https://www.wikidata.org/wiki/Q221,North Macedonia,"Republic of North Macedonia|former Yugoslav Republic of Macedonia|Macedonia, The Former Yugoslav Republic of|Macedonia",,MK,807,mk,41.83,22.00,yes,other
+MLI,https://www.wikidata.org/wiki/Q912,Mali,Republic of Mali|République du Mali,,ML,466,ml,17.00,-4.00,yes,other
+MLT,https://www.wikidata.org/wiki/Q233,Malta,Republic of Malta|Repubblika ta' Malta,,MT,470,mt,35.83,14.58,yes,other
+MMR,https://www.wikidata.org/wiki/Q836,Myanmar,Republic of the Union of Myanmar|Burma|Pyidaunzu Thanmăda Myăma Nainngandaw,,MM,104,mm,22.00,98.00,yes,other
+MNE,https://www.wikidata.org/wiki/Q236,Montenegro,Crna Gora,,ME,499,me,42.50,19.30,yes,other
+MNG,https://www.wikidata.org/wiki/Q711,Mongolia,,,MN,496,mn,46.00,105.00,yes,core
+MOZ,https://www.wikidata.org/wiki/Q1029,Mozambique,Republic of Mozambique|República de Moçambique,,MZ,508,mz,-18.25,35.00,yes,other
+MRT,https://www.wikidata.org/wiki/Q1025,Mauritania,Islamic Republic of Mauritania,,MR,478,mr,20.00,-12.00,yes,other
+MUS,https://www.wikidata.org/wiki/Q1027,Mauritius,Republic of Mauritius|République de Maurice,,MU,480,mu,-20.28,57.55,yes,other
+MWI,https://www.wikidata.org/wiki/Q1020,Malawi,Republic of Malawi,,MW,454,mw,-13.50,34.00,yes,other
+MYS,https://www.wikidata.org/wiki/Q833,Malaysia,,,MY,458,my,2.50,112.50,yes,core
+NAM,,Namibia,Republic of Namibia|Namibië,,NA,516,na,-22.00,17.00,yes,other
+NER,https://www.wikidata.org/wiki/Q1032,Niger,Republic of Niger|Nijar,,NE,562,ne,16.00,8.00,yes,other
+NGA,https://www.wikidata.org/wiki/Q1033,Nigeria,Federal Republic of Nigeria|Nijeriya|Naíjíríà,,NG,566,ng,10.00,8.00,yes,core
+NIC,https://www.wikidata.org/wiki/Q811,Nicaragua,Republic of Nicaragua|República de Nicaragua,,NI,558,ni,13.00,-85.00,yes,other
+NLD,https://www.wikidata.org/wiki/Q55,Netherlands,Kingdom of the Netherlands|Holland|Nederland,,NL,528,nl,52.50,5.75,yes,famous
+NOR,https://www.wikidata.org/wiki/Q20,Norway,Kingdom of Norway|Norge|Noreg|Kongeriket Norge|Kongeriket Noreg,,NO,578,no,62.00,10.00,yes,famous
+NPL,https://www.wikidata.org/wiki/Q837,Nepal,Federal Democratic Republic of Nepal|Loktāntrik Ganatantra Nepāl,,NP,524,np,28.00,84.00,yes,core
+NRU,https://www.wikidata.org/wiki/Q697,Nauru,Republic of Nauru|Naoero|Pleasant Island|Ripublik Naoero,,NR,520,nr,-0.53,166.92,yes,other
+NZL,https://www.wikidata.org/wiki/Q664,New Zealand,Aotearoa|NZ,,NZ,554,nz,-41.00,174.00,yes,famous
+OMN,https://www.wikidata.org/wiki/Q842,Oman,Sultanate of Oman,,OM,512,om,21.00,57.00,yes,other
+PAK,https://www.wikidata.org/wiki/Q843,Pakistan,Islamic Republic of Pakistan|Pākistān|Islāmī Jumhūriya'eh Pākistān,,PK,586,pk,30.00,70.00,yes,core
+PAN,https://www.wikidata.org/wiki/Q804,Panama,Republic of Panama|República de Panamá,,PA,591,pa,9.00,-80.00,yes,other
+PER,https://www.wikidata.org/wiki/Q419,Peru,Republic of Peru|República del Perú,,PE,604,pe,-10.00,-76.00,yes,core
+PHL,https://www.wikidata.org/wiki/Q928,Philippines,Republic of the Philippines|Repúblika ng Pilipinas,,PH,608,ph,13.00,122.00,yes,core
+PLW,https://www.wikidata.org/wiki/Q695,Palau,Republic of Palau|Beluu er a Belau,,PW,585,pw,7.50,134.50,yes,other
+PNG,https://www.wikidata.org/wiki/Q691,Papua New Guinea,Independent State of Papua New Guinea|Independen Stet bilong Papua Niugini|PNG,,PG,598,pg,-6.00,147.00,yes,other
+POL,https://www.wikidata.org/wiki/Q36,Poland,Republic of Poland|Rzeczpospolita Polska,,PL,616,pl,52.00,20.00,yes,famous
+PRK,https://www.wikidata.org/wiki/Q423,North Korea,"Democratic People's Republic of Korea|DPRK|Chosŏn Minjujuŭi Inmin Konghwaguk|Korea, Democratic People's Republic of",,KP,408,kp,40.00,127.00,yes,core
+PRT,https://www.wikidata.org/wiki/Q45,Portugal,Portuguese Republic|Portuguesa|República Portuguesa,,PT,620,pt,39.50,-8.00,yes,famous
+PRY,https://www.wikidata.org/wiki/Q733,Paraguay,Republic of Paraguay|República del Paraguay|Tetã Paraguái,,PY,600,py,-23.00,-58.00,yes,other
+QAT,https://www.wikidata.org/wiki/Q846,Qatar,State of Qatar|Dawlat Qaṭar,,QA,634,qa,25.50,51.25,yes,other
+ROU,https://www.wikidata.org/wiki/Q218,Romania,Rumania|Roumania|România,,RO,642,ro,46.00,25.00,yes,core
+RUS,https://www.wikidata.org/wiki/Q159,Russia,Russian Federation,,RU,643,ru,60.00,100.00,yes,famous
+RWA,https://www.wikidata.org/wiki/Q1037,Rwanda,Republic of Rwanda|Repubulika y'u Rwanda|République du Rwanda,,RW,646,rw,-2.00,30.00,yes,other
+SAU,https://www.wikidata.org/wiki/Q851,Saudi Arabia,Kingdom of Saudi Arabia|Saudi|KSA,,SA,682,sa,25.00,45.00,yes,core
+SDN,https://www.wikidata.org/wiki/Q1049,Sudan,Republic of the Sudan|Jumhūrīyat as-Sūdān,,SD,729,sd,15.00,30.00,yes,other
+SEN,https://www.wikidata.org/wiki/Q1041,Senegal,Republic of Senegal|République du Sénégal,,SN,686,sn,14.00,-14.00,yes,core
+SGP,https://www.wikidata.org/wiki/Q334,Singapore,Republic of Singapore|Singapura|Republik Singapura,,SG,702,sg,1.37,103.80,yes,core
+SLB,https://www.wikidata.org/wiki/Q685,Solomon Islands,,,SB,090,sb,-8.00,159.00,yes,other
+SLE,https://www.wikidata.org/wiki/Q1044,Sierra Leone,Republic of Sierra Leone,,SL,694,sl,8.50,-11.50,yes,other
+SLV,https://www.wikidata.org/wiki/Q792,El Salvador,Republic of El Salvador|República de El Salvador,,SV,222,sv,13.83,-88.92,yes,other
+SMR,https://www.wikidata.org/wiki/Q238,San Marino,Most Serene Republic of San Marino|Republic of San Marino|Repubblica di San Marino,,SM,674,sm,43.77,12.42,yes,other
+SOM,https://www.wikidata.org/wiki/Q1045,Somalia,Federal Republic of Somalia|aṣ-Ṣūmāl|Jamhuuriyadda Federaalka Soomaaliya|Jumhūriyyat aṣ-Ṣūmāl al-Fiderāliyya,,SO,706,so,10.00,49.00,yes,other
+SRB,https://www.wikidata.org/wiki/Q403,Serbia,Republic of Serbia|Srbija|Republika Srbija,,RS,688,rs,44.00,21.00,yes,other
+SSD,https://www.wikidata.org/wiki/Q958,South Sudan,Republic of South Sudan,,SS,728,ss,7.00,30.00,yes,other
+STP,https://www.wikidata.org/wiki/Q1039,São Tomé and Príncipe,Democratic Republic of São Tomé and Príncipe|Sao Tome and Principe|República Democrática de São Tomé e Príncipe,,ST,678,st,1.00,7.00,yes,other
+SUR,https://www.wikidata.org/wiki/Q730,Suriname,Republic of Suriname|Sarnam|Sranangron|Republiek Suriname,,SR,740,sr,4.00,-56.00,yes,other
+SVK,https://www.wikidata.org/wiki/Q214,Slovakia,Slovak Republic|Slovenská republika,,SK,703,sk,48.67,19.50,yes,other
+SVN,https://www.wikidata.org/wiki/Q215,Slovenia,Republic of Slovenia|Republika Slovenija,,SI,705,si,46.12,14.82,yes,other
+SWE,https://www.wikidata.org/wiki/Q34,Sweden,Kingdom of Sweden|Konungariket Sverige,,SE,752,se,62.00,15.00,yes,famous
+SWZ,https://www.wikidata.org/wiki/Q1050,Eswatini,Kingdom of Eswatini|Swaziland|weSwatini|Swatini|Ngwane|Umbuso weSwatini,,SZ,748,sz,-26.50,31.50,yes,other
+SYC,https://www.wikidata.org/wiki/Q1042,Seychelles,Republic of Seychelles|Repiblik Sesel|République des Seychelles,,SC,690,sc,-4.58,55.67,yes,other
+SYR,https://www.wikidata.org/wiki/Q858,Syria,Syrian Arab Republic,,SY,760,sy,35.00,38.00,yes,other
+TCD,https://www.wikidata.org/wiki/Q657,Chad,Republic of Chad|Tchad|République du Tchad,,TD,148,td,15.00,19.00,yes,other
+TGO,https://www.wikidata.org/wiki/Q945,Togo,Togolese Republic|Togolese|République Togolaise,,TG,768,tg,8.00,1.17,yes,other
+THA,https://www.wikidata.org/wiki/Q869,Thailand,Kingdom of Thailand|Prathet|Thai|Ratcha Anachak Thai,,TH,764,th,15.00,100.00,yes,famous
+TJK,https://www.wikidata.org/wiki/Q863,Tajikistan,Republic of Tajikistan|Toçikiston|Çumhuriyi Toçikiston,,TJ,762,tj,39.00,71.00,yes,other
+TKM,https://www.wikidata.org/wiki/Q874,Turkmenistan,,,TM,795,tm,40.00,60.00,yes,other
+TLS,https://www.wikidata.org/wiki/Q574,Timor-Leste,Democratic Republic of Timor-Leste|East Timor|Timor|República Democrática de Timor-Leste|Repúblika Demokrátika Timór-Leste|Timór Lorosa'e|Timor Lorosae,,TL,626,tl,-8.83,125.92,yes,other
+TON,https://www.wikidata.org/wiki/Q678,Tonga,Kingdom of Tonga,,TO,776,to,-20.00,-175.00,yes,other
+TTO,https://www.wikidata.org/wiki/Q754,Trinidad and Tobago,Republic of Trinidad and Tobago,,TT,780,tt,11.00,-61.00,yes,other
+TUN,https://www.wikidata.org/wiki/Q948,Tunisia,Tunisian Republic|Republic of Tunisia|al-Jumhūriyyah at-Tūnisiyyah,,TN,788,tn,34.00,9.00,yes,core
+TUR,https://www.wikidata.org/wiki/Q43,Türkiye,Republic of Türkiye|Turkey|Turkiye|Republic of Turkey|Türkiye Cumhuriyeti,,TR,792,tr,39.00,35.00,yes,famous
+TUV,https://www.wikidata.org/wiki/Q672,Tuvalu,,,TV,798,tv,-8.00,178.00,yes,other
+TZA,https://www.wikidata.org/wiki/Q924,Tanzania,"United Republic of Tanzania|Tanzania, United Republic of|Jamhuri ya Muungano wa Tanzania",,TZ,834,tz,-6.00,35.00,yes,other
+UGA,https://www.wikidata.org/wiki/Q1036,Uganda,Republic of Uganda|Jamhuri ya Uganda,,UG,800,ug,1.00,32.00,yes,other
+UKR,https://www.wikidata.org/wiki/Q212,Ukraine,Ukrayina,,UA,804,ua,49.00,32.00,yes,famous
+URY,https://www.wikidata.org/wiki/Q77,Uruguay,Oriental Republic of Uruguay|República Oriental del Uruguay,,UY,858,uy,-33.00,-56.00,yes,other
+USA,https://www.wikidata.org/wiki/Q30,United States,United States of America|USA|US|America,,US,840,us,38.00,-97.00,yes,famous
+UZB,https://www.wikidata.org/wiki/Q265,Uzbekistan,Republic of Uzbekistan,,UZ,860,uz,41.00,64.00,yes,other
+VAT,https://www.wikidata.org/wiki/Q237,Vatican City,Vatican City State|Holy See (Vatican City)|Holy See (Vatican City State)|Vatican|Stato della Città del Vaticano|Holy See,,VA,336,va,41.90,12.45,yes,other
+VCT,https://www.wikidata.org/wiki/Q757,Saint Vincent and the Grenadines,,,VC,670,vc,13.25,-61.20,yes,other
+VEN,https://www.wikidata.org/wiki/Q717,Venezuela,"Bolivarian Republic of Venezuela|Venezuela (Bolivarian Republic of)|Venezuela, Bolivarian Republic of|República Bolivariana de Venezuela",,VE,862,ve,8.00,-66.00,yes,core
+VNM,https://www.wikidata.org/wiki/Q881,Vietnam,Socialist Republic of Vietnam|Viet Nam|Cộng hòa Xã hội chủ nghĩa Việt Nam,,VN,704,vn,16.17,107.83,yes,core
+VUT,https://www.wikidata.org/wiki/Q686,Vanuatu,Republic of Vanuatu|Ripablik blong Vanuatu|République de Vanuatu,,VU,548,vu,-16.00,167.00,yes,other
+WSM,https://www.wikidata.org/wiki/Q683,Samoa,Independent State of Samoa,,WS,882,ws,-13.58,-172.33,yes,other
+YEM,https://www.wikidata.org/wiki/Q805,Yemen,Republic of Yemen|Yemeni Republic|al-Jumhūriyyah al-Yamaniyyah,,YE,887,ye,15.00,48.00,yes,other
+ZAF,https://www.wikidata.org/wiki/Q258,South Africa,Republic of South Africa|Suid-Afrika,,ZA,710,za,-29.00,24.00,yes,famous
+ZMB,https://www.wikidata.org/wiki/Q953,Zambia,Republic of Zambia,,ZM,894,zm,-15.00,30.00,yes,other
+ZWE,https://www.wikidata.org/wiki/Q954,Zimbabwe,Republic of Zimbabwe,,ZW,716,zw,-20.00,30.00,yes,other

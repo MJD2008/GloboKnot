@@ -1,9 +1,11 @@
-// The configuration (≡): the level (Easy, Medium or Hard, which ticks a set of question types and decides how well
-// known the places asked about are), what to be asked (categories and their question types), where (the whole
-// world, continents or single countries) and how many questions. Every change is kept at once; Play starts it.
-// Something always stays selected: the last ticked box can't be unticked until another one is ticked.
+// The configuration (≡): the level (Easy, Medium, Hard and, after a few rounds, Impossible: each picks a set of
+// question types and the answers, and decides how well known the places asked about are), how to answer (Choose,
+// Both or Type), what to be asked (categories and their question types), where (the whole world, continents or
+// single countries) and how many questions. Every change is kept at once; Play starts it. Something always stays
+// selected: the last ticked box can't be unticked until another one is ticked. All, under Impossible, is The Gordian
+// Knot: every question in the game, so the rest can't be changed while it is picked.
 import { CONTINENTS, type Knowledge } from './kb';
-import { CATS, LEVELS, LEVEL_IDS, TEMPLATES, available, isCustom, type Cat, type Level } from './questions';
+import { ANSWERS, CATS, GORDIAN, LEVELS, LEVEL_IDS, TEMPLATES, answersOf, available, isCustom, type Answers, type Cat, type Level } from './questions';
 import { MAX_SIZE, SIZES, clampSize, gordianOpen, saveSelection, saveStats, selection, setLevel, stats } from './prefs';
 
 export const ICONS: Record<Cat | 'world', string> = {
@@ -20,9 +22,9 @@ const CHEVRON = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6
 
 const esc = (s: string) => s.replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]!);
 
-export function catOn(cat: Cat): 'all' | 'some' | 'none' {
+export function catOn(cat: Cat, picked = selection.kinds): 'all' | 'some' | 'none' {
   const kinds = TEMPLATES.filter(t => t.cat === cat).map(t => t.id);
-  const n = kinds.filter(k => selection.kinds.includes(k)).length;
+  const n = kinds.filter(k => picked.includes(k)).length;
   return n === 0 ? 'none' : n === kinds.length ? 'all' : 'some';
 }
 export function setCat(cat: Cat, on: boolean) {
@@ -43,12 +45,17 @@ export function placesLabel(kb: Knowledge): string {
 export function initMenu(kb: Knowledge, root: HTMLElement, onChange: () => void) {
   const levels = root.querySelector<HTMLElement>('#menu-level')!;
   const levelHint = root.querySelector<HTMLElement>('#menu-level-hint')!;
+  const answers = root.querySelector<HTMLElement>('#menu-answers')!;
+  const fixed = [...root.querySelectorAll<HTMLElement>('.fixed-by-all')]; // what The Gordian Knot decides
   const what = root.querySelector<HTMLElement>('#menu-what')!;
   const where = root.querySelector<HTMLElement>('#menu-where')!;
   const sizes = root.querySelector<HTMLElement>('#menu-size')!;
 
   // ---- level
-  levels.innerHTML = LEVEL_IDS.map(l => `<button type="button" data-level="${l}">${LEVELS[l].label}</button>`).join('');
+  levels.innerHTML = LEVEL_IDS.map(l => `<button type="button" data-level="${l}" class="${l}">${LEVELS[l].label}</button>`).join('');
+
+  // ---- answers: picked from four (easier), typed, or each question its own way
+  answers.innerHTML = ANSWERS.map(a => `<button type="button" data-answers="${a.id}">${a.label}${a.id === 'choose' ? ' <small>easier</small>' : ''}</button>`).join('');
 
   // ---- what
   what.innerHTML = CATS.map(c => `
@@ -77,10 +84,10 @@ export function initMenu(kb: Knowledge, root: HTMLElement, onChange: () => void)
       </div>
     </div>`).join('')}`;
 
-  // ---- length: three presets, a box for any other number, and (once found) All: The Gordian Knot
+  // ---- length: three presets, a box for any other number, and under Impossible (once found) All: The Gordian Knot
   sizes.innerHTML = SIZES.map(n => `<button type="button" data-size="${n}">${n}</button>`).join('')
     + `<label class="custom"><input id="size-custom" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="${String(MAX_SIZE).length}" placeholder="Custom" aria-label="Custom number of questions" autocomplete="off" /></label>`
-    + `<button type="button" data-size="0" class="all" title="The Gordian Knot: every question in this configuration" hidden>All</button>`;
+    + `<button type="button" data-size="0" class="all" title="The Gordian Knot: every question in the game" hidden>All</button>`;
   const custom = sizes.querySelector<HTMLInputElement>('#size-custom')!;
   const all = sizes.querySelector<HTMLButtonElement>('.all')!;
   custom.addEventListener('input', () => {
@@ -104,6 +111,13 @@ export function initMenu(kb: Knowledge, root: HTMLElement, onChange: () => void)
     const level = t.closest<HTMLButtonElement>('[data-level]');
     if (level) {
       setLevel(level.dataset.level as Level);
+      changed();
+      return;
+    }
+    const ans = t.closest<HTMLButtonElement>('[data-answers]');
+    if (ans) {
+      const a = ans.dataset.answers as Answers;
+      if (a === LEVELS[selection.level].answers) delete selection.answers; else selection.answers = a;
       changed();
       return;
     }
@@ -145,32 +159,40 @@ export function initMenu(kb: Knowledge, root: HTMLElement, onChange: () => void)
 
   function paintLevel() {
     const l = LEVELS[selection.level];
-    for (const b of levels.querySelectorAll<HTMLButtonElement>('button')) b.setAttribute('aria-pressed', String(b.dataset.level === selection.level));
-    // All (The Gordian Knot) asks every question there is, so the level has no say in it.
-    const hint = selection.size === 0 ? 'The Gordian Knot asks about every place, whatever the level.'
-      : isCustom(selection) ? `${l.who} · Your own question types <button type="button" class="link" data-level="${selection.level}">Reset</button>`
+    for (const b of levels.querySelectorAll<HTMLButtonElement>('button')) {
+      b.setAttribute('aria-pressed', String(b.dataset.level === selection.level));
+      // Impossible shows itself with The Gordian Knot, after a few rounds (or when it was already the level).
+      if (b.dataset.level === 'impossible') b.hidden = !gordianOpen() && selection.level !== 'impossible';
+    }
+    const hint = selection.size === 0 ? 'The Gordian Knot: every question in the game, typed, in one go.'
+      : isCustom(selection) ? `${l.who} · Your own mix <button type="button" class="link" data-level="${selection.level}">Reset</button>`
         : `${l.who} · ${l.what}`;
     if (levelHint.innerHTML !== hint) levelHint.innerHTML = hint; // only when it changes, so it is read out once
   }
 
   function paint() {
     paintLevel();
-    const kinds = new Set(selection.kinds);
+    // While All is picked, the rest shows what The Gordian Knot asks, and can't be changed.
+    const all = selection.size === 0, view = all ? GORDIAN : selection;
+    for (const f of fixed) { f.inert = all; f.classList.toggle('fixed', all); }
+    const how = answersOf(view);
+    for (const b of answers.querySelectorAll<HTMLButtonElement>('[data-answers]')) b.setAttribute('aria-pressed', String(b.dataset.answers === how));
+    const kinds = new Set(view.kinds);
     for (const g of what.querySelectorAll<HTMLElement>('.group')) {
       const cat = g.dataset.cat as Cat;
-      const state = catOn(cat);
+      const state = catOn(cat, view.kinds);
       const box = g.querySelector<HTMLInputElement>('.cat-check')!;
       box.checked = state === 'all';
       box.indeterminate = state === 'some';
       // A fully ticked category that holds every selected type can't be unticked (a half-ticked one can: that adds).
-      lock(box, state === 'all' && selection.kinds.every(k => TEMPLATES.find(t => t.id === k)?.cat === cat));
+      lock(box, state === 'all' && view.kinds.every(k => TEMPLATES.find(t => t.id === k)?.cat === cat));
     }
     for (const b of what.querySelectorAll<HTMLInputElement>('[data-kind]')) {
       b.checked = kinds.has(b.dataset.kind!);
       lock(b, b.checked && kinds.size === 1);
     }
 
-    const set = new Set(selection.places);
+    const set = new Set(view.places);
     const world = where.querySelector<HTMLInputElement>('#world-check')!;
     world.checked = !set.size;
     lock(world, !set.size);
@@ -187,11 +209,11 @@ export function initMenu(kb: Knowledge, root: HTMLElement, onChange: () => void)
       lock(b, b.checked && set.size === 1);
     }
     paintSizes();
-    root.querySelector<HTMLButtonElement>('#menu-play')!.disabled = !selection.kinds.length || !available(kb, selection);
+    root.querySelector<HTMLButtonElement>('#menu-play')!.disabled = !available(kb, view);
   }
 
   function paintSizes(typing = false) {
-    all.hidden = !gordianOpen();
+    all.hidden = !gordianOpen() || selection.level !== 'impossible';
     all.classList.toggle('new', !stats.gordianSeen);
     const preset = selection.size === 0 || (SIZES as readonly number[]).includes(selection.size);
     for (const b of sizes.querySelectorAll<HTMLButtonElement>('[data-size]')) b.setAttribute('aria-pressed', String(Number(b.dataset.size) === selection.size));

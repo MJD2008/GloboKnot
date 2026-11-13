@@ -2,15 +2,15 @@
 // motion and sound carry the feedback. The answer always appears where the player is looking: in the answer box.
 // Every question has a time limit; a wrong typed answer is not revealed, the player tries again until time runs out.
 import { geoDistance } from 'd3-geo';
-import { resolve } from '../../scripts/lib/match.mjs';
+import { resolveFor } from '../../scripts/lib/match.mjs';
 import { norm } from '../../scripts/lib/text.mjs';
 import { Globe } from './globe';
 import { Sky } from './sky';
 import { Knowledge, type Country, type Entity, type KBData } from './kb';
 import { WorldMap, type MapOptions } from './map';
 import { catOn, icon, initMenu, placesLabel, setCat } from './menu';
-import { ACCENTS, TIME, UNLOCK_ROUNDS, applySettings, configKey, dailyResult, gordianOpen, saveDaily, saveSelection, saveSettings, saveStats, selection, settings, stats, today, type Accent, type Theme } from './prefs';
-import { CATS, DAILY, LEVELS, TEMPLATES, available, buildRound, codeOf, isCustom, levelOf, rebuildRound, remember, seeded, type Cat, type Level, type Pool, type Question, type Selection } from './questions';
+import { ACCENTS, TIME, UNLOCK_ROUNDS, applySettings, better, dailyResult, gordianOpen, saveDaily, saveSelection, saveSettings, saveStats, selection, settings, stats, today, type Accent, type Theme } from './prefs';
+import { CATS, DAILY, GORDIAN, LEVELS, TEMPLATES, askOf, available, buildRound, codeOf, isCustom, levelOf, rebuildRound, remember, seeded, type Answers, type Ask, type Cat, type Level, type Pool, type Question, type Selection, type Tempt } from './questions';
 import { zoomable, type Zoom } from './zoom';
 import { sound } from './sound';
 
@@ -108,20 +108,27 @@ type Knot = 'tight' | 'loose' | 'miss';
 const knotOf = (r: Result): Knot => (!r.ok ? 'miss' : r.tries > 1 ? 'loose' : 'tight');
 const scoreOf = (rs: Result[]) => (rs.length ? rs.reduce((n, r) => n + ({ tight: 1, loose: 0.5, miss: 0 } as const)[knotOf(r)], 0) / rs.length : 0);
 
-/** A challenge link: the same questions (codes and subjects, options fixed by the seed) and a score to beat. */
-interface Challenge { edition: string; seed: string; pct: number; secs: number; items: { code: string; subject: string }[] }
+/** A challenge link: the same questions (codes and subjects), asked the same way (typed or picked, and the same
+ *  options: the seed draws them), and a score to beat. v1 links (before the answers could be chosen) ask the way
+ *  every round did then: each question its own way, with tempting options. */
+interface Challenge { edition: string; seed: string; pct: number; secs: number; ask: Ask; items: { code: string; subject: string }[] }
 const CHALLENGE_MAX = 100; // questions; longer rounds are shared without a link
+const ANSWER_CODE: Record<Answers, string> = { choose: 'c', both: 'b', type: 't' };
 function encodeChallenge(c: Challenge): string {
-  return ['1', c.edition, c.seed, c.pct, c.secs, c.items.map(i => `${i.code}.${i.subject}`).join('~')].join('_');
+  const how = `${ANSWER_CODE[c.ask.answers]}${c.ask.tempt}`;
+  return ['2', c.edition, c.seed, c.pct, c.secs, how, c.items.map(i => `${i.code}.${i.subject}`).join('~')].join('_');
 }
 function parseChallenge(hash: string): Challenge | null {
   const m = /^#c=(.+)$/.exec(hash);
   if (!m) return null;
-  const [v, edition, seed, pct, secs, list] = decodeURIComponent(m[1]).split('_');
-  if (v !== '1' || !seed || !list) return null;
+  const parts = decodeURIComponent(m[1]).split('_');
+  if (parts[0] === '1') parts.splice(5, 0, 'b2');
+  const [v, edition, seed, pct, secs, how, list] = parts;
+  const answers = (Object.keys(ANSWER_CODE) as Answers[]).find(a => ANSWER_CODE[a] === how?.[0]), tempt = Number(how?.slice(1));
+  if (!['1', '2'].includes(v) || !seed || !list || !answers || ![0, 1, 2].includes(tempt)) return null;
   // "C.NLD" or "R.NLD.amsterdam": the code is the part before the first dot (city ids hold a dot themselves)
   const items = list.split('~').map(x => { const k = x.indexOf('.'); return { code: x.slice(0, k), subject: x.slice(k + 1) }; }).filter(i => i.code && i.subject);
-  return items.length && items.length <= CHALLENGE_MAX ? { edition, seed, pct: Number(pct) || 0, secs: Number(secs) || 0, items } : null;
+  return items.length && items.length <= CHALLENGE_MAX ? { edition, seed, pct: Number(pct) || 0, secs: Number(secs) || 0, ask: { answers, tempt: tempt as Tempt }, items } : null;
 }
 let challenge: Challenge | null = parseChallenge(location.hash);
 
@@ -129,8 +136,10 @@ const state = {
   sel: selection as Selection,
   daily: false,
   challenge: null as Challenge | null, // the challenge being played
-  gordian: false,                      // every question of the configuration
+  gordian: false,                      // The Gordian Knot: every question in the game
   level: null as Level | null,         // the level of a round of the player's own (not the Daily, a challenge or All)
+  ask: { answers: 'both', tempt: 2 } as Ask,
+  stopped: false,                      // Esc or Stop: the answers so far, without a score
   planned: 0,                          // questions in the round as it began (a stop cuts it short)
   seed: '',
   round: [] as Question[],
@@ -198,7 +207,7 @@ function chainNear(lon: number, lat: number): [number, number][] {
   if (!kb) return [];
   const at = (c: Country): [number, number] => [c.ll[1], c.ll[0]];
   const starts = kb.countries
-    .filter(c => c.tier === 'core' && kb.neighbours(c.id).length)
+    .filter(c => c.tier !== 'other' && kb.neighbours(c.id).length)
     .map(c => ({ c, d: geoDistance([lon, lat], at(c)) }))
     .filter(x => x.d < 0.9)
     .sort((a, b) => a.d - b.d)
@@ -227,6 +236,7 @@ function modeLabel(): string {
 function paintHome() {
   if (!kb) return;
   ui.chips.innerHTML = '';
+  ui.chips.hidden = selection.size === 0; // The Gordian Knot asks everything: nothing to pick
   for (const c of CATS) {
     const b = document.createElement('button');
     b.type = 'button';
@@ -238,11 +248,11 @@ function paintHome() {
     b.innerHTML = `${icon(c.id)}<span>${c.label}</span>`;
     ui.chips.append(b);
   }
-  const n = available(kb, selection);
-  ui.play.disabled = !selection.kinds.length || !n;
+  const n = available(kb, selection.size === 0 ? GORDIAN : selection);
+  ui.play.disabled = !n;
   // A challenge link waits on the Play button until it is taken or put aside.
   ui.playLabel.textContent = challenge ? 'Take the challenge' : 'Play';
-  ui.playSub.textContent = challenge ? `Beat ${challenge.pct}% · ${challenge.items.length} questions` : selection.size === 0 && gordianOpen() ? 'The Gordian Knot' : modeLabel();
+  ui.playSub.textContent = challenge ? `Beat ${challenge.pct}% · ${challenge.items.length} questions` : selection.size === 0 ? 'The Gordian Knot' : modeLabel();
   ui.notNow.hidden = !challenge;
   const done = dailyResult();
   ui.dailySub.textContent = done === null ? new Date().toLocaleDateString(undefined, { day: 'numeric', month: 'short' }) : `${Math.round(done * 100)}%`;
@@ -254,6 +264,8 @@ function show(name: keyof typeof screens) {
   for (const [k, el] of Object.entries(screens)) el.hidden = k !== name;
   // The home screen is a night sky; the quiz and the results follow the theme.
   document.body.classList.toggle('home', name === 'start');
+  // The Gordian Knot is played in crimson, with a heartbeat.
+  document.body.classList.toggle('gordian', name !== 'start' && state.gordian);
   themeColor();
   if (name === 'start') { globe?.play(); sky.play(); paintHome(); } else { globe?.pause(); sky.pause(); }
   window.scrollTo({ top: 0 });
@@ -284,10 +296,13 @@ async function start(sel: Selection, daily = false, ch: Challenge | null = null)
   state.daily = daily;
   state.challenge = ch;
   state.gordian = !daily && !ch && sel.size === 0;
+  if (state.gordian) state.sel = sel = GORDIAN; // every question in the game, whatever else was picked
   state.level = daily || ch || state.gordian ? null : levelOf(sel);
+  state.ask = ch ? ch.ask : askOf(sel);
+  state.stopped = false;
   // Every round has a seed, so it can be played again by someone else from a link.
   state.seed = ch ? ch.seed : daily ? `daily-${today()}` : Math.random().toString(36).slice(2, 10);
-  state.round = ch ? rebuildRound(kb, ch.items, ch.seed)
+  state.round = ch ? rebuildRound(kb, ch.items, ch.seed, ch.ask)
     : buildRound(kb, sel, daily ? seeded(state.seed) : Math.random, daily, state.seed);
   if (!state.round.length) return;
   state.planned = state.round.length;
@@ -467,12 +482,12 @@ function timeUp() {
   finish(state.round[state.i], false, state.lastWrong, true);
 }
 
-/** The entity a typed answer means. One name can belong to two things (Tonga is a country and a language): an exact
- *  match on an accepted one comes first. Typos are still judged against everything, so a slip never turns into a
- *  near neighbour. */
+/** The entity a typed answer means, for this question (scripts/lib/match.mjs): an exact name first, a right one before
+ *  others (Tonga is a country and a language); a right answer's context names ("Congo" for DR Congo); the usual typo
+ *  correction, judged against everything so a slip never turns into a near neighbour; and failing that, a near miss
+ *  for the right answer ("Ngera" for Nigeria). */
 function match(typed: string, q: Question): Entity | null {
-  const pool = q.pools.flatMap(p => pools[p]), right = (e: Entity) => q.accept.includes(e.id);
-  return resolve(typed, [...pool.filter(right), ...pool.filter(e => !right(e))]);
+  return resolveFor(typed, q.pools.flatMap(p => pools[p]), q.accept);
 }
 
 /** `given` is the typed text or a choice id. */
@@ -506,6 +521,7 @@ function answer(given: string, label = given) {
 // ---- auto-submit: a typed answer that is exactly a right name (or alias) is sent without Enter. A name that is the
 // start of a longer one waits a little longer ("Niger" on the way to "Nigeria"). Only right answers go by themselves.
 const names = (e: Entity) => [e.name, ...e.aliases];
+const rightNames = (e: Entity) => [...names(e), ...(e.context ?? [])];
 function autoSubmit() {
   clearTimeout(state.auto);
   const q = state.round[state.i];
@@ -513,7 +529,7 @@ function autoSubmit() {
   const k = norm(ui.input.value);
   if (!k) return;
   const pool = q.pools.flatMap(p => pools[p]);
-  if (!pool.some(e => q.accept.includes(e.id) && names(e).some(n => norm(n) === k))) return;
+  if (!pool.some(e => q.accept.includes(e.id) && rightNames(e).some(n => norm(n) === k))) return;
   const longer = pool.some(e => names(e).some(n => { const m = norm(n); return m.length > k.length && m.startsWith(k); }));
   state.auto = window.setTimeout(() => {
     if (!state.locked && state.round[state.i] === q && norm(ui.input.value) === k) answer(ui.input.value);
@@ -589,7 +605,7 @@ function quit() {
   clearInterval(state.clock);
   if (!state.results.length) { show('start'); return; }
   state.round = state.round.slice(0, state.results.length);
-  end();
+  end(true);
 }
 
 function nudge() {
@@ -676,7 +692,9 @@ const RANKS: [number, string, string][] = [
 ];
 const rankOf = (pct: number) => RANKS.find(([min]) => pct >= min)!;
 
-function end() {
+/** The end of a round. A stopped round (Esc or Stop) shows the answers so far and nothing else: no score, no knot,
+ *  no record, nothing to share, and it doesn't count towards what opens up after a few rounds. */
+function end(stopped = false) {
   clearInterval(state.clock);
   cancelAnimationFrame(state.low);
   const ms = performance.now() - state.started;
@@ -686,43 +704,50 @@ function end() {
   const share = scoreOf(state.results);
   const pct = Math.round(share * 100);
   remember(state.round.map(q => q.key));
-  if (state.daily && total === 10) saveDaily(share);
-  const [, rank, line] = rankOf(pct);
-  state.last = { pct, ms, rank, knots };
+  state.stopped = stopped;
+  screens.results.classList.toggle('stopped', stopped);
+  ui.resultsTitle.hidden = !state.gordian && !stopped;
+  ui.resultsTitle.textContent = stopped ? 'Stopped' : 'The Gordian Knot';
+  ui.versus.hidden = ui.best.hidden = ui.unlock.hidden = true;
+  ui.shareNote.hidden = true;
+  if (stopped) {
+    state.last = null;
+    ui.summary.textContent = `${total} of ${state.planned} answered · ${clock(ms)}`;
+  } else {
+    if (state.daily && total === 10) saveDaily(share);
+    const [, rank, line] = rankOf(pct);
+    state.last = { pct, ms, rank, knots };
+    ui.pct.textContent = `${pct}%`;
+    ui.rank.textContent = rank;
+    ui.rankLine.textContent = line;
+    ui.summary.textContent = `${right} of ${total}${loose ? ` · ${loose} loose` : ''} · ${clock(ms)}${state.best >= 3 ? ` · ${state.best} in a row` : ''}`;
+    drawRing(knots);
 
-  ui.resultsTitle.hidden = !state.gordian;
-  ui.pct.textContent = `${pct}%`;
-  ui.rank.textContent = rank;
-  ui.rankLine.textContent = line;
-  ui.summary.textContent = `${right} of ${total}${loose ? ` · ${loose} loose` : ''} · ${clock(ms)}${state.best >= 3 ? ` · ${state.best} in a row` : ''}`;
-  drawRing(knots);
+    // Against a challenge: their score next to yours.
+    if (state.challenge) {
+      // the higher score wins; the same score goes to the faster one
+      const them = state.challenge.pct, secs = Math.round(ms / 1000), t = state.challenge.secs;
+      const won = pct > them || (pct === them && secs < t), lost = pct < them || (pct === them && secs > t);
+      const how = pct === them && secs !== t ? ` Same score, ${won ? 'but you were faster' : 'but they were faster'}.` : '';
+      ui.versus.hidden = false;
+      ui.versus.textContent = `You ${pct}% · Challenger ${them}% · ${won ? 'You win!' : lost ? 'They win this one.' : 'A dead heat.'}${how}`;
+      ui.versus.className = `versus ${won ? 'won' : lost ? 'lost' : 'draw'}`;
+    }
 
-  // Against a challenge: their score next to yours.
-  ui.versus.hidden = !state.challenge;
-  if (state.challenge) {
-    // the higher score wins; the same score goes to the faster one
-    const them = state.challenge.pct, secs = Math.round(ms / 1000), t = state.challenge.secs;
-    const won = pct > them || (pct === them && secs < t), lost = pct < them || (pct === them && secs > t);
-    const how = pct === them && secs !== t ? ` Same score, ${won ? 'but you were faster' : 'but they were faster'}.` : '';
-    ui.versus.textContent = `You ${pct}% · Challenger ${them}% · ${won ? 'You win!' : lost ? 'They win this one.' : 'A dead heat.'}${how}`;
-    ui.versus.className = `versus ${won ? 'won' : lost ? 'lost' : 'draw'}`;
+    // The Gordian Knot keeps one record: the best score, then the fastest.
+    if (state.gordian) {
+      const prev = stats.record, now = { pct, ms };
+      if (better(now, prev)) stats.record = now;
+      ui.best.hidden = false;
+      ui.best.textContent = better(now, prev) ? (prev ? 'New record!' : 'Your first Gordian Knot.') : `Record: ${prev!.pct}% in ${clock(prev!.ms)}`;
+    }
+
+    // After a few rounds, Impossible and The Gordian Knot show themselves, once.
+    const wasOpen = gordianOpen();
+    stats.rounds++;
+    ui.unlock.hidden = wasOpen || !gordianOpen();
+    saveStats();
   }
-
-  // The Gordian Knot keeps a personal best per configuration (best score, then fastest).
-  ui.best.hidden = true;
-  if (state.gordian && total === state.planned) {
-    const key = configKey(state.sel), prev = stats.gordian[key];
-    const better = !prev || pct > prev.pct || (pct === prev.pct && ms < prev.ms);
-    if (better) stats.gordian[key] = { pct, ms };
-    ui.best.hidden = false;
-    ui.best.textContent = better ? (prev ? 'New personal best!' : 'Your first Gordian Knot.') : `Personal best: ${prev!.pct}% in ${clock(prev!.ms)}`;
-  }
-
-  // After a few rounds, The Gordian Knot shows itself, once.
-  const wasOpen = gordianOpen();
-  if (total) stats.rounds++;
-  ui.unlock.hidden = wasOpen || !gordianOpen();
-  saveStats();
 
   ui.answers.innerHTML = '';
   state.results.forEach((r, j) => {
@@ -734,8 +759,7 @@ function end() {
     li.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openReview(j); } });
     ui.answers.append(li);
   });
-  sound.done(share);
-  ui.shareNote.hidden = true;
+  if (!stopped) sound.done(share);
   show('results');
   ui.again.focus({ preventScroll: true });
 }
@@ -815,7 +839,8 @@ async function shareResult() {
   const text = `Globoknot · ${what}\n${r.rank} · ${r.pct}%\n${signs.length <= 50 ? signs : ''}`.trim();
   let link = location.origin + location.pathname;
   if (state.round.length <= CHALLENGE_MAX) {
-    const c: Challenge = { edition: kb.edition, seed: state.seed, pct: r.pct, secs: Math.round(r.ms / 1000), items: state.round.map(q => ({ code: codeOf(q.kind), subject: q.subject })) };
+    const c: Challenge = { edition: kb.edition, seed: state.seed, pct: r.pct, secs: Math.round(r.ms / 1000), ask: state.ask,
+      items: state.round.map(q => ({ code: codeOf(q.kind), subject: q.subject })) };
     link += `#c=${encodeChallenge(c)}`;
   }
   const full = `${text}\nCan you beat it? ${link}`;

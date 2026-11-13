@@ -30,7 +30,7 @@ const out = {
   relations: Object.fromEntries(Object.entries(relations).map(([k, r]) =>
     [k, { from: r.from, to: r.to, many: r.many, symmetric: !!r.symmetric, complete: !!r.complete, map: r.map, forward: r.forward, reverse: r.reverse || null }])),
   countries: countries.map(c => ({ id: c.id, qid: c.wikidata, name: c.name, aliases: c.aliases, iso2: c.iso2,
-    num: c.iso_numeric, flag: c.flag, ll: [+c.lat, +c.lng], tier: c.tier })),
+    num: c.iso_numeric, flag: c.flag, ll: [+c.lat, +c.lng], tier: c.tier, ...(c.context ? { context: c.context.split('|') } : {}) })),
   cities: cities.filter(c => facts.some(f => f.object === c.id)).map(c => ({ id: c.id, name: c.name, aliases: c.aliases, country: c.country, ll: ll(c) })),
   languages: languages.filter(l => facts.some(f => f.object === l.id)).map(l => ({ id: l.id, name: l.name, aliases: l.aliases,
     sample: samples.find(s => s.id === l.id)?.text, cluster: clusters.find(c => c.members.split('|').includes(l.id))?.id })),

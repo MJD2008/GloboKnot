@@ -41,3 +41,32 @@ export function resolve(input, entities) {
   const sameStart = [...near].filter(([, s]) => s);
   return sameStart.length === 1 ? sameStart[0][0] : null;
 }
+
+// The entity a typed answer to ONE question means; `right` holds the ids that count. Entities may be of several types
+// (a language or a country). In order:
+// 1. An exact name, a right one first (Tonga is a country and a language). A right entity's context names count as
+//    its names: "Congo" alone is the Republic of the Congo, but it counts when DR Congo is the answer.
+// 2. The usual typo correction (resolve), which may well find a wrong answer ("Slovkia" is Slovakia, also when the
+//    answer is Slovenia).
+// 3. When that finds nothing (too far, or between two names), a near miss for a right answer counts: one typo more
+//    than usual, the same first letter, and no other name closer. "Ngera" is Nigeria when Nigeria is the answer;
+//    "Seria" is Serbia when Serbia is the answer and Syria when Syria is. Names up to 4 letters stay exact (Iran, Iraq).
+export function resolveFor(input, entities, right) {
+  const q = norm(input);
+  if (!q) return null;
+  const ok = new Set(right);
+  const named = entities.map(e => (ok.has(e.id) && e.context?.length ? { ...e, aliases: [...e.aliases, ...e.context] } : e));
+  const back = new Map(named.map((e, i) => [e, entities[i]]));
+  const exact = e => [e.name, ...e.aliases].some(n => norm(n) === q);
+  const hit = named.find(e => ok.has(e.id) && exact(e)) ?? named.find(exact) ?? resolve(input, named);
+  if (hit) return back.get(hit);
+  let best = null, bestD = Infinity, otherD = Infinity;
+  for (const e of named) {
+    for (const n of [e.name, ...e.aliases]) {
+      const k = norm(n), d = distance(q, k);
+      if (!ok.has(e.id)) otherD = Math.min(otherD, d);
+      else if (k.length > 4 && q.length >= 4 && k[0] === q[0] && d <= tolerance(k) + 1 && d < bestD) { best = e; bestD = d; }
+    }
+  }
+  return best && bestD <= otherD ? back.get(best) : null;
+}

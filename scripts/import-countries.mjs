@@ -298,7 +298,9 @@ for (const [key, srcs] of pairs) {
   fact(x, 'borders', y, [...srcs], srcs.size === 2);
 }
 
-// ---------- Manual name overrides (names.csv): preferred display name, extra accepted answers, removed ambiguous ones.
+// ---------- Manual name overrides (names.csv): preferred display name, extra accepted answers, removed ambiguous ones,
+// and names that only count in context: ambiguous on their own ("Congo"), so never an answer by themselves, but right
+// when this place is the answer (a map of DR Congo answered "Congo").
 const names = parseCsv(await read('data/countries/names.csv'));
 for (const n of names) {
   const ent = countries.find(e => e.id === n.id) || cities.find(e => e.id === n.id);
@@ -311,6 +313,7 @@ for (const n of names) {
   n.remove_aliases.split('|').filter(Boolean).forEach(a => al.delete(a));
   al.delete(target.name);
   target.aliases = [...al].join('|');
+  target.context = (n.context_aliases || '').split('|').filter(a => a && !al.has(a) && a !== target.name).join('|');
 }
 
 // ---------- Capital positions (for the dot on the map): the Factbook's coordinates and Natural Earth's populated
@@ -348,7 +351,8 @@ for (const city of cities) {
   }
 }
 
-// ---------- Difficulty tiers (tiers.csv): a play-balance setting, not a fact. 'core' = widely known; the rest 'other'.
+// ---------- Difficulty tiers (tiers.csv): a play-balance setting, not a fact. 'famous' = known to nearly everyone (the
+// Easy level), 'core' = widely known; the rest 'other'.
 const tiers = Object.fromEntries(parseCsv(await read('data/countries/tiers.csv')).map(t => [t.id, t.tier]));
 for (const c of countries) c.tier = tiers[c.id] || 'other';
 
@@ -364,7 +368,7 @@ const langs = [...langsUsed].filter(([k]) => k && !k.startsWith('?')).sort()
 await fs.mkdir(root + 'data/countries', { recursive: true });
 const order = { approved: 0, draft: 1, rejected: 2, excluded: 3 };
 facts.sort((p, q) => p.relation.localeCompare(q.relation) || p.subject.localeCompare(q.subject) || p.object.localeCompare(q.object));
-await fs.writeFile(root + 'data/countries/countries.csv', toCsv(countries, ['id', 'wikidata', 'name', 'aliases', 'iso2', 'iso_numeric', 'flag', 'lat', 'lng', 'un_member', 'tier']));
+await fs.writeFile(root + 'data/countries/countries.csv', toCsv(countries, ['id', 'wikidata', 'name', 'aliases', 'context', 'iso2', 'iso_numeric', 'flag', 'lat', 'lng', 'un_member', 'tier']));
 await fs.writeFile(root + 'data/countries/cities.csv', toCsv(cities.sort((a, b) => a.id.localeCompare(b.id)), ['id', 'name', 'aliases', 'country', 'lat', 'lng', 'position']));
 await fs.writeFile(root + 'data/countries/languages.csv', toCsv(langs, ['id', 'name', 'aliases']));
 await fs.writeFile(root + 'data/countries/facts.csv', toCsv(facts, ['subject', 'relation', 'object', 'qualifier', 'sources', 'status', 'checked', 'note']));

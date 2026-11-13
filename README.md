@@ -13,18 +13,29 @@ languages, mountains, rivers...) and where (whole world, continents or single co
 typed answer is not revealed, so the player can try again until the time runs out. There is also a Daily: the same 10
 questions for everyone.
 
-Three levels, shown under Play ("Easy", "Easy + custom", "Hard · Europe"). A level does two things: it ticks a set of
-question types, which the player can still change (that is the "+ custom"), and it decides how well known the places
-asked about are.
+Four levels, shown under Play ("Easy", "Easy + custom", "Hard · Europe"). A level picks a set of question types and a way
+to answer, which the player can still change (that is the "+ custom"), and decides how well known the places asked
+about are. Impossible shows itself after three rounds.
 
-| Level | Ticks | Places |
-|---|---|---|
-| Easy (new visitors) | Locations, capitals, flags | Well-known only, while there are enough |
-| Medium | Every category | About 60% well-known |
-| Hard | Every category | About 20% well-known |
+| Level | Question types | Answers | Places |
+|---|---|---|---|
+| Easy (new visitors) | Capitals, flags | Choose: four options, far apart | Famous countries only, while there are enough |
+| Medium | Locations, capitals, flags, languages | Both | Well-known only, while there are enough |
+| Hard | Every category | Type | About 60% well-known |
+| Impossible | Every category | Type | About 20% well-known |
 
-"Well-known" is each template's `core` test: the countries in `data/countries/tiers.csv`, rivers of 2,500 km and more
-plus a list of famous ones, peaks of 5,000 m and more. The Daily and The Gordian Knot have no level.
+Answers: Choose (four options), Type, or Both (each question its own way: a flag to name is typed, a flag to find is
+picked). Every question type has both forms. On Easy the wrong options are far apart and familiar; on Hard and
+Impossible they are the tempting ones (neighbours, nearby rivers).
+
+How well known: countries by `data/countries/tiers.csv` (37 famous, 37 well known, the rest); languages through the
+countries where most people speak them (not Irish or Romansh); rivers of 2,500 km and more plus a list of famous ones;
+peaks of 5,000 m and more. The Daily is Medium with every category, the same for everyone.
+
+Typing forgives: an exact name first, then the usual typo correction (one typo in names of 5 to 8 letters, two in
+longer ones, never between two real names such as Niger and Nigeria), and then a near miss for the right answer, with one
+typo more, when no other name is as close ("Ngera" for Nigeria). Some names count only for the right answer ("Congo"
+for DR Congo, "Korea" for South Korea: `context_aliases` in `data/countries/names.csv`).
 
 On screens from 1240 px wide, the round so far hangs down the left side of the quiz as a rope, one knot per answer. The
 right side is left free: an advertisement can go there later (`.rail.right`, commented out in `index.astro`), away from
@@ -33,8 +44,9 @@ the answer box and the buttons.
 Scoring is a rope of knots: right first time ties a tight knot (1 point), right after a retry a loose one (half a point),
 and a miss frays the rope. The score ring shows the rope, and the rank is a knot (Loose end to Endless knot). Share
 sends the score with a challenge link (`#c=...`: the question codes and subjects plus a seed, so a friend gets the same
-questions with the same options and a score to beat). After three rounds The Gordian Knot appears: "All" in the
-configuration plays every question it holds, with a personal best per configuration.
+questions, asked the same way, and a score to beat). Stopping a round shows the answers so far, without a score.
+After three rounds Impossible appears, and under it All: The Gordian Knot, every question in the game (2,109), typed,
+in crimson, with one record (best score, then fastest).
 
 ```
 npm install
@@ -47,7 +59,7 @@ src/pages/index.astro     the quiz page: start screen, question card, results
 src/layouts/Base.astro    page frame: header, fonts, PREVIEW switch (noindex and badge)
 src/styles/global.css     all styles; colours are tokens with light and dark values (blue and orange presets)
 src/scripts/app.ts        the quiz screens, keys and timing
-src/scripts/menu.ts       the configuration: level, what, where, how many
+src/scripts/menu.ts       the configuration: level, answers, what, where, how many
 src/scripts/prefs.ts      what the browser remembers: the selection, settings (sound, auto-submit, theme, colour), the Daily, stats
 src/scripts/questions.ts  question templates (13 kinds, one clue each, given/asked tags), the levels and the round builder: approved facts in, questions out
 src/scripts/kb.ts         the knowledge base as the site reads it
@@ -82,7 +94,7 @@ data/
     clusters.csv          languages written so alike that they count for one another
 review/countries.md       what still needs a decision (generated)
 review/geo.md             the same for peaks and rivers
-data/countries/tiers.csv  which countries count as well known (a play-balance setting, not a fact)
+data/countries/tiers.csv  which countries count as famous or well known (a play-balance setting, not a fact)
 public/data/countries.json compact output for the site (generated, approved facts only)
 ```
 
@@ -97,7 +109,7 @@ public/data/countries.json compact output for the site (generated, approved fact
    places, two places sharing an accepted answer, and more.
 5. `npm run build:data` writes `public/data/countries.json` with approved facts only.
 
-`npm run data` runs steps 2 to 5 and copies the flags. `npm test` tests the answer matcher (silent typo correction), the names people type, and the round builder: the levels, and no country or river twice in a round (this one needs Node 22.18 or newer; older versions skip it).
+`npm run data` runs steps 2 to 5 and copies the flags. `npm test` tests the answer matcher (silent typo correction, near misses, context names), the names people type, and the round builder: the levels, both answer forms of every question type, challenge links, and no country or river twice in a round (this one needs Node 22.18 or newer; older versions skip it).
 
 ## Adding a subject later
 
