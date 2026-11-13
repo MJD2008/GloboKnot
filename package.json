@@ -3,14 +3,33 @@
   "private": true,
   "type": "module",
   "devDependencies": {
+    "@types/d3-geo": "3.1.1",
+    "@types/geojson": "7946.0.16",
+    "@types/topojson-client": "3.1.5",
+    "flag-icons": "7.6.0",
+    "topojson-simplify": "3.0.3",
+    "world-atlas": "2.0.2",
     "yaml": "2.9.1"
   },
   "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
     "fetch": "node scripts/fetch-sources.mjs",
-    "import": "node scripts/import-countries.mjs",
+    "import": "node scripts/import-countries.mjs && node scripts/import-geo.mjs && node scripts/import-samples.mjs",
     "check": "node scripts/check.mjs",
-    "build": "node scripts/build.mjs",
-    "data": "node scripts/import-countries.mjs && node scripts/check.mjs && node scripts/build.mjs",
+    "build:data": "node scripts/build.mjs",
+    "build:map": "node scripts/build-map.mjs",
+    "build:flags": "node scripts/copy-flags.mjs",
+    "build:flags-alike": "node scripts/flags-alike.mjs",
+    "data": "node scripts/import-countries.mjs && node scripts/import-geo.mjs && node scripts/import-samples.mjs && node scripts/check.mjs && node scripts/build.mjs && node scripts/copy-flags.mjs",
     "test": "node --test"
+  },
+  "dependencies": {
+    "@fontsource-variable/inter": "5.3.0",
+    "@fontsource/pixelify-sans": "^5.3.0",
+    "astro": "7.4.11",
+    "d3-geo": "3.1.2",
+    "topojson-client": "3.1.0"
   }
 }

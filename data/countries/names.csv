@@ -1,33 +1,41 @@
-id,name,add_aliases,remove_aliases,note
-USA,,USA|US|America|United States of America,,
-GBR,,UK|Britain,,
-ARE,,UAE,,
-COD,,DRC|Congo-Kinshasa|Democratic Republic of Congo,Congo,Congo alone means the Republic of the Congo
-COG,Republic of the Congo,Congo|Congo-Brazzaville,,
-KOR,,,Korea,ambiguous between North and South
-PRK,,,Korea,ambiguous between North and South
-CIV,,Cote dIvoire,,
-VAT,,Holy See,,
-MNG.ulan-bator,Ulaanbaatar,Ulan Bator,,
-MDA.chisinau,,Chisinau|Kishinev,,
-UKR.kyiv,,Kiev,,
-SMR.city-of-san-marino,San Marino,City of San Marino,,
-USA.washington-dc,Washington D.C.,Washington|Washington DC,,
-IND.new-delhi,,Delhi,,
-MMR.naypyidaw,,Nay Pyi Taw|Naypyitaw,,
-KIR.south-tarawa,,Tarawa,,
-BRA.brasilia,,Brasilia,,
-COL.bogota,,Bogota,,
-ron,Romanian,Moldovan|Moldavian,,
-pes,Persian,Farsi|Dari Persian,,
-ber,Tamazight,Berber|Amazigh,,
-nau,Nauruan,,,
-div,Dhivehi,Maldivian,,
-ssw,Swazi,siSwati|Swati,,
-nya,Chewa,Chichewa|Nyanja,,
-mya,Burmese,Myanmar,,
-slv,Slovene,Slovenian,,
-zho,Chinese,Mandarin|Standard Chinese,,
-msa,Malay,Bahasa Melayu|Bahasa Malaysia,,
-fil,Filipino,Tagalog,,
-sfs,South African Sign Language,SASL,,
+id,name,add_aliases,remove_aliases,context_aliases,note
+USA,,USA|US|America|United States of America,,,
+GBR,,UK|Britain,,,
+ARE,,UAE,,,
+COD,,DRC|Congo-Kinshasa|Democratic Republic of Congo,Congo,Congo,Congo alone means the Republic of the Congo; it still counts when DR Congo is the answer
+COG,Republic of the Congo,Congo|Congo-Brazzaville,,,
+KOR,,,Korea,Korea,ambiguous between North and South; it still counts when South Korea is the answer
+PRK,,,Korea,,ambiguous between North and South
+CIV,,Cote dIvoire,,,
+VAT,,Holy See,,,
+MNG.ulan-bator,Ulaanbaatar,Ulan Bator,,,
+MDA.chisinau,,Chisinau|Kishinev,,,
+UKR.kyiv,,Kiev,,,
+SMR.city-of-san-marino,San Marino,City of San Marino,,,
+USA.washington-dc,Washington D.C.,Washington|Washington DC,,,
+IND.new-delhi,,Delhi,,,
+MMR.naypyidaw,,Nay Pyi Taw|Naypyitaw,,,
+KIR.south-tarawa,,Tarawa,,,
+BRA.brasilia,,Brasilia,,,
+COL.bogota,,Bogota,,,
+ron,Romanian,Moldovan|Moldavian,,,
+pes,Persian,Farsi|Dari Persian,,,
+ber,Tamazight,Berber|Amazigh,,,
+nau,Nauruan,,,,
+div,Dhivehi,Maldivian,,,
+ssw,Swazi,siSwati|Swati,,,
+nya,Chewa,Chichewa|Nyanja,,,
+mya,Burmese,Myanmar,,,
+slv,Slovene,Slovenian,,,
+zho,Chinese,Mandarin|Standard Chinese,,,
+msa,Malay,Bahasa Melayu|Bahasa Malaysia,,,
+fil,Filipino,Tagalog,,,
+sfs,South African Sign Language,SASL,,,
+KWT.kuwait-city,,Kuwait,,,also called simply Kuwait
+PAN.panama-city,,Panama,,,also called simply Panama (Ciudad de Panama)
+GTM.guatemala-city,,Guatemala,,,also called simply Guatemala (Ciudad de Guatemala)
+VAT.vatican-city,,Vatican,,,
+CAF,,CAR,,,common short form
+PNG,,PNG,,,common short form
+NZL,,NZ,,,common short form
+SAU,,KSA,,,common short form

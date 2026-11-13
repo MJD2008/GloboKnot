@@ -1,0 +1,7 @@
+// Cloudflare Workers settings for the static site (no server code): serve everything Astro builds into dist/.
+// Steps to connect the repository and the domain: docs/DEPLOY.md
+{
+  "name": "globoknot",
+  "compatibility_date": "2026-11-12",
+  "assets": { "directory": "./dist" }
+}

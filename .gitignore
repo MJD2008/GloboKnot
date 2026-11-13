@@ -1,4 +1,6 @@
 node_modules/
 sources/cache/
 build/
+dist/
+.astro/
 .DS_Store

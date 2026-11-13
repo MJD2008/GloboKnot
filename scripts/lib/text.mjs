@@ -20,10 +20,12 @@ export function norm(s) {
   return String(s || '')
     .normalize('NFD').replace(/[̀-ͯ]/g, '')
     .toLowerCase()
+    .replace(/[øœæßłđþı]/g, c => ({ ø: 'o', œ: 'oe', æ: 'ae', ß: 'ss', ł: 'l', đ: 'd', þ: 'th', ı: 'i' })[c])
     .replace(/&/g, ' and ')
     .replace(/\bst\.?\s/g, 'saint ')
     .replace(/['’`.]/g, '')
     .replace(/[^a-z0-9]+/g, ' ')
+    .trim()
     .replace(/^the\s+|\s+the$/g, '')
     .trim();
 }

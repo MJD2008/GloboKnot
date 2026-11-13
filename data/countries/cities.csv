@@ -1,207 +1,207 @@
-id,name,aliases,country
-AFG.kabul,Kabul,,AFG
-AGO.luanda,Luanda,,AGO
-ALB.tirana,Tirana,,ALB
-AND.andorra-la-vella,Andorra la Vella,,AND
-ARE.abu-dhabi,Abu Dhabi,,ARE
-ARG.buenos-aires,Buenos Aires,,ARG
-ARM.yerevan,Yerevan,,ARM
-ATG.saint-johns,Saint John's,,ATG
-AUS.canberra,Canberra,,AUS
-AUT.vienna,Vienna,,AUT
-AZE.baku,Baku,,AZE
-BDI.gitega,Gitega,,BDI
-BDI.gitega-bujumbura,"Gitega, Bujumbura",,BDI
-BEL.brussels,Brussels,,BEL
-BEN.cotonou,Cotonou,,BEN
-BEN.porto-novo,Porto-Novo,,BEN
-BFA.ouagadougou,Ouagadougou,,BFA
-BGD.dhaka,Dhaka,,BGD
-BGR.sofia,Sofia,,BGR
-BHR.manama,Manama,,BHR
-BHS.nassau,Nassau,,BHS
-BIH.sarajevo,Sarajevo,,BIH
-BLR.minsk,Minsk,,BLR
-BLZ.belmopan,Belmopan,,BLZ
-BOL.la-paz,La Paz,,BOL
-BOL.sucre,Sucre,,BOL
-BRA.brasilia,Brasília,Brasilia,BRA
-BRB.bridgetown,Bridgetown,,BRB
-BRN.bandar-seri-begawan,Bandar Seri Begawan,,BRN
-BTN.thimphu,Thimphu,,BTN
-BWA.gaborone,Gaborone,,BWA
-CAF.bangui,Bangui,,CAF
-CAN.ottawa,Ottawa,,CAN
-CHE.bern,Bern,,CHE
-CHL.santiago,Santiago,,CHL
-CHN.beijing,Beijing,,CHN
-CIV.yamoussoukro,Yamoussoukro,,CIV
-CIV.yamoussoukro-abidjan,"Yamoussoukro, Abidjan",,CIV
-CMR.yaounde,Yaoundé,,CMR
-COD.kinshasa,Kinshasa,,COD
-COG.brazzaville,Brazzaville,,COG
-COL.bogota,Bogotá,Bogota,COL
-COM.moroni,Moroni,,COM
-CPV.praia,Praia,,CPV
-CRI.san-jose,San José,,CRI
-CUB.havana,Havana,,CUB
-CYP.nicosia,Nicosia,,CYP
-CZE.prague,Prague,,CZE
-DEU.berlin,Berlin,,DEU
-DJI.djibouti,Djibouti,,DJI
-DMA.roseau,Roseau,,DMA
-DNK.copenhagen,Copenhagen,,DNK
-DOM.santo-domingo,Santo Domingo,,DOM
-DZA.algiers,Algiers,,DZA
-ECU.quito,Quito,,ECU
-EGY.cairo,Cairo,,EGY
-ERI.asmara,Asmara,,ERI
-ESP.madrid,Madrid,,ESP
-EST.tallinn,Tallinn,,EST
-ETH.addis-ababa,Addis Ababa,,ETH
-FIN.helsinki,Helsinki,,FIN
-FJI.suva,Suva,,FJI
-FRA.paris,Paris,,FRA
-FSM.palikir,Palikir,,FSM
-GAB.libreville,Libreville,,GAB
-GBR.london,London,,GBR
-GEO.tbilisi,Tbilisi,,GEO
-GHA.accra,Accra,,GHA
-GIN.conakry,Conakry,,GIN
-GMB.banjul,Banjul,,GMB
-GNB.bissau,Bissau,,GNB
-GNQ.ciudad-de-la-paz,Ciudad de la Paz,,GNQ
-GNQ.malabo,Malabo,,GNQ
-GRC.athens,Athens,,GRC
-GRD.saint-georges,St. George's,,GRD
-GTM.guatemala-city,Guatemala City,,GTM
-GUY.georgetown,Georgetown,,GUY
-HND.tegucigalpa,Tegucigalpa,,HND
-HRV.zagreb,Zagreb,,HRV
-HTI.port-au-prince,Port-au-Prince,,HTI
-HUN.budapest,Budapest,,HUN
-IDN.jakarta,Jakarta,,IDN
-IND.new-delhi,New Delhi,Delhi,IND
-IRL.dublin,Dublin,,IRL
-IRN.tehran,Tehran,,IRN
-IRQ.baghdad,Baghdad,,IRQ
-ISL.reykjavik,Reykjavik,,ISL
-ISR.jerusalem,Jerusalem,,ISR
-ITA.rome,Rome,,ITA
-JAM.kingston,Kingston,,JAM
-JOR.amman,Amman,,JOR
-JPN.tokyo,Tokyo,,JPN
-KAZ.astana,Astana,,KAZ
-KEN.nairobi,Nairobi,,KEN
-KGZ.bishkek,Bishkek,,KGZ
-KHM.phnom-penh,Phnom Penh,,KHM
-KIR.south-tarawa,South Tarawa,Tarawa,KIR
-KNA.basseterre,Basseterre,,KNA
-KOR.seoul,Seoul,,KOR
-KWT.kuwait-city,Kuwait City,,KWT
-LAO.vientiane,Vientiane,,LAO
-LBN.beirut,Beirut,,LBN
-LBR.monrovia,Monrovia,,LBR
-LBY.tripoli,Tripoli,,LBY
-LCA.castries,Castries,,LCA
-LIE.vaduz,Vaduz,,LIE
-LKA.colombo,Colombo,,LKA
-LKA.sri-jayewardenepura-kotte,Sri Jayewardenepura Kotte,,LKA
-LSO.maseru,Maseru,,LSO
-LTU.vilnius,Vilnius,,LTU
-LUX.luxembourg,Luxembourg,,LUX
-LVA.riga,Riga,,LVA
-MAR.rabat,Rabat,,MAR
-MCO.monaco,Monaco,,MCO
-MDA.chisinau,Chișinău,Chisinau|Kishinev,MDA
-MDA.chisinau-in-romanian,Chisinau in Romanian,,MDA
-MDG.antananarivo,Antananarivo,,MDG
-MDV.male,Malé,,MDV
-MEX.mexico-city,Mexico City,,MEX
-MHL.majuro,Majuro,,MHL
-MKD.skopje,Skopje,,MKD
-MLI.bamako,Bamako,,MLI
-MLT.valletta,Valletta,,MLT
-MMR.naypyidaw,Naypyidaw,Nay Pyi Taw|Naypyitaw,MMR
-MMR.rangoon,Rangoon,,MMR
-MNE.podgorica,Podgorica,,MNE
-MNG.ulan-bator,Ulaanbaatar,Ulan Bator,MNG
-MOZ.maputo,Maputo,,MOZ
-MRT.nouakchott,Nouakchott,,MRT
-MUS.port-louis,Port Louis,,MUS
-MWI.lilongwe,Lilongwe,,MWI
-MYS.kuala-lumpur,Kuala Lumpur,,MYS
-NAM.windhoek,Windhoek,,NAM
-NER.niamey,Niamey,,NER
-NGA.abuja,Abuja,,NGA
-NIC.managua,Managua,,NIC
-NLD.amsterdam,Amsterdam,,NLD
-NOR.oslo,Oslo,,NOR
-NPL.kathmandu,Kathmandu,,NPL
-NRU.no-official-capital,no official capital,,NRU
-NRU.yaren,Yaren,,NRU
-NZL.wellington,Wellington,,NZL
-OMN.muscat,Muscat,,OMN
-PAK.islamabad,Islamabad,,PAK
-PAN.panama-city,Panama City,,PAN
-PER.lima,Lima,,PER
-PHL.manila,Manila,,PHL
-PLW.ngerulmud,Ngerulmud,,PLW
-PNG.port-moresby,Port Moresby,,PNG
-POL.warsaw,Warsaw,,POL
-PRK.pyongyang,Pyongyang,,PRK
-PRT.lisbon,Lisbon,,PRT
-PRY.asuncion,Asunción,,PRY
-QAT.doha,Doha,,QAT
-ROU.bucharest,Bucharest,,ROU
-RUS.moscow,Moscow,,RUS
-RWA.kigali,Kigali,,RWA
-SAU.riyadh,Riyadh,,SAU
-SDN.khartoum,Khartoum,,SDN
-SEN.dakar,Dakar,,SEN
-SGP.singapore,Singapore,,SGP
-SLB.honiara,Honiara,,SLB
-SLE.freetown,Freetown,,SLE
-SLV.san-salvador,San Salvador,,SLV
-SMR.city-of-san-marino,San Marino,City of San Marino,SMR
-SOM.mogadishu,Mogadishu,,SOM
-SRB.belgrade,Belgrade,,SRB
-SSD.juba,Juba,,SSD
-STP.sao-tome,São Tomé,,STP
-SUR.paramaribo,Paramaribo,,SUR
-SVK.bratislava,Bratislava,,SVK
-SVN.ljubljana,Ljubljana,,SVN
-SWE.stockholm,Stockholm,,SWE
-SWZ.lobamba,Lobamba,,SWZ
-SWZ.mbabane,Mbabane,,SWZ
-SYC.victoria,Victoria,,SYC
-SYR.damascus,Damascus,,SYR
-TCD.ndjamena,N'Djamena,,TCD
-TGO.lome,Lomé,,TGO
-THA.bangkok,Bangkok,,THA
-TJK.dushanbe,Dushanbe,,TJK
-TKM.ashgabat,Ashgabat,,TKM
-TLS.dili,Dili,,TLS
-TON.nukualofa,Nuku'alofa,,TON
-TTO.port-of-spain,Port of Spain,,TTO
-TUN.tunis,Tunis,,TUN
-TUR.ankara,Ankara,,TUR
-TUV.funafuti,Funafuti,,TUV
-TZA.dodoma,Dodoma,,TZA
-UGA.kampala,Kampala,,UGA
-UKR.kyiv,Kyiv,Kiev,UKR
-URY.montevideo,Montevideo,,URY
-USA.washington-dc,Washington D.C.,Washington|Washington DC,USA
-UZB.tashkent,Tashkent,,UZB
-VAT.vatican-city,Vatican City,,VAT
-VCT.kingstown,Kingstown,,VCT
-VEN.caracas,Caracas,,VEN
-VNM.hanoi,Hanoi,,VNM
-VUT.port-vila,Port Vila,,VUT
-WSM.apia,Apia,,WSM
-YEM.sanaa,Sana'a,,YEM
-ZAF.bloemfontein,Bloemfontein,,ZAF
-ZAF.cape-town,Cape Town,,ZAF
-ZAF.pretoria,Pretoria,,ZAF
-ZMB.lusaka,Lusaka,,ZMB
-ZWE.harare,Harare,,ZWE
+id,name,aliases,country,lat,lng,position
+AFG.kabul,Kabul,,AFG,34.519,69.181,factbook+naturalearth
+AGO.luanda,Luanda,,AGO,-8.836,13.232,factbook+naturalearth
+ALB.tirana,Tirana,,ALB,41.328,19.819,factbook+naturalearth
+AND.andorra-la-vella,Andorra la Vella,,AND,42.507,1.522,claude:2026-11-12
+ARE.abu-dhabi,Abu Dhabi,,ARE,24.467,54.367,factbook+naturalearth
+ARG.buenos-aires,Buenos Aires,,ARG,-34.601,-58.399,factbook+naturalearth
+ARM.yerevan,Yerevan,,ARM,40.183,44.512,factbook+naturalearth
+ATG.saint-johns,Saint John's,,ATG,17.118,-61.850,factbook+naturalearth
+AUS.canberra,Canberra,,AUS,-35.283,149.129,factbook+naturalearth
+AUT.vienna,Vienna,,AUT,48.202,16.365,factbook+naturalearth
+AZE.baku,Baku,,AZE,40.397,49.860,factbook+naturalearth
+BDI.gitega,Gitega,,BDI,-3.426,29.844,factbook+naturalearth
+BDI.gitega-bujumbura,"Gitega, Bujumbura",,BDI,,,
+BEL.brussels,Brussels,,BEL,50.846,4.352,claude:2026-11-12
+BEN.cotonou,Cotonou,,BEN,,,
+BEN.porto-novo,Porto-Novo,,BEN,6.483,2.617,factbook+naturalearth
+BFA.ouagadougou,Ouagadougou,,BFA,12.372,-1.527,factbook+naturalearth
+BGD.dhaka,Dhaka,,BGD,23.725,90.407,factbook+naturalearth
+BGR.sofia,Sofia,,BGR,42.685,23.315,factbook+naturalearth
+BHR.manama,Manama,,BHR,26.236,50.583,factbook+naturalearth
+BHS.nassau,Nassau,,BHS,25.083,-77.350,factbook+naturalearth
+BIH.sarajevo,Sarajevo,,BIH,43.850,18.383,factbook+naturalearth
+BLR.minsk,Minsk,,BLR,53.902,27.565,factbook+naturalearth
+BLZ.belmopan,Belmopan,,BLZ,17.252,-88.767,factbook+naturalearth
+BOL.la-paz,La Paz,,BOL,-16.496,-68.152,factbook+naturalearth
+BOL.sucre,Sucre,,BOL,-19.041,-65.260,claude:2026-11-12
+BRA.brasilia,Brasília,Brasilia,BRA,-15.781,-47.918,factbook+naturalearth
+BRB.bridgetown,Bridgetown,,BRB,13.102,-59.617,factbook+naturalearth
+BRN.bandar-seri-begawan,Bandar Seri Begawan,,BRN,4.883,114.933,factbook+naturalearth
+BTN.thimphu,Thimphu,,BTN,27.473,89.639,factbook+naturalearth
+BWA.gaborone,Gaborone,,BWA,-24.646,25.912,factbook+naturalearth
+CAF.bangui,Bangui,,CAF,4.367,18.558,factbook+naturalearth
+CAN.ottawa,Ottawa,,CAN,45.419,-75.702,factbook+naturalearth
+CHE.bern,Bern,,CHE,46.917,7.467,factbook+naturalearth
+CHL.santiago,Santiago,,CHL,-33.448,-70.669,factbook+naturalearth
+CHN.beijing,Beijing,,CHN,39.931,116.386,factbook+naturalearth
+CIV.yamoussoukro,Yamoussoukro,,CIV,6.818,-5.276,claude:2026-11-12
+CIV.yamoussoukro-abidjan,"Yamoussoukro, Abidjan",,CIV,,,
+CMR.yaounde,Yaoundé,,CMR,3.869,11.515,factbook+naturalearth
+COD.kinshasa,Kinshasa,,COD,-4.328,15.313,factbook+naturalearth
+COG.brazzaville,Brazzaville,,COG,-4.257,15.283,factbook+naturalearth
+COL.bogota,Bogotá,Bogota,COL,4.598,-74.085,factbook+naturalearth
+COM.moroni,Moroni,,COM,-11.704,43.240,factbook+naturalearth
+CPV.praia,Praia,,CPV,14.917,-23.517,factbook+naturalearth
+CRI.san-jose,San José,,CRI,9.937,-84.086,factbook+naturalearth
+CUB.havana,Havana,,CUB,23.134,-82.366,factbook+naturalearth
+CYP.nicosia,Nicosia,,CYP,35.167,33.367,factbook+naturalearth
+CZE.prague,Prague,,CZE,50.085,14.464,factbook+naturalearth
+DEU.berlin,Berlin,,DEU,52.524,13.400,factbook+naturalearth
+DJI.djibouti,Djibouti,,DJI,11.595,43.148,factbook+naturalearth
+DMA.roseau,Roseau,,DMA,15.301,-61.387,factbook+naturalearth
+DNK.copenhagen,Copenhagen,,DNK,55.676,12.568,claude:2026-11-12
+DOM.santo-domingo,Santo Domingo,,DOM,18.472,-69.902,factbook+naturalearth
+DZA.algiers,Algiers,,DZA,36.765,3.049,factbook+naturalearth
+ECU.quito,Quito,,ECU,-0.213,-78.502,factbook+naturalearth
+EGY.cairo,Cairo,,EGY,30.052,31.248,factbook+naturalearth
+ERI.asmara,Asmara,,ERI,15.333,38.933,factbook+naturalearth
+ESP.madrid,Madrid,,ESP,40.402,-3.685,factbook+naturalearth
+EST.tallinn,Tallinn,,EST,59.434,24.728,factbook+naturalearth
+ETH.addis-ababa,Addis Ababa,,ETH,9.035,38.698,factbook+naturalearth
+FIN.helsinki,Helsinki,,FIN,60.178,24.932,factbook+naturalearth
+FJI.suva,Suva,,FJI,-18.133,178.442,factbook+naturalearth
+FRA.paris,Paris,,FRA,48.869,2.331,factbook+naturalearth
+FSM.palikir,Palikir,,FSM,6.917,158.150,factbook+naturalearth
+GAB.libreville,Libreville,,GAB,0.385,9.458,factbook+naturalearth
+GBR.london,London,,GBR,51.502,-0.119,factbook+naturalearth
+GEO.tbilisi,Tbilisi,,GEO,41.727,44.789,factbook+naturalearth
+GHA.accra,Accra,,GHA,5.552,-0.219,factbook+naturalearth
+GIN.conakry,Conakry,,GIN,9.533,-13.682,factbook+naturalearth
+GMB.banjul,Banjul,,GMB,13.454,-16.592,factbook+naturalearth
+GNB.bissau,Bissau,,GNB,11.865,-15.598,factbook+naturalearth
+GNQ.ciudad-de-la-paz,Ciudad de la Paz,,GNQ,,,
+GNQ.malabo,Malabo,,GNQ,3.750,8.783,factbook+naturalearth
+GRC.athens,Athens,,GRC,37.985,23.731,factbook+naturalearth
+GRD.saint-georges,St. George's,,GRD,12.053,-61.742,factbook+naturalearth
+GTM.guatemala-city,Guatemala City,Guatemala,GTM,14.623,-90.529,factbook+naturalearth
+GUY.georgetown,Georgetown,,GUY,6.802,-58.167,factbook+naturalearth
+HND.tegucigalpa,Tegucigalpa,,HND,14.104,-87.219,factbook+naturalearth
+HRV.zagreb,Zagreb,,HRV,45.800,16.000,factbook+naturalearth
+HTI.port-au-prince,Port-au-Prince,,HTI,18.543,-72.338,factbook+naturalearth
+HUN.budapest,Budapest,,HUN,47.502,19.081,factbook+naturalearth
+IDN.jakarta,Jakarta,,IDN,-6.172,106.827,factbook+naturalearth
+IND.new-delhi,New Delhi,Delhi,IND,28.600,77.200,factbook+naturalearth
+IRL.dublin,Dublin,,IRL,53.335,-6.251,factbook+naturalearth
+IRN.tehran,Tehran,,IRN,35.674,51.422,factbook+naturalearth
+IRQ.baghdad,Baghdad,,IRQ,33.341,44.392,factbook+naturalearth
+ISL.reykjavik,Reykjavik,,ISL,64.150,-21.950,factbook+naturalearth
+ISR.jerusalem,Jerusalem,,ISR,31.778,35.207,factbook+naturalearth
+ITA.rome,Rome,,ITA,41.898,12.481,factbook+naturalearth
+JAM.kingston,Kingston,,JAM,17.977,-76.767,factbook+naturalearth
+JOR.amman,Amman,,JOR,31.952,35.931,factbook+naturalearth
+JPN.tokyo,Tokyo,,JPN,35.687,139.749,factbook+naturalearth
+KAZ.astana,Astana,,KAZ,51.181,71.428,factbook+naturalearth
+KEN.nairobi,Nairobi,,KEN,-1.281,36.815,factbook+naturalearth
+KGZ.bishkek,Bishkek,,KGZ,42.875,74.583,factbook+naturalearth
+KHM.phnom-penh,Phnom Penh,,KHM,11.552,104.915,factbook+naturalearth
+KIR.south-tarawa,South Tarawa,Tarawa,KIR,1.338,173.018,factbook+naturalearth
+KNA.basseterre,Basseterre,,KNA,17.302,-62.717,factbook+naturalearth
+KOR.seoul,Seoul,,KOR,37.568,126.998,factbook+naturalearth
+KWT.kuwait-city,Kuwait City,Kuwait,KWT,29.372,47.976,factbook+naturalearth
+LAO.vientiane,Vientiane,,LAO,17.967,102.600,factbook+naturalearth
+LBN.beirut,Beirut,,LBN,33.874,35.508,factbook+naturalearth
+LBR.monrovia,Monrovia,,LBR,6.315,-10.800,factbook+naturalearth
+LBY.tripoli,Tripoli,,LBY,32.892,13.180,factbook+naturalearth
+LCA.castries,Castries,,LCA,14.002,-61.000,factbook+naturalearth
+LIE.vaduz,Vaduz,,LIE,47.134,9.517,factbook+naturalearth
+LKA.colombo,Colombo,,LKA,6.932,79.858,factbook+naturalearth
+LKA.sri-jayewardenepura-kotte,Sri Jayewardenepura Kotte,,LKA,6.900,79.950,claude:2026-11-12
+LSO.maseru,Maseru,,LSO,-29.317,27.483,factbook+naturalearth
+LTU.vilnius,Vilnius,,LTU,54.683,25.317,factbook+naturalearth
+LUX.luxembourg,Luxembourg,,LUX,49.612,6.130,factbook+naturalearth
+LVA.riga,Riga,,LVA,56.950,24.100,factbook+naturalearth
+MAR.rabat,Rabat,,MAR,34.025,-6.836,factbook+naturalearth
+MCO.monaco,Monaco,,MCO,43.740,7.407,factbook+naturalearth
+MDA.chisinau,Chișinău,Chisinau|Kishinev,MDA,47.005,28.858,claude:2026-11-12
+MDA.chisinau-in-romanian,Chisinau in Romanian,,MDA,,,
+MDG.antananarivo,Antananarivo,,MDG,-18.915,47.515,factbook+naturalearth
+MDV.male,Malé,,MDV,4.167,73.500,factbook+naturalearth
+MEX.mexico-city,Mexico City,,MEX,19.444,-99.133,factbook+naturalearth
+MHL.majuro,Majuro,,MHL,7.103,171.380,factbook+naturalearth
+MKD.skopje,Skopje,,MKD,42.000,21.433,factbook+naturalearth
+MLI.bamako,Bamako,,MLI,12.652,-8.002,factbook+naturalearth
+MLT.valletta,Valletta,,MLT,35.900,14.515,factbook+naturalearth
+MMR.naypyidaw,Naypyidaw,Nay Pyi Taw|Naypyitaw,MMR,19.763,96.079,claude:2026-11-12
+MMR.rangoon,Rangoon,,MMR,16.785,96.165,factbook+naturalearth
+MNE.podgorica,Podgorica,,MNE,42.466,19.266,factbook+naturalearth
+MNG.ulan-bator,Ulaanbaatar,Ulan Bator,MNG,47.919,106.915,factbook+naturalearth
+MOZ.maputo,Maputo,,MOZ,-25.953,32.587,factbook+naturalearth
+MRT.nouakchott,Nouakchott,,MRT,18.086,-15.975,factbook+naturalearth
+MUS.port-louis,Port Louis,,MUS,-20.167,57.500,factbook+naturalearth
+MWI.lilongwe,Lilongwe,,MWI,-13.983,33.783,factbook+naturalearth
+MYS.kuala-lumpur,Kuala Lumpur,,MYS,3.169,101.698,factbook+naturalearth
+NAM.windhoek,Windhoek,,NAM,-22.570,17.084,factbook+naturalearth
+NER.niamey,Niamey,,NER,13.519,2.115,factbook+naturalearth
+NGA.abuja,Abuja,,NGA,9.085,7.531,factbook+naturalearth
+NIC.managua,Managua,,NIC,12.155,-86.270,factbook+naturalearth
+NLD.amsterdam,Amsterdam,,NLD,52.352,4.915,factbook+naturalearth
+NOR.oslo,Oslo,,NOR,59.919,10.748,factbook+naturalearth
+NPL.kathmandu,Kathmandu,,NPL,27.719,85.315,factbook+naturalearth
+NRU.no-official-capital,no official capital,,NRU,,,
+NRU.yaren,Yaren,,NRU,-0.547,166.921,claude:2026-11-12
+NZL.wellington,Wellington,,NZL,-41.300,174.783,factbook+naturalearth
+OMN.muscat,Muscat,,OMN,23.613,58.593,factbook+naturalearth
+PAK.islamabad,Islamabad,,PAK,33.702,73.165,factbook+naturalearth
+PAN.panama-city,Panama City,Panama,PAN,8.970,-79.535,factbook+naturalearth
+PER.lima,Lima,,PER,-12.046,-77.052,factbook+naturalearth
+PHL.manila,Manila,,PHL,14.606,120.980,factbook+naturalearth
+PLW.ngerulmud,Ngerulmud,,PLW,7.500,134.624,claude:2026-11-12
+PNG.port-moresby,Port Moresby,,PNG,-9.465,147.193,factbook+naturalearth
+POL.warsaw,Warsaw,,POL,52.252,20.998,factbook+naturalearth
+PRK.pyongyang,Pyongyang,,PRK,39.021,125.753,factbook+naturalearth
+PRT.lisbon,Lisbon,,PRT,38.725,-9.147,factbook+naturalearth
+PRY.asuncion,Asunción,,PRY,-25.294,-57.643,factbook+naturalearth
+QAT.doha,Doha,,QAT,25.287,51.533,factbook+naturalearth
+ROU.bucharest,Bucharest,,ROU,44.435,26.098,factbook+naturalearth
+RUS.moscow,Moscow,,RUS,55.754,37.614,factbook+naturalearth
+RWA.kigali,Kigali,,RWA,-1.952,30.059,factbook+naturalearth
+SAU.riyadh,Riyadh,,SAU,24.643,46.771,factbook+naturalearth
+SDN.khartoum,Khartoum,,SDN,15.590,32.532,factbook+naturalearth
+SEN.dakar,Dakar,,SEN,14.718,-17.475,factbook+naturalearth
+SGP.singapore,Singapore,,SGP,1.295,103.854,factbook+naturalearth
+SLB.honiara,Honiara,,SLB,-9.438,159.950,factbook+naturalearth
+SLE.freetown,Freetown,,SLE,8.472,-13.236,factbook+naturalearth
+SLV.san-salvador,San Salvador,,SLV,13.712,-89.205,factbook+naturalearth
+SMR.city-of-san-marino,San Marino,City of San Marino,SMR,43.936,12.442,factbook+naturalearth
+SOM.mogadishu,Mogadishu,,SOM,2.069,45.365,factbook+naturalearth
+SRB.belgrade,Belgrade,,SRB,44.819,20.468,claude:2026-11-12
+SSD.juba,Juba,,SSD,4.830,31.580,factbook+naturalearth
+STP.sao-tome,São Tomé,,STP,0.333,6.733,factbook+naturalearth
+SUR.paramaribo,Paramaribo,,SUR,5.835,-55.167,factbook+naturalearth
+SVK.bratislava,Bratislava,,SVK,48.150,17.117,factbook+naturalearth
+SVN.ljubljana,Ljubljana,,SVN,46.055,14.515,factbook+naturalearth
+SWE.stockholm,Stockholm,,SWE,59.353,18.095,factbook+naturalearth
+SWZ.lobamba,Lobamba,,SWZ,-26.467,31.200,claude:2026-11-12
+SWZ.mbabane,Mbabane,,SWZ,-26.317,31.133,factbook+naturalearth
+SYC.victoria,Victoria,,SYC,-4.617,55.450,factbook+naturalearth
+SYR.damascus,Damascus,,SYR,33.502,36.298,factbook+naturalearth
+TCD.ndjamena,N'Djamena,,TCD,12.115,15.047,factbook+naturalearth
+TGO.lome,Lomé,,TGO,6.134,1.221,factbook+naturalearth
+THA.bangkok,Bangkok,,THA,13.752,100.515,factbook+naturalearth
+TJK.dushanbe,Dushanbe,,TJK,38.560,68.774,factbook+naturalearth
+TKM.ashgabat,Ashgabat,,TKM,37.950,58.383,factbook+naturalearth
+TLS.dili,Dili,,TLS,-8.559,125.579,factbook+naturalearth
+TON.nukualofa,Nuku'alofa,,TON,-21.139,-175.221,factbook+naturalearth
+TTO.port-of-spain,Port of Spain,,TTO,10.652,-61.517,factbook+naturalearth
+TUN.tunis,Tunis,,TUN,36.803,10.180,factbook+naturalearth
+TUR.ankara,Ankara,,TUR,39.929,32.862,factbook+naturalearth
+TUV.funafuti,Funafuti,,TUV,-8.517,179.217,factbook+naturalearth
+TZA.dodoma,Dodoma,,TZA,-6.173,35.739,claude:2026-11-12
+UGA.kampala,Kampala,,UGA,0.319,32.581,factbook+naturalearth
+UKR.kyiv,Kyiv,Kiev,UKR,50.435,30.515,factbook+naturalearth
+URY.montevideo,Montevideo,,URY,-34.856,-56.173,factbook+naturalearth
+USA.washington-dc,Washington D.C.,Washington|Washington DC,USA,38.901,-77.011,factbook+naturalearth
+UZB.tashkent,Tashkent,,UZB,41.314,69.293,factbook+naturalearth
+VAT.vatican-city,Vatican City,Vatican,VAT,41.903,12.453,factbook+naturalearth
+VCT.kingstown,Kingstown,,VCT,13.148,-61.212,factbook+naturalearth
+VEN.caracas,Caracas,,VEN,10.503,-66.919,factbook+naturalearth
+VNM.hanoi,Hanoi,,VNM,21.035,105.848,factbook+naturalearth
+VUT.port-vila,Port Vila,,VUT,-17.733,168.317,factbook+naturalearth
+WSM.apia,Apia,,WSM,-13.842,-171.739,factbook+naturalearth
+YEM.sanaa,Sana'a,,YEM,15.357,44.205,factbook+naturalearth
+ZAF.bloemfontein,Bloemfontein,,ZAF,-29.120,26.230,claude:2026-11-12
+ZAF.cape-town,Cape Town,,ZAF,-33.918,18.433,claude:2026-11-12
+ZAF.pretoria,Pretoria,,ZAF,-25.705,28.227,factbook+naturalearth
+ZMB.lusaka,Lusaka,,ZMB,-15.415,28.281,factbook+naturalearth
+ZWE.harare,Harare,,ZWE,-17.816,31.043,factbook+naturalearth

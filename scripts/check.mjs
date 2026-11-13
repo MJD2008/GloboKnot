@@ -13,12 +13,14 @@ const disputed = JSON.parse(await read('data/disputed.json'));
 const countries = parseCsv(await read('data/countries/countries.csv'));
 const cities = parseCsv(await read('data/countries/cities.csv'));
 const languages = parseCsv(await read('data/countries/languages.csv'));
-const facts = parseCsv(await read('data/countries/facts.csv'));
+const peaks = parseCsv(await read('data/geo/peaks.csv'));
+const rivers = parseCsv(await read('data/geo/rivers.csv'));
+const facts = [...parseCsv(await read('data/countries/facts.csv')), ...parseCsv(await read('data/geo/facts.csv'))];
 const CONTINENTS = ['Africa', 'Asia', 'Europe', 'North America', 'South America', 'Oceania'];
 
 const errors = [], warnings = [];
 const typeOf = new Map();
-for (const [type, list] of [['country', countries], ['city', cities], ['language', languages]]) {
+for (const [type, list] of [['country', countries], ['city', cities], ['language', languages], ['peak', peaks], ['river', rivers]]) {
   for (const e of list) {
     if (typeOf.has(e.id)) errors.push(`duplicate id ${e.id}`);
     typeOf.set(e.id, type);
@@ -36,6 +38,7 @@ for (const f of approved) {
   if (typeOf.get(f.subject) !== rel.from) errors.push(`subject should be a ${rel.from}: ${where}`);
   if (typeOf.get(f.object) !== rel.to) errors.push(`object should be a ${rel.to}: ${where}`);
   if (!f.sources) errors.push(`no source: ${where}`);
+  if (!rel.answers_only && !f.sources.includes('+') && !f.checked.startsWith('claude') && !f.checked.startsWith('james')) errors.push(`approved on one source: ${where}`);
   if (!f.checked) errors.push(`not checked: ${where}`);
   if (disputed.entities.some(d => d.id === f.subject || d.id === f.object)) errors.push(`disputed entity in approved fact: ${where}`);
   if (rel.symmetric && f.subject > f.object) errors.push(`symmetric fact not stored alphabetically: ${where}`);
@@ -53,14 +56,15 @@ for (const [name, rel] of Object.entries(relations)) {
     for (const [s, n] of Object.entries(per)) if (n > 1) errors.push(`${s} has ${n} ${name} facts but the relation allows one`);
   }
 }
+for (const p of peaks) if (!(+p.lat) && !(+p.lng)) errors.push(`peak without a position: ${p.id}`);
 for (const c of countries) {
   if (!approved.some(f => f.subject === c.id && f.relation === 'continent')) errors.push(`${c.id} has no continent`);
   if (!approved.some(f => f.subject === c.id && f.relation === 'official_language')) warnings.push(`${c.id} (${c.name}) has no official language`);
   if (!approved.some(f => f.subject === c.id && f.relation === 'capital')) warnings.push(`${c.id} (${c.name}) has no capital (excluded or pending)`);
 }
 
-// Answers: no accepted name may point to two entities of the same type.
-for (const [type, list] of [['country', countries], ['city', cities], ['language', languages]]) {
+// Answers: no accepted name may point to two entities of the same type (two rivers called Red are told apart by the map).
+for (const [type, list] of [['country', countries], ['city', cities], ['language', languages], ['peak', peaks]]) {
   const seen = new Map();
   for (const e of list) for (const n of [e.name, ...e.aliases.split('|')].filter(Boolean)) {
     const k = norm(n);
