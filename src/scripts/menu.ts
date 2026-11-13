@@ -3,7 +3,7 @@
 // Something always stays selected: the last ticked box can't be unticked until another one is ticked.
 import { CONTINENTS, type Knowledge } from './kb';
 import { CATS, TEMPLATES, available, type Cat } from './questions';
-import { MAX_SIZE, SIZES, clampSize, saveSelection, selection } from './prefs';
+import { MAX_SIZE, SIZES, clampSize, gordianOpen, saveSelection, saveStats, selection, stats } from './prefs';
 
 export const ICONS: Record<Cat | 'world', string> = {
   locations: '<path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2zM9 4v14M15 6v14"/>',
@@ -71,10 +71,12 @@ export function initMenu(kb: Knowledge, root: HTMLElement, onChange: () => void)
       </div>
     </div>`).join('')}`;
 
-  // ---- length: three presets and a box for any other number
+  // ---- length: three presets, a box for any other number, and (once found) All: The Gordian Knot
   sizes.innerHTML = SIZES.map(n => `<button type="button" data-size="${n}">${n}</button>`).join('')
-    + `<label class="custom"><input id="size-custom" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="${String(MAX_SIZE).length}" placeholder="Other" aria-label="Other number of questions" autocomplete="off" /></label>`;
+    + `<label class="custom"><input id="size-custom" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="${String(MAX_SIZE).length}" placeholder="Custom" aria-label="Custom number of questions" autocomplete="off" /></label>`
+    + `<button type="button" data-size="0" class="all" title="The Gordian Knot: every question in this configuration" hidden>All</button>`;
   const custom = sizes.querySelector<HTMLInputElement>('#size-custom')!;
+  const all = sizes.querySelector<HTMLButtonElement>('.all')!;
   custom.addEventListener('input', () => {
     custom.value = custom.value.replace(/\D/g, '');
     const n = parseInt(custom.value, 10);
@@ -93,7 +95,11 @@ export function initMenu(kb: Knowledge, root: HTMLElement, onChange: () => void)
       return;
     }
     const size = t.closest<HTMLButtonElement>('[data-size]');
-    if (size) { selection.size = Number(size.dataset.size); changed(); }
+    if (size) {
+      selection.size = Number(size.dataset.size);
+      if (selection.size === 0 && !stats.gordianSeen) { stats.gordianSeen = true; saveStats(); }
+      changed();
+    }
   });
   root.addEventListener('change', e => {
     const t = e.target as HTMLInputElement;
@@ -161,7 +167,9 @@ export function initMenu(kb: Knowledge, root: HTMLElement, onChange: () => void)
   }
 
   function paintSizes(typing = false) {
-    const preset = (SIZES as readonly number[]).includes(selection.size);
+    all.hidden = !gordianOpen();
+    all.classList.toggle('new', !stats.gordianSeen);
+    const preset = selection.size === 0 || (SIZES as readonly number[]).includes(selection.size);
     for (const b of sizes.querySelectorAll<HTMLButtonElement>('[data-size]')) b.setAttribute('aria-pressed', String(Number(b.dataset.size) === selection.size));
     custom.closest('.custom')!.classList.toggle('on', !preset);
     if (!typing) custom.value = preset ? '' : String(selection.size);

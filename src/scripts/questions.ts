@@ -19,6 +19,7 @@ export interface Choice { id: string; label: string; flag?: string }
 export interface Question {
   key: string;                 // template + subject: used to avoid repeats
   kind: string;                // template id
+  subject: string;             // what the question is about (a country, language, peak or river id)
   cat: Cat;
   given: Tag;
   asked: Tag;
@@ -37,15 +38,16 @@ export interface Question {
 type Rng = () => number;
 interface Template {
   id: string;
+  code: string;                // one letter, for challenge links: never change it once links are out
   cat: Cat;
   label: string;               // in the menu: what you see → what you answer
   given: Tag;
   asked: Tag;
   subjects(kb: Knowledge, inPlace: (country: string) => boolean): string[];
   core(kb: Knowledge, id: string): boolean;
-  // `cat`, `given` and `asked` are filled in by buildRound. The answers never depend on what is selected under
-  // Where: a question about France accepts every neighbour of France, also when only France is selected.
-  make(kb: Knowledge, id: string, rng: Rng): Omit<Question, 'cat' | 'given' | 'asked'> | null;
+  // `cat`, `given`, `asked` and `subject` are filled in by buildRound. The answers never depend on what is selected
+  // under Where: a question about France accepts every neighbour of France, also when only France is selected.
+  make(kb: Knowledge, id: string, rng: Rng): Omit<Question, 'cat' | 'given' | 'asked' | 'subject'> | null;
 }
 
 export const CATS: { id: Cat; label: string }[] = [
@@ -104,7 +106,7 @@ const BCP47: Record<string, string> = {
 // ---------------------------------------------------------------- templates
 export const TEMPLATES: Template[] = [
   {
-    id: 'loc.map', cat: 'locations', label: 'Map → country', given: 'Map', asked: 'Country',
+    id: 'loc.map', code: 'L', cat: 'locations', label: 'Map → country', given: 'Map', asked: 'Country',
     subjects: (kb, inPlace) => countriesIn(kb, inPlace),
     core: isCore,
     make: (kb, id) => {
@@ -114,7 +116,7 @@ export const TEMPLATES: Template[] = [
     },
   },
   {
-    id: 'cap.name', cat: 'capitals', label: 'Country → capital', given: 'Country', asked: 'Capital',
+    id: 'cap.name', code: 'C', cat: 'capitals', label: 'Country → capital', given: 'Country', asked: 'Capital',
     subjects: (kb, inPlace) => countriesIn(kb, inPlace).filter(c => kb.mainCapitals(c).length),
     core: isCore,
     make: (kb, id) => {
@@ -125,7 +127,7 @@ export const TEMPLATES: Template[] = [
     },
   },
   {
-    id: 'cap.map', cat: 'capitals', label: 'Map → capital', given: 'Map', asked: 'Capital',
+    id: 'cap.map', code: 'M', cat: 'capitals', label: 'Map → capital', given: 'Map', asked: 'Capital',
     // One capital with a checked position: the dot marks it.
     subjects: (kb, inPlace) => countriesIn(kb, inPlace).filter(c => { const m = kb.mainCapitals(c); return m.length === 1 && kb.cities.find(x => x.id === m[0])?.ll; }),
     core: isCore,
@@ -136,7 +138,7 @@ export const TEMPLATES: Template[] = [
     },
   },
   {
-    id: 'cap.reverse', cat: 'capitals', label: 'Capital → country', given: 'Capital', asked: 'Country',
+    id: 'cap.reverse', code: 'R', cat: 'capitals', label: 'Capital → country', given: 'Capital', asked: 'Country',
     subjects: (kb, inPlace) => countriesIn(kb, inPlace).filter(c => kb.mainCapitals(c).length === 1),
     core: isCore,
     make: (kb, id) => {
@@ -147,14 +149,14 @@ export const TEMPLATES: Template[] = [
     },
   },
   {
-    id: 'flag.name', cat: 'flags', label: 'Flag → country', given: 'Flag', asked: 'Country',
+    id: 'flag.name', code: 'F', cat: 'flags', label: 'Flag → country', given: 'Flag', asked: 'Country',
     subjects: (kb, inPlace) => countriesIn(kb, inPlace),
     core: isCore,
     make: (kb, id) => ({ key: `flag:${id}`, kind: 'flag.name', format: 'type', prompt: 'Which country’s flag is this?', clue: 'Flag',
       media: { kind: 'flag', country: id }, pools: ['country'], accept: [id], answer: country(kb, id).name, countries: [id] }),
   },
   {
-    id: 'flag.pick', cat: 'flags', label: 'Country → flag', given: 'Country', asked: 'Flag',
+    id: 'flag.pick', code: 'P', cat: 'flags', label: 'Country → flag', given: 'Country', asked: 'Flag',
     subjects: (kb, inPlace) => countriesIn(kb, inPlace),
     core: isCore,
     make: (kb, id, rng) => {
@@ -168,7 +170,7 @@ export const TEMPLATES: Template[] = [
     },
   },
   {
-    id: 'lang.text', cat: 'languages', label: 'Text → language or country', given: 'Text', asked: 'Language',
+    id: 'lang.text', code: 'T', cat: 'languages', label: 'Text → language or country', given: 'Text', asked: 'Language',
     // Spoken in a selected country (officially or by many people).
     subjects: (kb, inPlace) => kb.languages.filter(l => l.sample && kb.cluster(l.id).some(x => kb.whereSpoken(x).some(inPlace))).map(l => l.id),
     core: (kb, id) => kb.whereSpoken(id, false).some(c => isCore(kb, c)),
@@ -182,7 +184,7 @@ export const TEMPLATES: Template[] = [
     },
   },
   {
-    id: 'lang.official', cat: 'languages', label: 'Country → official language', given: 'Country', asked: 'Language',
+    id: 'lang.official', code: 'O', cat: 'languages', label: 'Country → official language', given: 'Country', asked: 'Language',
     subjects: (kb, inPlace) => countriesIn(kb, inPlace).filter(c => kb.languagesOf(c).length),
     core: isCore,
     make: (kb, id, rng) => {
@@ -207,7 +209,7 @@ export const TEMPLATES: Template[] = [
     },
   },
   {
-    id: 'peak.name', cat: 'mountains', label: 'Country → highest point', given: 'Country', asked: 'Highest point',
+    id: 'peak.name', code: 'H', cat: 'mountains', label: 'Country → highest point', given: 'Country', asked: 'Highest point',
     subjects: (kb, inPlace) => countriesIn(kb, inPlace).filter(c => kb.highestPoint(c)),
     core: isCore,
     make: (kb, id, rng) => {
@@ -222,7 +224,7 @@ export const TEMPLATES: Template[] = [
     },
   },
   {
-    id: 'peak.map', cat: 'mountains', label: 'Highest point → country', given: 'Mountain', asked: 'Country',
+    id: 'peak.map', code: 'K', cat: 'mountains', label: 'Highest point → country', given: 'Mountain', asked: 'Country',
     subjects: (kb, inPlace) => kb.peaks.filter(p => kb.peakCountries(p.id).some(inPlace)).map(p => p.id),
     core: (kb, id) => kb.peakCountries(id).some(c => isCore(kb, c)) || (kb.get<Peak>(id)?.m ?? 0) >= 5000,
     make: (kb, id) => {
@@ -236,7 +238,7 @@ export const TEMPLATES: Template[] = [
     },
   },
   {
-    id: 'river.name', cat: 'rivers', label: 'River → name', given: 'Map', asked: 'River',
+    id: 'river.name', code: 'V', cat: 'rivers', label: 'River → name', given: 'Map', asked: 'River',
     subjects: (kb, inPlace) => kb.rivers.filter(r => kb.riverCountries(r.id).some(inPlace)).map(r => r.id),
     core: (kb, id) => (kb.get<River>(id)?.km ?? 0) >= 2500 || FAMOUS_RIVERS.has(id),
     make: (kb, id) => {
@@ -247,7 +249,7 @@ export const TEMPLATES: Template[] = [
     },
   },
   {
-    id: 'river.map', cat: 'rivers', label: 'River → country', given: 'River', asked: 'Country',
+    id: 'river.map', code: 'W', cat: 'rivers', label: 'River → country', given: 'River', asked: 'Country',
     subjects: (kb, inPlace) => kb.rivers.filter(r => kb.riverCountries(r.id).some(inPlace)).map(r => r.id),
     core: (kb, id) => (kb.get<River>(id)?.km ?? 0) >= 2500 || FAMOUS_RIVERS.has(id),
     make: (kb, id) => {
@@ -259,7 +261,7 @@ export const TEMPLATES: Template[] = [
   },
   {
     // Neighbours are a question type under Locations (on by default), not a category of their own.
-    id: 'nb.name', cat: 'locations', label: 'Country → neighbour', given: 'Country', asked: 'Neighbour',
+    id: 'nb.name', code: 'N', cat: 'locations', label: 'Country → neighbour', given: 'Country', asked: 'Neighbour',
     subjects: (kb, inPlace) => countriesIn(kb, inPlace).filter(c => kb.neighbours(c).length),
     core: isCore,
     make: (kb, id) => {
@@ -274,6 +276,7 @@ const FAMOUS_RIVERS = new Set(['rhine', 'danube', 'elbe', 'loire', 'tagus', 'vis
   'zambezi', 'orange', 'limpopo', 'rio-grande', 'colorado', 'saint-lawrence', 'murray', 'senegal', 'gambia']);
 
 // ---------------------------------------------------------------- what to play
+/** size 0 means every question the selection can ask: The Gordian Knot. */
 export interface Selection { kinds: string[]; places: string[]; size: number }
 export const DEFAULT_KINDS = TEMPLATES.map(t => t.id);
 /** The Daily: the same 10 questions for everyone on a day, from every category. */
@@ -299,9 +302,20 @@ export function remember(keys: string[]) {
   try { localStorage.setItem(RECENT_KEY, JSON.stringify([...keys, ...recent()].slice(0, 120))); } catch { /* private mode */ }
 }
 
-/** A round of `size` questions. Categories take turns; within one, about 60% are well-known subjects. No country
- *  comes up twice, and questions seen recently rest unless there aren't enough others (`fresh`: ignore that). */
-export function buildRound(kb: Knowledge, sel: Selection, rng: Rng = Math.random, fresh = false): Question[] {
+/** One question, made the same way every time for the same seed (its options are shuffled by that seed), so a
+ *  challenge link can carry just the subjects. */
+function makeQuestion(kb: Knowledge, t: Template, id: string, seed: string): Question | null {
+  const made = t.make(kb, id, seeded(`${seed}|${t.id}|${id}`));
+  return made && { ...made, cat: t.cat, given: t.given, asked: t.asked, subject: id };
+}
+
+/** A round of `size` questions (0: all of them). Categories take turns; within one, about 60% are well-known
+ *  subjects. No country comes up twice (except when playing everything), and questions seen recently rest unless
+ *  there aren't enough others (`fresh`: ignore that). `seed` fixes each question's options. */
+export function buildRound(kb: Knowledge, sel: Selection, rng: Rng = Math.random, fresh = false, seed = String(rng())): Question[] {
+  const all = sel.size <= 0;
+  const size = all ? Infinity : sel.size;
+  if (all) fresh = true;
   const inPlace = placeTest(sel);
   const templates = TEMPLATES.filter(t => sel.kinds.includes(t.id));
   const queues = new Map<Template, string[]>();
@@ -316,17 +330,18 @@ export function buildRound(kb: Knowledge, sel: Selection, rng: Rng = Math.random
   const seen = new Set(fresh ? [] : recent());
   const round: Question[] = [];
   const used = new Set<string>();
+  const keys = new Set<string>();
   for (const pass of [true, false]) { // the first pass rests recently seen questions, the second fills up
     let stuck = 0;
-    for (let i = 0; round.length < sel.size && stuck < cats.length; i++) {
+    for (let i = 0; round.length < size && stuck < cats.length; i++) {
       const cat = cats[i % cats.length];
       let q: Question | null = null;
       for (const t of shuffle(templates.filter(t => t.cat === cat), rng)) {
         const queue = queues.get(t)!;
         for (let j = 0; j < queue.length && !q; j++) {
-          const made = t.make(kb, queue[j], rng);
-          const cand: Question | null = made && { ...made, cat: t.cat, given: t.given, asked: t.asked };
-          if (!cand || round.some(r => r.key === cand.key) || cand.countries.some(c => used.has(c)) || (pass && seen.has(cand.key))) continue;
+          const id = queue[j];
+          const cand = makeQuestion(kb, t, id, seed);
+          if (!cand || keys.has(cand.key) || (!all && cand.countries.some(c => used.has(c))) || (pass && seen.has(cand.key))) continue;
           queue.splice(j, 1);
           q = cand;
         }
@@ -335,11 +350,25 @@ export function buildRound(kb: Knowledge, sel: Selection, rng: Rng = Math.random
       if (!q) { stuck++; continue; }
       stuck = 0;
       round.push(q);
+      keys.add(q.key);
       q.countries.forEach(c => used.add(c));
     }
   }
   return round;
 }
+
+/** The same questions again, from their codes and subjects (a challenge link). Subjects the data no longer has are
+ *  left out. */
+export function rebuildRound(kb: Knowledge, items: { code: string; subject: string }[], seed: string): Question[] {
+  const out: Question[] = [];
+  for (const it of items) {
+    const t = TEMPLATES.find(x => x.code === it.code);
+    if (!t) continue;
+    try { const q = makeQuestion(kb, t, it.subject, seed); if (q) out.push(q); } catch { /* gone from the data */ }
+  }
+  return out;
+}
+export const codeOf = (kind: string) => TEMPLATES.find(t => t.id === kind)?.code ?? '';
 
 /** A seeded random generator (mulberry32), for the Daily. */
 export function seeded(seed: string): Rng {

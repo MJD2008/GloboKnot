@@ -5,13 +5,15 @@ const X = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 
 <Base title="Globoknot" description="A geography quiz: countries, capitals, flags, languages, mountains and rivers. Pick what you want, type your answers; typos are forgiven.">
   <main class="wrap">
     <section id="start" class="screen start">
-      <canvas id="globe" class="globe" aria-hidden="true"></canvas>
-      <h1 class="hero">The world,<br /><em>tied together.</em></h1>
+      <canvas id="sky" class="sky" aria-hidden="true"></canvas>
+      <canvas id="globe" class="globe" aria-label="A globe: drag to turn it, point at a country to see its name"></canvas>
+      <h1 class="hero">Every corner of the&nbsp;Earth,<br /><em>tied together.</em></h1>
       <div id="chips" class="chips" aria-label="Categories"></div>
       <button id="play" class="btn-play" type="button" disabled>
-        <span>Play</span>
+        <span id="play-label">Play</span>
         <small id="play-sub">…</small>
       </button>
+      <button id="not-now" class="not-now" type="button" hidden>Not now</button>
       <div class="start-row">
         <button id="daily" class="btn-soft" type="button" disabled>
           <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5" width="16" height="15" rx="3" /><path d="M4 10h16M9 3v4M15 3v4" /></svg>
@@ -61,6 +63,7 @@ const X = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 
     </section>
 
     <section id="results" class="screen results" hidden>
+      <p id="results-title" class="results-title" hidden>The Gordian Knot</p>
       <div class="score">
         <svg id="ring" class="ring" viewBox="0 0 220 220" aria-hidden="true"></svg>
         <div class="score-in">
@@ -68,12 +71,21 @@ const X = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 
           <span id="rank"></span>
         </div>
       </div>
+      <p id="rank-line" class="rank-line"></p>
       <p id="summary" class="summary"></p>
+      <p id="versus" class="versus" hidden></p>
+      <p id="best" class="best" hidden></p>
+      <p id="unlock" class="unlock" hidden>
+        <b>You found The Gordian Knot.</b>
+        <span>Every question in your configuration, in one go. Pick <em>All</em> under Configure.</span>
+      </p>
       <div class="actions">
         <button id="again" class="btn primary" type="button">New round</button>
+        <button id="share" class="btn" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="18" cy="5.5" r="2.5" /><circle cx="6" cy="12" r="2.5" /><circle cx="18" cy="18.5" r="2.5" /><path d="m8.2 10.8 7.6-4.1M8.2 13.2l7.6 4.1" /></svg>Share</button>
         <button id="change" class="btn" type="button">Configure</button>
         <button id="home" class="btn" type="button">Home</button>
       </div>
+      <p id="share-note" class="share-note" role="status" hidden></p>
       <h2 class="answers-title">Answers</h2>
       <ol id="answers" class="answers"></ol>
     </section>
@@ -148,7 +160,7 @@ const X = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 
           <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16" /></svg><span>Pick what and where under Configure, then play.</span></li>
           <li><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="6" width="18" height="12" rx="2" /><path d="M7 10h1M11 10h1M15 10h1M8 14h8" /></svg><span>Type the answer. Small typos are fixed for you, and capitals don't matter.</span></li>
           <li><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="13" r="8" /><path d="M12 9v4l2.5 2M10 3h4" /></svg><span>Each question gives you <span id="about-time">15</span> seconds. Wrong? Try again until the time runs out.</span></li>
-          <li><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5" /><path d="M8 12.5l2.5 2.5L16 9.5" /></svg><span>Your score is the share you got right. Get them all and the knot closes.</span></li>
+          <li><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5" /><path d="M8 12.5l2.5 2.5L16 9.5" /></svg><span>Every answer ties a knot: tight first time, loose after a retry (half a point). A miss frays the rope. All tight, and the knot closes.</span></li>
         </ul>
         <p class="keys"><kbd>Enter</kbd> answer · <kbd>Esc</kbd> skip · <kbd>1</kbd>–<kbd>4</kbd> pick</p>
         <h3>Sources</h3>

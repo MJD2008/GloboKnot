@@ -1,6 +1,6 @@
 // The map: an orthographic globe turned and zoomed to what is asked (a country, a capital, a peak, a river).
 // Natural Earth 1:50m (public domain) via world-atlas; tiny countries get a ring so they can be found.
-import { geoArea, geoCentroid, geoCircle, geoDistance, geoGraticule10, geoOrthographic, geoPath } from 'd3-geo';
+import { geoArea, geoCentroid, geoCircle, geoContains, geoDistance, geoGraticule10, geoOrthographic, geoPath } from 'd3-geo';
 import type { GeoPermissibleObjects, GeoStream } from 'd3-geo';
 import { feature } from 'topojson-client';
 import type { Feature, FeatureCollection, MultiPolygon, Polygon, Position } from 'geojson';
@@ -34,6 +34,16 @@ export class WorldMap {
       }
       this.caps.set(s, { c, r });
     }
+  }
+
+  /** The country at a point on the globe ([lon, lat]): its numeric code (ISO 3166) and its shape. */
+  countryAt(p: LonLat): { num: string; shape: GeoPermissibleObjects } | null {
+    for (const s of this.shapes) {
+      const cap = this.caps.get(s)!;
+      if (s.id == null || geoDistance(cap.c, p) > cap.r + 0.002) continue;
+      if (geoContains(s, p)) return { num: String(s.id), shape: s };
+    }
+    return null;
   }
 
   /** A small outline of a country (its mainland and the islands near it) with its capital as a dot, for the

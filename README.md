@@ -13,6 +13,12 @@ number), play, and see every answer at the end. Every question has a time limit 
 is not revealed, so the player can try again until the time runs out. There is also a Daily: the same 10 questions for
 everyone.
 
+Scoring is a rope of knots: right first time ties a tight knot (1 point), right after a retry a loose one (half a point),
+and a miss frays the rope. The score ring shows the rope, and the rank is a knot (Loose end to Endless knot). Share
+sends the score with a challenge link (`#c=...`: the question codes and subjects plus a seed, so a friend gets the same
+questions with the same options and a score to beat). After three rounds The Gordian Knot appears: "All" in the
+configuration plays every question it holds, with a personal best per configuration.
+
 ```
 npm install
 npm run dev       # http://localhost:4321, reloads as you edit
@@ -21,15 +27,16 @@ npm run build     # the finished site in dist/
 
 ```
 src/pages/index.astro     the quiz page: start screen, question card, results
-src/layouts/Base.astro    page frame: header, footer with the data credits, PREVIEW switch
-src/styles/global.css     all styles; colours are tokens with light and dark values
+src/layouts/Base.astro    page frame: header, fonts, PREVIEW switch (noindex and badge)
+src/styles/global.css     all styles; colours are tokens with light and dark values (blue and orange presets)
 src/scripts/app.ts        the quiz screens, keys and timing
 src/scripts/menu.ts       the configuration: what, where, how many
 src/scripts/prefs.ts      what the browser remembers: the selection, settings (sound, time, auto-submit, theme, colour), the Daily
 src/scripts/questions.ts  question templates (13 kinds, one clue each, given/asked tags): approved facts in, questions out
 src/scripts/kb.ts         the knowledge base as the site reads it
 src/scripts/map.ts        the map: a globe turned and zoomed to the asked country, capital, peak or river
-src/scripts/globe.ts      the turning globe on the start screen
+src/scripts/globe.ts      the globe on the start screen: turns by itself, can be dragged, names the country under the pointer
+src/scripts/sky.ts        the night sky behind the start screen: stars that light up and tie together when touched
 src/scripts/sound.ts      small synthesised placeholder sounds (no audio files yet)
 public/data/              countries.json (npm run build:data), rivers.json (npm run import), world.json and globe.json (npm run build:map)
 public/flags/             flags from flag-icons (npm run build:flags)

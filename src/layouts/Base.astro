@@ -16,11 +16,10 @@ const PREVIEW = true;
     <title>{title}</title>
     <meta name="description" content={description} />
     {PREVIEW && <meta name="robots" content="noindex, nofollow" />}
-    <meta name="theme-color" content="#f6f5f1" media="(prefers-color-scheme: light)" />
-    <meta name="theme-color" content="#0f1318" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#060912" />
     <link rel="icon" href="favicon.svg" type="image/svg+xml" />
   </head>
-  <body>
+  <body class="home">
     <header class="top">
       <a class="brand" href="./" aria-label="Globoknot home">
         <svg class="logo" viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="13" /><path d="M16 3c-4.5 4-4.5 22 0 26M16 3c4.5 4 4.5 22 0 26M3.5 12.5h25M3.5 19.5h25" /></svg>
@@ -40,8 +39,5 @@ const PREVIEW = true;
       </nav>
     </header>
     <slot />
-    <footer class="foot">
-      <p>Facts from two sources that agree · sources in About</p>
-    </footer>
   </body>
 </html>

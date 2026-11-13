@@ -13,9 +13,9 @@ function save(key: string, value: unknown) {
 }
 
 // ---------- the quiz selection
-export const SIZES = [10, 20, 50] as const; // presets; any other number can be typed in
+export const SIZES = [10, 20, 50] as const; // presets; any other number can be typed in, and 0 means all
 export const MAX_SIZE = 9999;
-export const clampSize = (n: number) => Math.min(MAX_SIZE, Math.max(1, Math.round(n) || 10));
+export const clampSize = (n: number) => (n === 0 ? 0 : Math.min(MAX_SIZE, Math.max(1, Math.round(n) || 10)));
 const SEL_KEY = 'gk-selection';
 type Saved = Selection & { v?: number };
 const saved: Saved = load<Saved>(SEL_KEY, { kinds: DEFAULT_KINDS, places: [], size: 10, v: 3 });
@@ -34,34 +34,58 @@ export const ACCENTS = {
   lagoon: { label: 'Lagoon', light: '#0aa3a3', deep: '#088a8a', dark: '#2cc7c7' },
 } as const;
 export type Accent = keyof typeof ACCENTS;
+export type Theme = 'light' | 'dark';
 export const TIMES = [10, 15, 20] as const;
+/** Each theme has its own colour: blue in Light, orange in Dark, unless the player picks another. */
+export const PRESETS: Record<Theme, Accent> = { light: 'cobalt', dark: 'coral' };
 export interface Settings {
-  theme: 'auto' | 'light' | 'dark';
-  accent: Accent;
+  theme: Theme;      // Light by default; the page never switches by itself
+  accents: Record<Theme, Accent>;
   time: number;      // seconds per question
   auto: boolean;     // send a typed answer as soon as it is exactly right
 }
 const SET_KEY = 'gk-settings';
-export const settings: Settings = load<Settings>(SET_KEY, { theme: 'auto', accent: 'coral', time: 15, auto: true });
-if (!(settings.accent in ACCENTS)) settings.accent = 'coral';
-if (!TIMES.includes(settings.time as 10)) settings.time = 15;
+type SavedSettings = Partial<Settings> & { theme?: string; accent?: Accent };
+const savedSettings = load<SavedSettings>(SET_KEY, {});
+export const settings: Settings = {
+  theme: savedSettings.theme === 'dark' ? 'dark' : 'light', // 'auto' (before v3) becomes Light
+  accents: { ...PRESETS, ...savedSettings.accents },
+  time: TIMES.includes(savedSettings.time as 10) ? savedSettings.time! : 15,
+  auto: savedSettings.auto ?? true,
+};
+// Before v3 there was one colour for both themes, coral by default: a colour picked on purpose is kept for both.
+if (!savedSettings.accents && savedSettings.accent && savedSettings.accent !== 'coral' && savedSettings.accent in ACCENTS) {
+  settings.accents = { light: savedSettings.accent, dark: savedSettings.accent };
+}
+for (const t of ['light', 'dark'] as const) if (!(settings.accents[t] in ACCENTS)) settings.accents[t] = PRESETS[t];
 
 export function saveSettings() {
   save(SET_KEY, settings);
   applySettings();
 }
 
-/** Theme and accent colour on the page (CSS tokens). */
+/** Theme and accent colour on the page. The stylesheet picks the light or dark shade of the accent per theme (the
+ *  home screen is always a night sky, so it uses the dark shades). */
 export function applySettings() {
   const root = document.documentElement;
-  if (settings.theme === 'auto') root.removeAttribute('data-theme'); else root.dataset.theme = settings.theme;
-  const a = ACCENTS[settings.accent];
-  const dark = settings.theme === 'dark' || (settings.theme === 'auto' && matchMedia('(prefers-color-scheme: dark)').matches);
-  root.style.setProperty('--accent', dark ? a.dark : a.light);
-  root.style.setProperty('--accent-deep', dark ? a.light : a.deep);
-  root.style.setProperty('--hl', dark ? a.dark : a.light);
+  root.dataset.theme = settings.theme;
+  const a = ACCENTS[settings.accents[settings.theme]];
+  root.style.setProperty('--a-light', a.light);
+  root.style.setProperty('--a-deep', a.deep);
+  root.style.setProperty('--a-dark', a.dark);
 }
-matchMedia('(prefers-color-scheme: dark)').addEventListener?.('change', applySettings);
+
+// ---------- progress: rounds played, and the best results in The Gordian Knot (every question at once), which
+// shows itself after a few rounds.
+export const UNLOCK_ROUNDS = 3;
+export interface Stats { rounds: number; gordianSeen: boolean; gordian: Record<string, { pct: number; ms: number }> }
+const STATS_KEY = 'gk-stats';
+export const stats: Stats = load<Stats>(STATS_KEY, { rounds: 0, gordianSeen: false, gordian: {} });
+export const saveStats = () => save(STATS_KEY, stats);
+export const gordianOpen = () => stats.rounds >= UNLOCK_ROUNDS;
+if (!gordianOpen() && selection.size === 0) selection.size = 10;
+/** One key per configuration, for personal bests. */
+export const configKey = (sel: Selection) => `${[...sel.kinds].sort().join(',')}|${[...sel.places].sort().join(',')}`;
 
 // ---------- the Daily: one result per day
 export const today = () => new Date().toISOString().slice(0, 10);

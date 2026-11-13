@@ -5,11 +5,12 @@ import { geoDistance } from 'd3-geo';
 import { resolve } from '../../scripts/lib/match.mjs';
 import { norm } from '../../scripts/lib/text.mjs';
 import { Globe } from './globe';
+import { Sky } from './sky';
 import { Knowledge, type Country, type Entity, type KBData } from './kb';
 import { WorldMap } from './map';
 import { catOn, icon, initMenu, placesLabel, setCat } from './menu';
-import { ACCENTS, TIMES, applySettings, dailyResult, saveDaily, saveSelection, saveSettings, selection, settings, today, type Accent } from './prefs';
-import { CATS, DAILY, TEMPLATES, available, buildRound, remember, seeded, type Cat, type Pool, type Question, type Selection } from './questions';
+import { ACCENTS, TIMES, UNLOCK_ROUNDS, applySettings, configKey, dailyResult, gordianOpen, saveDaily, saveSelection, saveSettings, saveStats, selection, settings, stats, today, type Accent, type Theme } from './prefs';
+import { CATS, DAILY, TEMPLATES, available, buildRound, codeOf, rebuildRound, remember, seeded, type Cat, type Pool, type Question, type Selection } from './questions';
 import { sound } from './sound';
 
 const $ = <T extends HTMLElement = HTMLElement>(sel: string) => document.querySelector(sel) as T;
@@ -21,7 +22,9 @@ const screens = { start: $('#start'), quiz: $('#quiz'), results: $('#results') }
 const ui = {
   chips: $('#chips'),
   play: $<HTMLButtonElement>('#play'),
+  playLabel: $('#play-label'),
   playSub: $('#play-sub'),
+  notNow: $<HTMLButtonElement>('#not-now'),
   daily: $<HTMLButtonElement>('#daily'),
   dailySub: $('#daily-sub'),
   choose: $<HTMLButtonElement>('#choose'),
@@ -49,6 +52,13 @@ const ui = {
   ring: $('#ring') as unknown as SVGSVGElement,
   pct: $('#pct'),
   rank: $('#rank'),
+  rankLine: $('#rank-line'),
+  resultsTitle: $('#results-title'),
+  versus: $('#versus'),
+  best: $('#best'),
+  unlock: $('#unlock'),
+  share: $<HTMLButtonElement>('#share'),
+  shareNote: $('#share-note'),
   summary: $('#summary'),
   answers: $('#answers'),
   again: $<HTMLButtonElement>('#again'),
@@ -65,6 +75,8 @@ let kb: Knowledge;
 let world: WorldMap;
 let pools: Record<Pool, Entity[]>;
 let globe: Globe | null = null;
+const sky = new Sky($<HTMLCanvasElement>('#sky'));
+if (!screens.start.hidden) sky.play();
 let menu: { paint(): void } | null = null;
 let riversLoaded: Promise<void> | null = null;
 
@@ -76,9 +88,35 @@ interface Result {
   tries: number;   // answers sent, the right one included (one pick for a choice question)
   pick?: string;   // the option picked (choice questions)
 }
+/** Each answer ties a knot: tight on the first try, loose after a retry (worth half), or the rope frays. */
+type Knot = 'tight' | 'loose' | 'miss';
+const knotOf = (r: Result): Knot => (!r.ok ? 'miss' : r.tries > 1 ? 'loose' : 'tight');
+const scoreOf = (rs: Result[]) => (rs.length ? rs.reduce((n, r) => n + ({ tight: 1, loose: 0.5, miss: 0 } as const)[knotOf(r)], 0) / rs.length : 0);
+
+/** A challenge link: the same questions (codes and subjects, options fixed by the seed) and a score to beat. */
+interface Challenge { edition: string; seed: string; pct: number; secs: number; items: { code: string; subject: string }[] }
+const CHALLENGE_MAX = 100; // questions; longer rounds are shared without a link
+function encodeChallenge(c: Challenge): string {
+  return ['1', c.edition, c.seed, c.pct, c.secs, c.items.map(i => `${i.code}.${i.subject}`).join('~')].join('_');
+}
+function parseChallenge(hash: string): Challenge | null {
+  const m = /^#c=(.+)$/.exec(hash);
+  if (!m) return null;
+  const [v, edition, seed, pct, secs, list] = decodeURIComponent(m[1]).split('_');
+  if (v !== '1' || !seed || !list) return null;
+  // "C.NLD" or "R.NLD.amsterdam": the code is the part before the first dot (city ids hold a dot themselves)
+  const items = list.split('~').map(x => { const k = x.indexOf('.'); return { code: x.slice(0, k), subject: x.slice(k + 1) }; }).filter(i => i.code && i.subject);
+  return items.length && items.length <= CHALLENGE_MAX ? { edition, seed, pct: Number(pct) || 0, secs: Number(secs) || 0, items } : null;
+}
+let challenge: Challenge | null = parseChallenge(location.hash);
+
 const state = {
   sel: selection as Selection,
   daily: false,
+  challenge: null as Challenge | null, // the challenge being played
+  gordian: false,                      // every question of the configuration
+  planned: 0,                          // questions in the round as it began (a stop cuts it short)
+  seed: '',
   round: [] as Question[],
   i: 0,
   results: [] as Result[],
@@ -95,6 +133,7 @@ const state = {
   tries: 0,       // wrong typed answers on this question
   lastWrong: '',  // the last of them
   auto: 0,        // auto-submit, waiting for a pause in typing
+  last: null as { pct: number; ms: number; rank: string; knots: Knot[] } | null,
 };
 
 // ---------------------------------------------------------------- loading
@@ -103,6 +142,7 @@ async function load() {
   fetch(url('data/globe.json')).then(r => r.json()).then(topo => {
     globe = new Globe(ui.globe, topo);
     globe.chainNear = chainNear;
+    globe.countryAt = countryAt;
     if (!screens.start.hidden) globe.play();
   }).catch(() => { ui.globe.hidden = true; });
 
@@ -124,6 +164,15 @@ async function load() {
 function loadRivers(): Promise<void> {
   riversLoaded ??= fetch(url('data/rivers.json')).then(r => r.json()).then(courses => { world.rivers = courses; });
   return riversLoaded;
+}
+
+/** The country under the pointer on the home globe: only countries the quiz knows get a name. */
+let byNum: Map<string, Country> | null = null;
+function countryAt(p: [number, number]) {
+  if (!kb || !world) return null;
+  byNum ??= new Map(kb.countries.map(c => [c.num, c]));
+  const hit = world.countryAt(p), c = hit && byNum.get(hit.num);
+  return c ? { name: c.name, shape: hit.shape } : null;
 }
 
 /** A walk of up to five neighbouring countries starting near (lon, lat), for the globe on the home screen. */
@@ -167,7 +216,10 @@ function paintHome() {
   }
   const n = available(kb, selection);
   ui.play.disabled = !selection.kinds.length || !n;
-  ui.playSub.textContent = !selection.kinds.length ? 'Pick a category' : `${Math.min(selection.size, n)} questions · ${placesLabel(kb)}`;
+  // A challenge link waits on the Play button until it is taken or put aside.
+  ui.playLabel.textContent = challenge ? 'Take the challenge' : 'Play';
+  ui.playSub.textContent = challenge ? `Beat ${challenge.pct}% · ${challenge.items.length} questions` : selection.size === 0 && gordianOpen() ? 'The Gordian Knot' : 'As configured';
+  ui.notNow.hidden = !challenge;
   const done = dailyResult();
   ui.dailySub.textContent = done === null ? new Date().toLocaleDateString(undefined, { day: 'numeric', month: 'short' }) : `${Math.round(done * 100)}%`;
   ui.daily.classList.toggle('done', done !== null);
@@ -176,8 +228,16 @@ function paintHome() {
 // ---------------------------------------------------------------- screens and sheets
 function show(name: keyof typeof screens) {
   for (const [k, el] of Object.entries(screens)) el.hidden = k !== name;
-  if (name === 'start') { globe?.play(); paintHome(); } else globe?.pause();
+  // The home screen is a night sky; the quiz and the results follow the theme.
+  document.body.classList.toggle('home', name === 'start');
+  themeColor();
+  if (name === 'start') { globe?.play(); sky.play(); paintHome(); } else { globe?.pause(); sky.pause(); }
   window.scrollTo({ top: 0 });
+}
+/** The browser's own bar takes the colour of the page. */
+function themeColor() {
+  const meta = document.querySelector<HTMLMetaElement>('meta[name="theme-color"]');
+  if (meta) meta.content = document.body.classList.contains('home') ? '#060912' : settings.theme === 'dark' ? '#0f1318' : '#f6f5f1';
 }
 
 function open(d: HTMLDialogElement) {
@@ -195,12 +255,20 @@ for (const d of [ui.menu, ui.settings, ui.about]) {
 }
 
 // ---------------------------------------------------------------- a round
-async function start(sel: Selection, daily = false) {
+async function start(sel: Selection, daily = false, ch: Challenge | null = null) {
   if (!kb) return;
   state.sel = sel;
   state.daily = daily;
-  state.round = buildRound(kb, sel, daily ? seeded(`globoknot ${today()}`) : Math.random, daily);
+  state.challenge = ch;
+  state.gordian = !daily && !ch && sel.size === 0;
+  // Every round has a seed, so it can be played again by someone else from a link.
+  state.seed = ch ? ch.seed : daily ? `daily-${today()}` : Math.random().toString(36).slice(2, 10);
+  state.round = ch ? rebuildRound(kb, ch.items, ch.seed)
+    : buildRound(kb, sel, daily ? seeded(state.seed) : Math.random, daily, state.seed);
   if (!state.round.length) return;
+  state.planned = state.round.length;
+  if (state.gordian && !stats.gordianSeen) { stats.gordianSeen = true; saveStats(); }
+  if (ch) { challenge = null; history.replaceState(null, '', location.pathname + location.search); }
   if (state.round.some(q => q.media.kind === 'map' && q.media.river)) {
     try { await loadRivers(); } catch { state.round = state.round.filter(q => !(q.media.kind === 'map' && q.media.river)); }
   }
@@ -211,7 +279,8 @@ async function start(sel: Selection, daily = false) {
   state.timed = true; // every round, the Daily too
   state.started = performance.now();
   ui.beads.innerHTML = state.round.map(() => '<i></i>').join('');
-  ui.beads.classList.toggle('many', state.round.length > 20);
+  ui.beads.classList.toggle('many', state.round.length > 20 && state.round.length <= 30);
+  ui.beads.classList.toggle('lots', state.round.length > 30); // too many to show apart: one rope, coloured as it goes
   ui.clock.hidden = state.round.length <= 20; // long rounds also count: "12/50"
   clearInterval(state.clock);
   show('quiz');
@@ -435,7 +504,8 @@ function finish(q: Question, ok: boolean, typed: string, late = false, pick?: st
   state.results.push({ q, ok, typed, late, tries: q.format === 'type' ? state.tries + (ok ? 1 : 0) : 1, pick });
   state.streak = ok ? state.streak + 1 : 0;
   state.best = Math.max(state.best, state.streak);
-  ui.beads.children[state.i].classList.add(ok ? 'ok' : 'bad');
+  const knot = knotOf(state.results[state.results.length - 1]);
+  ui.beads.children[state.i].classList.add(knot);
   ui.card.classList.add(ok ? 'ok' : 'bad');
 
   // The verdict sits on the answer box: the right answer, after a wrong typed one struck through.
@@ -485,23 +555,64 @@ function nudge() {
 }
 
 // ---------------------------------------------------------------- results
-const RANKS: [number, string][] = [[100, 'Knot closed'], [90, 'Cartographer'], [75, 'Navigator'], [50, 'Explorer'], [25, 'Wanderer'], [0, 'Stowaway']];
+/** Ranks are knots, from a loose end to the knot with no end. */
+const RANKS: [number, string, string][] = [
+  [100, 'Endless knot', 'No beginning, no end, no mistakes.'],
+  [90, 'Figure-eight', 'The knot climbers trust their lives to.'],
+  [75, 'Bowline', 'The king of knots. It holds.'],
+  [50, 'Reef knot', 'Square, steady, sailor-approved.'],
+  [25, 'Granny knot', 'It holds. Mostly.'],
+  [0, 'Loose end', 'Plenty of rope left to tie.'],
+];
+const rankOf = (pct: number) => RANKS.find(([min]) => pct >= min)!;
 
 function end() {
   clearInterval(state.clock);
   cancelAnimationFrame(state.low);
   const ms = performance.now() - state.started;
   const total = state.results.length;
-  const right = state.results.filter(r => r.ok).length;
-  const share = total ? right / total : 0;
+  const knots = state.results.map(knotOf);
+  const right = knots.filter(k => k !== 'miss').length, loose = knots.filter(k => k === 'loose').length;
+  const share = scoreOf(state.results);
   const pct = Math.round(share * 100);
   remember(state.round.map(q => q.key));
   if (state.daily && total === 10) saveDaily(share);
+  const [, rank, line] = rankOf(pct);
+  state.last = { pct, ms, rank, knots };
 
+  ui.resultsTitle.hidden = !state.gordian;
   ui.pct.textContent = `${pct}%`;
-  ui.rank.textContent = RANKS.find(([min]) => pct >= min)![1];
-  ui.summary.textContent = `${right} of ${total} · ${clock(ms)}${state.best >= 3 ? ` · ${state.best} in a row` : ''}`;
-  drawRing(state.results.map(r => r.ok), share === 1);
+  ui.rank.textContent = rank;
+  ui.rankLine.textContent = line;
+  ui.summary.textContent = `${right} of ${total}${loose ? ` · ${loose} loose` : ''} · ${clock(ms)}${state.best >= 3 ? ` · ${state.best} in a row` : ''}`;
+  drawRing(knots);
+
+  // Against a challenge: their score next to yours.
+  ui.versus.hidden = !state.challenge;
+  if (state.challenge) {
+    // the higher score wins; the same score goes to the faster one
+    const them = state.challenge.pct, secs = Math.round(ms / 1000), t = state.challenge.secs;
+    const won = pct > them || (pct === them && secs < t), lost = pct < them || (pct === them && secs > t);
+    const how = pct === them && secs !== t ? ` Same score, ${won ? 'but you were faster' : 'but they were faster'}.` : '';
+    ui.versus.textContent = `You ${pct}% · Challenger ${them}% · ${won ? 'You win!' : lost ? 'They win this one.' : 'A dead heat.'}${how}`;
+    ui.versus.className = `versus ${won ? 'won' : lost ? 'lost' : 'draw'}`;
+  }
+
+  // The Gordian Knot keeps a personal best per configuration (best score, then fastest).
+  ui.best.hidden = true;
+  if (state.gordian && total === state.planned) {
+    const key = configKey(state.sel), prev = stats.gordian[key];
+    const better = !prev || pct > prev.pct || (pct === prev.pct && ms < prev.ms);
+    if (better) stats.gordian[key] = { pct, ms };
+    ui.best.hidden = false;
+    ui.best.textContent = better ? (prev ? 'New personal best!' : 'Your first Gordian Knot.') : `Personal best: ${prev!.pct}% in ${clock(prev!.ms)}`;
+  }
+
+  // After a few rounds, The Gordian Knot shows itself, once.
+  const wasOpen = gordianOpen();
+  if (total) stats.rounds++;
+  ui.unlock.hidden = wasOpen || !gordianOpen();
+  saveStats();
 
   ui.answers.innerHTML = '';
   state.results.forEach((r, j) => {
@@ -545,24 +656,95 @@ function end() {
     ui.answers.append(li);
   });
   sound.done(share);
+  ui.shareNote.hidden = true;
   show('results');
   ui.again.focus({ preventScroll: true });
 }
 
+// ---- sharing: the score, the knots as a row of signs, and a link to the same questions
+async function shareResult() {
+  const r = state.last;
+  if (!r) return;
+  const signs = r.knots.map(k => ({ tight: '●', loose: '○', miss: '·' })[k]).join('');
+  const what = state.daily ? `Daily ${new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}` : state.gordian ? 'The Gordian Knot' : `${r.knots.length} questions`;
+  const text = `Globoknot · ${what}\n${r.rank} · ${r.pct}%\n${signs.length <= 50 ? signs : ''}`.trim();
+  let link = location.origin + location.pathname;
+  if (state.round.length <= CHALLENGE_MAX) {
+    const c: Challenge = { edition: kb.edition, seed: state.seed, pct: r.pct, secs: Math.round(r.ms / 1000), items: state.round.map(q => ({ code: codeOf(q.kind), subject: q.subject })) };
+    link += `#c=${encodeChallenge(c)}`;
+  }
+  const full = `${text}\nCan you beat it? ${link}`;
+  try {
+    if (navigator.share) { await navigator.share({ title: 'Globoknot', text: `${text}\nCan you beat it?`, url: link }); return; }
+  } catch (e) { if ((e as Error).name === 'AbortError') return; }
+  try {
+    await navigator.clipboard.writeText(full);
+    ui.shareNote.textContent = 'Copied. Send it to a friend.';
+    ui.shareNote.hidden = false;
+    return;
+  } catch { /* no clipboard here: show the text to copy by hand */ }
+  ui.shareNote.hidden = false;
+  ui.shareNote.innerHTML = '';
+  const box = document.createElement('textarea');
+  box.readOnly = true;
+  box.value = full;
+  box.rows = 4;
+  ui.shareNote.append(box);
+  box.select();
+}
+
 const ordinal = (n: number) => `${n}${n % 10 === 2 && n % 100 !== 12 ? 'nd' : n % 10 === 3 && n % 100 !== 13 ? 'rd' : 'th'}`;
 
-/** The knot: one strand per question around a ring, tied (accent) when right. All right closes the ring. */
-function drawRing(oks: boolean[], closed: boolean) {
-  const n = oks.length, R = 92, C = 110, gap = n > 1 ? Math.min(0.06, 1.2 / n) : 0;
-  const arc = (a0: number, a1: number) => {
-    const p = (a: number) => `${(C + R * Math.sin(a)).toFixed(2)} ${(C - R * Math.cos(a)).toFixed(2)}`;
-    return `M${p(a0)}A${R} ${R} 0 ${a1 - a0 > Math.PI ? 1 : 0} 1 ${p(a1)}`;
+/** The score as a rope tied into a ring, one knot per answer: tight knots are solid, loose ones open, and where an
+ *  answer was missed the rope is broken, with frayed ends. Every knot tight: the ring closes. */
+function drawRing(knots: Knot[]) {
+  const n = knots.length, R = 92, C = 110, TAU = 2 * Math.PI;
+  const pt = (a: number, r = R) => `${(C + r * Math.sin(a)).toFixed(2)} ${(C - r * Math.cos(a)).toFixed(2)}`;
+  const arc = (a0: number, a1: number) => `M${pt(a0)}A${R} ${R} 0 ${a1 - a0 > Math.PI ? 1 : 0} 1 ${pt(a1)}`;
+  const at = (j: number) => (j / n) * TAU;
+  const step = Math.min(0.08, 1.2 / Math.max(1, n)); // seconds of drawing per answer
+  const sec = (x: number) => `${x.toFixed(3)}s`;
+  const size = Math.min(7.5, ((TAU * R) / Math.max(1, n)) * 0.36); // knots shrink when there are many
+  const miss = (j: number) => knots[(j + n) % n] === 'miss';
+  // the lay of the rope: short slanted lines across it, as in a drawing of a rope
+  const lay = (a0: number, a1: number) => {
+    let d = '';
+    for (let a = a0 + 3.5 / R; a < a1 - 1 / R; a += 7 / R) d += `M${pt(a - 2.6 / R, R - 3.6)}L${pt(a + 2.6 / R, R + 3.6)}`;
+    return d;
   };
   let svg = `<circle class="track" cx="${C}" cy="${C}" r="${R}"/>`;
-  if (closed) svg += `<circle class="strand ok closed" cx="${C}" cy="${C}" r="${R}" style="--d:0s"/>`;
-  else oks.forEach((ok, j) => {
-    const a0 = (j / n) * 2 * Math.PI + gap / 2, a1 = ((j + 1) / n) * 2 * Math.PI - gap / 2;
-    svg += `<path class="strand ${ok ? 'ok' : 'bad'}" d="${arc(a0, a1)}" style="--d:${(j * Math.min(0.08, 1.2 / n)).toFixed(3)}s"/>`;
+  ui.ring.classList.toggle('closed', n > 0 && knots.every(k => k === 'tight'));
+  if (n && !knots.includes('miss')) {
+    // one unbroken rope
+    svg += `<circle class="rope" cx="${C}" cy="${C}" r="${R}" pathLength="1" transform="rotate(-90 ${C} ${C})" style="--d:0s;--t:${sec(n * step)}"/>`
+      + `<path class="twist" d="${lay(0, TAU)}" style="--d:${sec(n * step)}"/>`;
+  } else {
+    // stretches of rope between the misses; each break has frayed ends
+    for (let j = 0; j < n;) {
+      let e = j;
+      while (e + 1 < n && miss(e + 1) === miss(j)) e++;
+      const a0 = at(j), a1 = at(e + 1), d = `--d:${sec(j * step)}`;
+      if (miss(j)) {
+        // the strands of the cut rope come apart like a brush: [from, to] across the rope, and how far they reach
+        const f = Math.min(0.12, (a1 - a0) * 0.3);
+        const fray = (b: number, dir: number) => `<path class="fray" d="${([[-3.8, -7, 0.75], [-1.3, -2.4, 1], [1.3, 2.8, 0.9], [3.8, 7.4, 0.65]] as const)
+          .map(([o0, o1, k]) => `M${pt(b, R + o0)}L${pt(b + dir * f * k, R + o1)}`).join('')}" style="${d}"/>`;
+        if (!miss(j - 1)) svg += fray(a0, 1);
+        if (!miss(e + 1)) svg += fray(a1, -1);
+      } else {
+        // where the rope runs on past twelve o'clock, the two pieces overlap a little so no seam shows
+        const r0 = a0 - (j === 0 && !miss(-1) ? 0.6 / R : 0), r1 = a1 + (e === n - 1 && !miss(0) ? 0.6 / R : 0);
+        svg += `<path class="rope" pathLength="1" d="${arc(r0, r1)}" style="${d};--t:${sec((e + 1 - j) * step)}"/>`
+          + `<path class="twist" d="${lay(a0, a1)}" style="--d:${sec((e + 1) * step)}"/>`;
+      }
+      j = e + 1;
+    }
+  }
+  // the knots, popping up as the rope reaches them (too small to see in very long rounds)
+  if (size >= 1.6) knots.forEach((k, j) => {
+    if (k === 'miss') return;
+    const [x, y] = pt(at(j + 0.5)).split(' ');
+    svg += `<circle class="knot ${k}" cx="${x}" cy="${y}" r="${(k === 'loose' ? size * 0.9 : size).toFixed(2)}" style="--d:${sec((j + 0.5) * step)}"/>`;
   });
   ui.ring.innerHTML = svg;
 }
@@ -572,8 +754,10 @@ function paintSettings() {
   $('#set-sound').setAttribute('aria-checked', String(!sound.muted));
   $('#set-auto').setAttribute('aria-checked', String(settings.auto));
   $('#set-time').innerHTML = TIMES.map(t => `<button type="button" data-time="${t}" aria-pressed="${settings.time === t}">${t} s</button>`).join('');
-  $('#set-theme').innerHTML = (['auto', 'light', 'dark'] as const).map(t => `<button type="button" data-theme="${t}" aria-pressed="${settings.theme === t}">${t[0].toUpperCase() + t.slice(1)}</button>`).join('');
-  $('#set-accent').innerHTML = (Object.keys(ACCENTS) as Accent[]).map(a => `<button type="button" data-accent="${a}" aria-pressed="${settings.accent === a}" title="${ACCENTS[a].label}" aria-label="${ACCENTS[a].label}" style="--sw:${ACCENTS[a].light}"></button>`).join('');
+  $('#set-theme').innerHTML = (['light', 'dark'] as const).map(t => `<button type="button" data-theme="${t}" aria-pressed="${settings.theme === t}">${t[0].toUpperCase() + t.slice(1)}</button>`).join('');
+  // The colour belongs to the theme shown: each theme keeps its own.
+  const mine = settings.accents[settings.theme];
+  $('#set-accent').innerHTML = (Object.keys(ACCENTS) as Accent[]).map(a => `<button type="button" data-accent="${a}" aria-pressed="${mine === a}" title="${ACCENTS[a].label}" aria-label="${ACCENTS[a].label}" style="--sw:${settings.theme === 'dark' ? ACCENTS[a].dark : ACCENTS[a].light}"></button>`).join('');
 }
 ui.settings.addEventListener('click', e => {
   const t = (e.target as HTMLElement).closest<HTMLButtonElement>('button');
@@ -581,11 +765,14 @@ ui.settings.addEventListener('click', e => {
   if (t.id === 'set-sound') sound.toggle();
   else if (t.id === 'set-auto') settings.auto = !settings.auto;
   else if (t.dataset.time) settings.time = Number(t.dataset.time);
-  else if (t.dataset.theme) settings.theme = t.dataset.theme as typeof settings.theme;
-  else if (t.dataset.accent) settings.accent = t.dataset.accent as Accent;
+  else if (t.dataset.theme) settings.theme = t.dataset.theme as Theme;
+  else if (t.dataset.accent) settings.accents[settings.theme] = t.dataset.accent as Accent;
   else return;
   saveSettings();
   paintSettings();
+  themeColor();
+  globe?.refresh();
+  sky.readAccent();
   menu?.paint();
 });
 
@@ -606,7 +793,9 @@ ui.chips.addEventListener('click', e => {
   saveSelection();
   paintHome();
 });
-ui.play.addEventListener('click', () => start(selection));
+ui.play.addEventListener('click', () => (challenge ? start(selection, false, challenge) : start(selection)));
+ui.notNow.addEventListener('click', () => { challenge = null; history.replaceState(null, '', location.pathname + location.search); paintHome(); });
+ui.share.addEventListener('click', () => void shareResult());
 ui.daily.addEventListener('click', () => start(DAILY, true));
 ui.choose.addEventListener('click', () => open(ui.menu));
 $('#open-menu').addEventListener('click', () => open(ui.menu));
@@ -619,6 +808,13 @@ ui.skip.addEventListener('click', () => (state.locked ? next() : giveUp()));
 ui.next.addEventListener('click', next);
 ui.quit.addEventListener('click', quit);
 ui.again.addEventListener('click', () => start(state.sel, state.daily));
+// A challenge link opened while the site is already open: show it on the home screen (but never in the middle of a round).
+window.addEventListener('hashchange', () => {
+  const c = parseChallenge(location.hash);
+  if (!c) return;
+  challenge = c;
+  if (screens.quiz.hidden) show('start');
+});
 ui.change.addEventListener('click', () => { show('start'); open(ui.menu); });
 ui.home.addEventListener('click', () => show('start'));
 ui.card.addEventListener('animationend', e => { if (e.target === ui.card) ui.card.classList.remove('shake'); });
