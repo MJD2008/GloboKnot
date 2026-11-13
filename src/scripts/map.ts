@@ -7,8 +7,11 @@ import type { Feature, FeatureCollection, MultiPolygon, Polygon, Position } from
 
 type Shape = Feature<Polygon | MultiPolygon, { n: string }>;
 type LonLat = [number, number];
-/** What a map shows: a country (ISO numeric code, its position [lat, lng]), a capital's dot, a peak or a river. */
-export interface MapOptions { num?: string; ll?: [number, number]; dot?: [number, number]; peak?: [number, number]; river?: string }
+/** A country's name on the map (ISO numeric code); the main one is the country the map is about. */
+export interface MapLabel { num: string; name: string; main?: boolean }
+/** What a map shows: a country (ISO numeric code, its position [lat, lng]), a capital's dot, a peak or a river, and
+ *  the names of countries in view (the answers do: a country with its neighbours around it). */
+export interface MapOptions { num?: string; ll?: [number, number]; dot?: [number, number]; peak?: [number, number]; river?: string; labels?: MapLabel[] }
 /** The view of the map last drawn: where it is centred and how wide (degrees), and where it started. */
 interface View { svg: SVGSVGElement; o: MapOptions; center: LonLat; radius: number; home: LonLat; base: number; revealed: string[] }
 
@@ -170,11 +173,12 @@ export class WorldMap {
     if (target) parts.push(`<path class="land hl" d="${path(target) ?? ''}"/>`);
     parts.push(`<g class="rv">${this.revealPath(path, v.revealed)}</g>`);
     // Tiny or shapeless countries: a ring around them (not needed when the capital's dot marks the spot).
+    let ring: [number, number] | null = null;
     if (target || (!o.peak && !course)) {
       const [[x0, y0], [x1, y1]] = main ? geoPath(projection).bounds(main) : [[0, 0], [0, 0]];
       if ((!main || Math.max(x1 - x0, y1 - y0) < 12) && !o.dot) {
-        const pt = projection(v.home);
-        if (pt) parts.push(`<circle class="ring" cx="${pt[0].toFixed(1)}" cy="${pt[1].toFixed(1)}" r="15"/>`);
+        ring = projection(v.home);
+        if (ring) parts.push(`<circle class="ring" cx="${ring[0].toFixed(1)}" cy="${ring[1].toFixed(1)}" r="15"/>`);
       }
     }
     if (course?.length) {
@@ -189,10 +193,49 @@ export class WorldMap {
       const pt = projection([o.peak[1], o.peak[0]]);
       if (pt) parts.push(`<g class="peak" transform="translate(${pt[0].toFixed(1)} ${pt[1].toFixed(1)})"><circle class="pulse" r="12"/><path d="M0-9 9 6H-9z"/></g>`);
     }
+    if (o.labels?.length) parts.push(this.names(svg, projection, o.labels, !!ring));
     svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
     // One group around everything, so a pinch or a drag can move the drawing before it is drawn again.
     svg.innerHTML = `<g class="zoomer">${parts.join('')}</g>`;
     this.last = { path, svg, projection };
+  }
+
+  /** Country names, each in the middle of the part of its country in view: the main country first, then the larger
+   *  ones. A name that would cover another moves just above or below; if it still can't fit, or only a sliver of its
+   *  country shows at the edge, it is left out. The main country is only named when its name fits inside it: a small
+   *  one stays visible (it is lit up, and named next to the map anyway). Sizes are in map units, worked out from the
+   *  width the map is shown at (the
+   *  box around it: a dialog that is still growing into view would give a smaller width), so a name reads at about
+   *  12.5 px on a phone and on a wide screen alike. */
+  private names(svg: SVGSVGElement, projection: ReturnType<typeof geoOrthographic>, labels: MapLabel[], ring: boolean): string {
+    const shown = svg.parentElement?.clientWidth || svg.getBoundingClientRect().width || W;
+    const k = W / shown; // map units per pixel on screen
+    const flat = geoPath(projection);
+    const items = labels.flatMap(l => {
+      const s = this.byNum.get(l.num);
+      if (!s) return [];
+      const [x, y] = flat.centroid(s);
+      return Number.isFinite(x) && Number.isFinite(y) ? [{ ...l, x, y, area: flat.area(s), box: flat.bounds(s) }] : [];
+    }).sort((a, b) => Number(!!b.main) - Number(!!a.main) || b.area - a.area);
+    const taken: [number, number, number, number][] = [];
+    const edge = 16 * k, gap = 3 * k;
+    let out = '';
+    for (const it of items) {
+      if (!it.main && (it.x < edge || it.x > W - edge || it.y < edge || it.y > H - edge)) continue;
+      const size = (it.main ? 13.5 : 12.5) * k;
+      const w = it.name.length * size * 0.58 + 2 * gap, h = size * 1.25;
+      if (it.main && (ring || it.box[1][0] - it.box[0][0] < w * 1.1 || it.box[1][1] - it.box[0][1] < h * 1.8)) continue;
+      for (const dy of it.main ? [0] : [0, -h, h]) {
+        const cx = Math.min(Math.max(it.x, w / 2 + gap), W - w / 2 - gap);
+        const cy = Math.min(Math.max(it.y + dy, h / 2 + gap), H - h / 2 - gap);
+        const box: [number, number, number, number] = [cx - w / 2, cy - h / 2, cx + w / 2, cy + h / 2];
+        if (taken.some(b => b[0] < box[2] && box[0] < b[2] && b[1] < box[3] && box[1] < b[3])) continue;
+        taken.push(box);
+        out += `<text class="name${it.main ? ' main' : ''}" x="${cx.toFixed(1)}" y="${cy.toFixed(1)}" style="font-size:${size.toFixed(1)}px;stroke-width:${(3.2 * k).toFixed(1)}px">${escapeXml(it.name)}</text>`;
+        break;
+      }
+    }
+    return `<g class="names">${out}</g>`;
   }
 
   /** After an answer: lights up these countries (ISO numeric codes) on the map just drawn. */
@@ -221,6 +264,8 @@ export class WorldMap {
     return best * RAD;
   }
 }
+
+const escapeXml = (s: string) => s.replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]!);
 
 function polygons(s: Shape): Position[][][] {
   return s.geometry.type === 'Polygon' ? [s.geometry.coordinates] : s.geometry.coordinates;

@@ -154,6 +154,9 @@ kbd {
   padding: 2px 8px;
 }
 .tools { margin-left: auto; display: flex; gap: 2px; }
+/* About sits right next to the name, a little smaller than the tools on the right. */
+.about-btn { width: 34px; height: 34px; margin-left: -6px; border-radius: 10px; }
+.about-btn svg { width: 19px; height: 19px; }
 .icon-btn {
   width: 42px;
   height: 42px;
@@ -213,7 +216,6 @@ kbd {
   margin: 0 0 20px;
 }
 .hero em { font-style: normal; color: var(--glow, var(--accent)); transition: color 0.2s; }
-#start .chip[aria-pressed="true"] svg { stroke: var(--glow); }
 .globe.dragging { cursor: grabbing; }
 /* The name of the country under the pointer (or the finger, for a moment). */
 .globe-label {
@@ -231,28 +233,43 @@ kbd {
   pointer-events: none;
 }
 
-.chips { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin: 0 auto 16px; max-width: 560px; }
-.chip {
-  display: inline-flex;
+/* The level, on the night sky: the one picked is lit up, Impossible in crimson. */
+.home-levels { display: flex; width: 100%; max-width: 560px; margin: 0 auto 8px; background: rgba(8, 12, 22, 0.55); border-color: var(--line); }
+.home-levels button { padding-block: 9px; font-size: 1rem; color: var(--muted); }
+.home-levels button:hover { color: var(--ink); }
+.home-levels.seg button[aria-pressed="true"] { background: rgba(160, 190, 240, 0.2); color: #fff; box-shadow: inset 0 0 0 1px rgba(170, 195, 235, 0.3); }
+.home-levels .impossible { color: var(--crimson); }
+.home-levels.seg .impossible[aria-pressed="true"] { background: var(--crimson); color: #fff; box-shadow: none; }
+/* Under it, the configuration in one grey line that looks like a select box and opens the configuration. */
+.config-line {
+  display: flex;
   align-items: center;
-  gap: 7px;
-  padding: 8px 14px 8px 11px;
-  border-radius: 99px;
-  border: 1.5px solid var(--line);
-  background: transparent;
+  gap: 10px;
+  width: 100%;
+  max-width: 560px;
+  min-height: 44px;
+  margin: 0 auto 14px;
+  padding: 8px 10px 8px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  background: rgba(22, 29, 42, 0.6);
   color: var(--muted);
-  font-weight: 650;
-  font-size: 0.95rem;
+  font-weight: 600;
+  font-size: 0.92rem;
+  text-align: left;
   cursor: pointer;
-  transition: background 0.15s, color 0.15s, border-color 0.15s, transform 0.1s;
+  transition: border-color 0.15s, color 0.15s;
 }
-.chip svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
-.chip:hover { border-color: var(--line-strong); color: var(--ink); }
-.chip:active { transform: scale(0.96); }
-.chip[aria-pressed="true"] { background: var(--surface); border-color: var(--chip-on); color: var(--ink); box-shadow: var(--shadow-sm); }
-.chip[aria-pressed="true"] svg { stroke: var(--accent); }
-.chip.some { border-style: dashed; }
-.chip.shake { animation: shake 0.3s; }
+.config-line:hover { border-color: var(--line-strong); color: var(--ink); }
+.config-what { display: flex; gap: 5px; flex: none; }
+.config-what span { display: grid; }
+.config-what svg { width: 18px; height: 18px; fill: none; stroke: var(--glow); stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.config-what .some svg { stroke: var(--muted); }
+.config-rest { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.config-rest:not(:empty)::before { content: '· '; }
+.config-line .chev { width: 18px; height: 18px; flex: none; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+@media (max-width: 400px) { .config-what { gap: 3px; } .config-what svg { width: 17px; height: 17px; } }
+@media (max-width: 374px) { .config-line .wide { display: none; } }
 
 .btn-play {
   display: flex;
@@ -274,7 +291,7 @@ kbd {
   transition: background 0.15s, transform 0.12s;
 }
 .btn-play span { font-size: 1.45rem; font-weight: 800; letter-spacing: -0.02em; line-height: 1.1; }
-/* The level and what was changed from it ("Easy + custom · Europe"): quieter than the word Play, and free to wrap. */
+/* Under Play only when it is something else: a challenge to take, or The Gordian Knot. */
 .btn-play small { font-size: 0.88rem; font-weight: 600; opacity: 0.8; text-wrap: balance; }
 .btn-play:hover:not(:disabled) { background: var(--accent-deep); transform: translateY(-1px); }
 .btn-play:active:not(:disabled) { transform: scale(0.99); }
@@ -355,26 +372,32 @@ kbd {
 .card.bad { border-color: var(--bad); box-shadow: 0 0 0 4px var(--bad-ring), var(--shadow); animation: shake 0.36s; }
 .card.shake { animation: shake 0.3s; }
 
-/* What is given and what is asked, top left of the card: MAP → COUNTRY, in a pixel font. The asked tag takes the
-   accent colour (green and red already mean right and wrong). */
+/* What is given and what is asked, top left of the card, one above the other in a pixel font: what you see in
+   green, what you answer in red. Outlines only: solid green and red mean right and wrong. */
 .tags {
   position: absolute;
   z-index: 2;
-  top: 16px;
-  left: 16px;
+  top: 14px;
+  left: 14px;
   display: flex;
-  align-items: center;
-  gap: 5px;
-  padding: 3px 3px 3px 8px;
-  border-radius: 8px;
-  background: var(--surface);
-  box-shadow: 0 0 0 1px var(--line), var(--shadow-sm);
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
   pointer-events: none;
 }
 .tags:empty { display: none; }
-.tag { font: 500 12px/1 'Pixelify Sans', ui-monospace, monospace; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); padding: 4px 0 3px; white-space: nowrap; }
-.tag.ask { color: var(--accent-ink); background: var(--accent); padding: 4px 6px 3px; border-radius: 5px; }
-.tags svg { width: 12px; height: 9px; flex: none; fill: none; stroke: var(--muted); stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+.tag {
+  font: 500 14px/1 'Pixelify Sans', ui-monospace, monospace;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+  padding: 5px 8px 4px;
+  border-radius: 6px;
+  background: var(--surface);
+  box-shadow: inset 0 0 0 1.5px currentColor, var(--shadow-sm);
+}
+.tag.given { color: var(--ok); }
+.tag.ask { color: var(--bad); }
 
 /* The time limit, right above the answer box: when a phone's keyboard is open the page scrolls so the answer box sits
    just above it, so a bar under the box would be hidden. The fill runs from green through yellow and orange to red;
@@ -419,7 +442,8 @@ kbd {
 .media[data-kind="map"] .map,
 .media[data-kind="flag"] .flag,
 .media[data-kind="text"] .sample { display: block; }
-.media[data-kind="flag"] { background: transparent; display: grid; place-items: center; padding: 36px 0 6px; }
+/* Room at the top for the two tags (what is given, what is asked) above the flag or the text. */
+.media[data-kind="flag"] { background: transparent; display: grid; place-items: center; padding: 60px 0 6px; }
 .media[data-kind="text"] { background: var(--bg); }
 .map { width: 100%; height: auto; aspect-ratio: 640 / 400; touch-action: pan-y; }
 /* Zoomed in, a finger moves the map instead of the page. */
@@ -472,7 +496,7 @@ kbd {
 .media.big .flag { height: auto; width: min(100%, 560px); cursor: zoom-out; animation: bump 0.25s ease-out; }
 .sample {
   margin: 0;
-  padding: clamp(48px, 9vw, 56px) clamp(18px, 5vw, 36px) clamp(26px, 6vw, 40px);
+  padding: 64px clamp(18px, 5vw, 36px) clamp(26px, 6vw, 40px);
   font-size: clamp(1.25rem, 4.6vw, 1.6rem);
   line-height: 1.45;
   font-weight: 500;
@@ -484,9 +508,6 @@ kbd {
 .sample::before { content: '“'; margin-right: 2px; }
 .sample::after { content: '”'; margin-left: 2px; }
 
-.badge-cat:empty { display: none; }
-.badge-cat { display: grid; place-items: center; margin: 42px auto 0; width: 44px; height: 44px; border-radius: 50%; background: var(--bg); }
-.badge-cat svg { width: 24px; height: 24px; fill: none; stroke: var(--icon); stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 .prompt {
   text-wrap: balance;
   font-size: clamp(1.35rem, 5vw, 1.8rem);
@@ -496,7 +517,8 @@ kbd {
   text-align: center;
   margin: 14px 8px 12px;
 }
-.media[data-kind="none"] + .badge-cat + .prompt { margin: 12px 8px 16px; font-size: clamp(1.5rem, 5.6vw, 2.1rem); }
+/* A question without a picture: bigger words, under the tags. */
+.media[data-kind="none"] + .prompt { margin: 64px 8px 16px; font-size: clamp(1.5rem, 5.6vw, 2.1rem); }
 
 .respond { display: grid; grid-template-columns: minmax(0, 1fr); }
 .respond > * { grid-area: 1 / 1; }
@@ -662,7 +684,8 @@ kbd {
 .actions { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
 #share { display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
 #share svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
-@media (max-width: 520px) { .actions { display: grid; grid-template-columns: 1fr 1fr; max-width: 400px; margin: 0 auto; } }
+/* Phones: New round across the width, Share and Home under it. */
+@media (max-width: 520px) { .actions { display: grid; grid-template-columns: 1fr 1fr; max-width: 400px; margin: 0 auto; } .actions #again { grid-column: 1 / -1; } }
 .share-note { margin: 12px auto 0; max-width: 460px; color: var(--muted); font-weight: 650; animation: rise 0.25s ease-out; }
 .share-note textarea { width: 100%; resize: none; padding: 10px 12px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); font: inherit; font-size: 0.9rem; }
 .btn {
@@ -681,7 +704,6 @@ kbd {
 .btn.wide { width: 100%; display: flex; flex-direction: column; align-items: center; gap: 1px; }
 .btn.wide small { font-weight: 600; font-size: 0.82rem; opacity: 0.9; }
 .answers-title { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin: 32px 0 6px; text-align: left; }
-.answers-title small { margin-left: 8px; font-size: 0.8rem; font-weight: 600; text-transform: none; letter-spacing: 0; opacity: 0.85; }
 .answers li { cursor: pointer; border-radius: 8px; transition: background 0.15s; }
 .answers li:hover { background: var(--surface); }
 .answers li:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
@@ -762,7 +784,7 @@ kbd {
   .trail .ans img { display: block; height: 22px; width: auto; aspect-ratio: 4 / 3; border-radius: 3px; margin-top: 2px; box-shadow: 0 0 0 1px var(--flag-edge); }
 }
 
-/* ---------- an answer, looked at again: a big map, flag or text */
+/* ---------- an answer, looked at again: a big map with the countries around named (or the text), and a card */
 .review { width: min(720px, calc(100% - 20px)); max-width: none; max-height: calc(100% - 20px); padding: 0; border: 0; border-radius: 18px; background: var(--surface); color: var(--ink); box-shadow: var(--shadow); }
 .review[open] { animation: pop 0.2s ease-out; }
 .review::backdrop { background: rgba(10, 14, 20, 0.45); animation: fadein 0.2s; }
@@ -772,10 +794,35 @@ kbd {
 .review-n.loose { color: var(--accent); background: transparent; box-shadow: inset 0 0 0 2px var(--accent); }
 .review-n.miss { background: var(--bad); color: #fff; }
 .review-title { margin: 0; font-size: 1.08rem; font-weight: 700; line-height: 1.25; }
-.review .media[data-kind="flag"] { padding: 18px 0; }
-.review .media[data-kind="flag"] .flag { height: auto; width: min(100%, 520px); cursor: default; }
 .review-answer { margin: 0 4px; font-size: 1.25rem; font-weight: 800; letter-spacing: -0.01em; }
 .review-answer::before { content: 'Answer'; display: block; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+/* Names on the map: dark letters with a halo of land colour, the country it is about in bold. Sizes come from
+   map.ts (they depend on the width the map is shown at). */
+.map .names { pointer-events: none; }
+.map .names text {
+  font-family: 'Inter Variable', system-ui, sans-serif;
+  font-weight: 650;
+  fill: var(--ink);
+  fill-opacity: 0.78;
+  stroke: var(--land);
+  stroke-linejoin: round;
+  paint-order: stroke;
+  text-anchor: middle;
+  dominant-baseline: central;
+}
+.map .names text.main { font-weight: 800; fill-opacity: 1; }
+/* The card: a flag and a name, then a few facts in two columns. */
+.facts { margin: 0 4px; padding-top: 12px; border-top: 1px solid var(--line); }
+.facts-head { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
+.facts-head b { display: block; font-size: 1.1rem; font-weight: 800; letter-spacing: -0.01em; line-height: 1.2; }
+.facts-head small { display: block; color: var(--muted); font-weight: 600; font-size: 0.85rem; }
+.facts-flag { height: 36px; width: auto; border-radius: 4px; box-shadow: 0 0 0 1px var(--flag-edge), var(--shadow-sm); }
+.facts-flag.big { height: 64px; }
+.facts dl { margin: 0; display: grid; gap: 0; }
+.facts dl div { display: grid; grid-template-columns: minmax(96px, 30%) minmax(0, 1fr); gap: 12px; padding: 6px 0; border-bottom: 1px solid var(--line); }
+.facts dl div:last-child { border-bottom: 0; }
+.facts dt { color: var(--muted); font-size: 0.85rem; font-weight: 650; padding-top: 1px; }
+.facts dd { margin: 0; font-weight: 600; font-size: 0.95rem; line-height: 1.35; }
 .review-foot { display: flex; justify-content: space-between; gap: 8px; }
 .review-foot .btn { padding: 10px 16px; font-size: 0.95rem; }
 
@@ -924,22 +971,64 @@ kbd {
 .sources span { color: var(--muted); font-size: 0.82rem; margin-left: 4px; }
 .fine { color: var(--muted); font-size: 0.85rem; margin: 16px 0 0; }
 
+/* ---------- Practice: one question type (under its category), a region with its number of questions, and how to answer */
+.p-what { display: grid; gap: 8px; }
+.p-cat { display: flex; align-items: center; gap: 7px; font-weight: 700; font-size: 0.9rem; margin-bottom: 4px; }
+.p-cat svg { width: 18px; height: 18px; fill: none; stroke: var(--icon); stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.p-kinds, .pills { display: flex; flex-wrap: wrap; gap: 6px; }
+.pill {
+  padding: 6px 11px;
+  border-radius: 99px;
+  border: 1px solid var(--line);
+  background: var(--bg);
+  color: var(--ink);
+  font-weight: 600;
+  font-size: 0.88rem;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s, transform 0.1s;
+}
+.pill small { color: var(--muted); font-weight: 600; margin-left: 2px; }
+.pill:hover:not(:disabled) { border-color: var(--line-strong); }
+.pill:active:not(:disabled) { transform: scale(0.97); }
+.pill[aria-pressed="true"] { background: var(--accent); border-color: transparent; color: var(--accent-ink); }
+.pill[aria-pressed="true"] small { color: inherit; opacity: 0.85; }
+.pill:disabled { opacity: 0.4; cursor: default; }
+.sheet-body > .hint:first-child { margin-top: 12px; }
+
+/* ---------- a word or two for a moment ("Copied"), at the bottom of the screen */
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: max(28px, env(safe-area-inset-bottom, 0px));
+  z-index: 20;
+  max-width: calc(100% - 32px);
+  margin: 0;
+  padding: 9px 18px;
+  border-radius: 99px;
+  background: var(--ink);
+  color: var(--bg);
+  font-weight: 700;
+  font-size: 0.95rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  box-shadow: var(--shadow);
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+.toast.show { animation: toast 1.9s ease both; }
+@keyframes toast { 0% { opacity: 0; transform: translate(-50%, 8px); } 10%, 82% { opacity: 1; transform: translate(-50%, 0); } 100% { opacity: 0; transform: translate(-50%, 0); } }
+
 @media (max-width: 480px) {
   .sheet { width: 100%; border-left: 0; }
-  .chips { gap: 6px; margin-bottom: 14px; }
-  .chip { padding: 6px 10px 6px 8px; font-size: 0.86rem; gap: 5px; border-width: 1.5px; }
-  .chip svg { width: 16px; height: 16px; }
   .subs.countries { columns: 1; }
   .hero { margin-bottom: 16px; }
 }
 @media (max-height: 720px) and (max-width: 480px) {
   .globe { width: min(100%, 28vh); margin-bottom: 8px; }
   .hero { font-size: min(1.9rem, 7.6vw); }
-  /* Small phones: no category icon above a question without a picture, so the answer box stays higher up. */
-  .badge-cat { display: none; }
-  .media[data-kind="none"] + .badge-cat + .prompt { margin-top: 44px; }
 }
-/* Small phones (320-400 px): the menu button must stay on screen. */
+/* Small phones (320-400 px): the buttons at the top must stay on screen. */
 @media (max-width: 400px) {
   .top { gap: 6px; }
   .badge { display: none; }

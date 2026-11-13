@@ -7,15 +7,16 @@ Plan: [docs/PLAN.md](docs/PLAN.md) · Knowledge system: [docs/KNOWLEDGE-SYSTEM.m
 
 ## The site
 
-Astro, built to plain static files. One page: open the configuration (≡), pick a level, what (capitals, flags,
-languages, mountains, rivers...) and where (whole world, continents or single countries) and how many questions (10, 20,
-50 or any number), play, and see every answer at the end. Every question has 15 seconds, the same for everyone; a wrong
-typed answer is not revealed, so the player can try again until the time runs out. There is also a Daily: the same 10
-questions for everyone.
+Astro, built to plain static files. One page. The home screen shows the levels, and under them one grey line with the
+rest of the configuration: the categories as icons (half lit when only some of their question types are picked), where
+and how many, and the answers when they aren't the level's own ("World · 10 questions · Type"). The line opens the
+configuration: level, answers, what (capitals, flags, languages, mountains, rivers...), where (whole world, continents or
+single countries) and how many questions (10, 20, 50 or any number). Then play, and see every answer at the end. Every
+question has 15 seconds, the same for everyone; a wrong typed answer is not revealed, so the player can try again until
+the time runs out. Next to Play: the Daily (the same 10 questions for everyone) and Practice (below).
 
-Four levels, shown under Play ("Easy", "Easy + custom", "Hard · Europe"). A level picks a set of question types and a way
-to answer, which the player can still change (that is the "+ custom"), and decides how well known the places asked
-about are. Impossible shows itself after three rounds.
+Four levels. A level picks a set of question types and a way to answer, which the player can still change in the
+configuration, and decides how well known the places asked about are. Impossible shows itself after three rounds.
 
 | Level | Question types | Answers | Places |
 |---|---|---|---|
@@ -44,7 +45,17 @@ the answer box and the buttons.
 Scoring is a rope of knots: right first time ties a tight knot (1 point), right after a retry a loose one (half a point),
 and a miss frays the rope. The score ring shows the rope, and the rank is a knot (Loose end to Endless knot). Share
 sends the score with a challenge link (`#c=...`: the question codes and subjects plus a seed, so a friend gets the same
-questions, asked the same way, and a score to beat). Stopping a round shows the answers so far, without a score.
+questions, asked the same way, and a score to beat); the share icon at the top shares the site. Stopping a round shows
+the answers so far, without a score.
+
+Tapping an answer opens it again: the map of the country it was about with the countries around it named, and a card with
+its flag, capital, languages, highest point, rivers and neighbours (a river, a language or a mountain gets its own card).
+Names on the map are sized for the width the map is shown at, and left out where they would cover each other.
+
+Practice: one question type (Country → capital, Flag → country...) in the whole world or one continent, every question
+there is, in the same order every time (the order and the options come from a seed named after the practice, such as
+`p-C-eu-t`: capitals of Europe, typed). Typed or picked from four. Each practice keeps its best run (score, then time).
+For learning a set until it sticks, and for speedruns.
 After three rounds Impossible appears, and under it All: The Gordian Knot, every question in the game (2,109), typed,
 in crimson, with one record (best score, then fastest).
 
@@ -60,6 +71,7 @@ src/layouts/Base.astro    page frame: header, fonts, PREVIEW switch (noindex and
 src/styles/global.css     all styles; colours are tokens with light and dark values (blue and orange presets)
 src/scripts/app.ts        the quiz screens, keys and timing
 src/scripts/menu.ts       the configuration: level, answers, what, where, how many
+src/scripts/practice.ts   Practice: one question type in one region, in a fixed order, with a best run each
 src/scripts/prefs.ts      what the browser remembers: the selection, settings (sound, auto-submit, theme, colour), the Daily, stats
 src/scripts/questions.ts  question templates (13 kinds, one clue each, given/asked tags), the levels and the round builder: approved facts in, questions out
 src/scripts/kb.ts         the knowledge base as the site reads it

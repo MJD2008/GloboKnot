@@ -101,7 +101,8 @@ export function applySettings() {
 // shows itself after a few rounds.
 export const UNLOCK_ROUNDS = 3;
 export interface Best { pct: number; ms: number }
-export interface Stats { rounds: number; gordianSeen: boolean; record?: Best; gordian?: Record<string, Best> }
+/** `practice`: the best run per practice (question type, region and answers: see practice.ts). */
+export interface Stats { rounds: number; gordianSeen: boolean; record?: Best; practice?: Record<string, Best>; gordian?: Record<string, Best> }
 const STATS_KEY = 'gk-stats';
 export const stats: Stats = load<Stats>(STATS_KEY, { rounds: 0, gordianSeen: false });
 export const saveStats = () => save(STATS_KEY, stats);

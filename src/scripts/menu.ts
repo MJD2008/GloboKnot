@@ -1,4 +1,4 @@
-// The configuration (≡): the level (Easy, Medium, Hard and, after a few rounds, Impossible: each picks a set of
+// The configuration (the grey line under the level on the home screen opens it): the level (Easy, Medium, Hard and, after a few rounds, Impossible: each picks a set of
 // question types and the answers, and decides how well known the places asked about are), how to answer (Choose,
 // Both or Type), what to be asked (categories and their question types), where (the whole world, continents or
 // single countries) and how many questions. Every change is kept at once; Play starts it. Something always stays

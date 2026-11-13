@@ -1,6 +1,6 @@
 // Question templates: each turns approved facts about one subject into a question. Nothing here is a fact itself;
 // facts only come from the knowledge base. Prompts are short, plain sentences ("What is the capital of France?"),
-// two small tags say what is given and what is asked (MAP → COUNTRY), and every question has one clue: a map, a flag,
+// two small tags say what is given and what is asked (MAP, then COUNTRY), and every question has one clue: a map, a flag,
 // a text or a name, never two.
 import type { Country, Knowledge, Language, Peak, River } from './kb';
 
@@ -540,6 +540,20 @@ export function rebuildRound(kb: Knowledge, items: { code: string; subject: stri
   return out;
 }
 export const codeOf = (kind: string) => TEMPLATES.find(t => t.id === kind)?.code ?? '';
+
+/** How Practice asks: typed or picked, as the player chose, with some near and some far options (as on Medium). */
+export const practiceAsk = (answers: Answers, kind: string): Ask =>
+  ({ answers: answers === 'type' && TEMPLATES.find(t => t.id === kind)?.typable ? 'type' : 'choose', tempt: 1 });
+/** Practice: every question of one type about the places given (none: the whole world), in the same order every
+ *  time. The seed fixes the order and each question's options, so a run can be repeated, learned and timed. */
+export function practiceRound(kb: Knowledge, kind: string, places: string[], answers: Answers, seed: string): Question[] {
+  const t = TEMPLATES.find(x => x.id === kind);
+  if (!t) return [];
+  const ask = practiceAsk(answers, kind);
+  return shuffle(t.subjects(kb, placeTest({ kinds: [kind], places, size: 0 })), seeded(seed))
+    .map(id => makeQuestion(kb, t, id, seed, ask))
+    .filter((q): q is Question => !!q);
+}
 
 /** A seeded random generator (mulberry32), for the Daily. */
 export function seeded(seed: string): Rng {

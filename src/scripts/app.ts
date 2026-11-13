@@ -1,4 +1,5 @@
-// The quiz: home → questions → results. The configuration (≡) decides what is asked; minimal words, while colour,
+// The quiz: home → questions → results. The level and the configuration (the grey line under it) decide what is
+// asked, or Practice does; minimal words, while colour,
 // motion and sound carry the feedback. The answer always appears where the player is looking: in the answer box.
 // Every question has a time limit; a wrong typed answer is not revealed, the player tries again until time runs out.
 import { geoDistance } from 'd3-geo';
@@ -6,11 +7,12 @@ import { resolveFor } from '../../scripts/lib/match.mjs';
 import { norm } from '../../scripts/lib/text.mjs';
 import { Globe } from './globe';
 import { Sky } from './sky';
-import { Knowledge, type Country, type Entity, type KBData } from './kb';
-import { WorldMap, type MapOptions } from './map';
-import { catOn, icon, initMenu, placesLabel, setCat } from './menu';
-import { ACCENTS, TIME, UNLOCK_ROUNDS, applySettings, better, dailyResult, gordianOpen, saveDaily, saveSelection, saveSettings, saveStats, selection, settings, stats, today, type Accent, type Theme } from './prefs';
-import { CATS, DAILY, GORDIAN, LEVELS, TEMPLATES, askOf, available, buildRound, codeOf, isCustom, levelOf, rebuildRound, remember, seeded, type Answers, type Ask, type Cat, type Level, type Pool, type Question, type Selection, type Tempt } from './questions';
+import { Knowledge, type Country, type Entity, type KBData, type Language, type Peak, type River } from './kb';
+import { WorldMap, type MapLabel, type MapOptions } from './map';
+import { catOn, icon, initMenu, placesLabel } from './menu';
+import { bestLabel, initPractice, practiceBest, practiceKey, practiceLabel, practicePlaces, practiceSeed, type Practice } from './practice';
+import { ACCENTS, TIME, UNLOCK_ROUNDS, applySettings, better, dailyResult, gordianOpen, saveDaily, saveSelection, saveSettings, saveStats, selection, setLevel, settings, stats, today, type Accent, type Theme } from './prefs';
+import { ANSWERS, CATS, DAILY, GORDIAN, LEVELS, LEVEL_IDS, askOf, available, buildRound, codeOf, practiceAsk, practiceRound, rebuildRound, remember, seeded, levelOf, type Answers, type Ask, type Level, type Pool, type Question, type Selection, type Tempt } from './questions';
 import { zoomable, type Zoom } from './zoom';
 import { sound } from './sound';
 
@@ -21,14 +23,17 @@ applySettings();
 
 const screens = { start: $('#start'), quiz: $('#quiz'), results: $('#results') };
 const ui = {
-  chips: $('#chips'),
+  homeLevel: $('#home-level'),
+  config: $<HTMLButtonElement>('#config'),
+  configWhat: $('#config-what'),
+  configRest: $('#config-rest'),
   play: $<HTMLButtonElement>('#play'),
   playLabel: $('#play-label'),
   playSub: $('#play-sub'),
   notNow: $<HTMLButtonElement>('#not-now'),
   daily: $<HTMLButtonElement>('#daily'),
   dailySub: $('#daily-sub'),
-  choose: $<HTMLButtonElement>('#choose'),
+  practice: $<HTMLButtonElement>('#practice'),
   quit: $<HTMLButtonElement>('#quit'),
   beads: $('#beads'),
   trail: $('#trail'),
@@ -42,7 +47,6 @@ const ui = {
   flag: $<HTMLImageElement>('#flag'),
   sample: $('#sample'),
   prompt: $('#prompt'),
-  badge: $('#badge'),
   form: $<HTMLFormElement>('#answer-form'),
   input: $<HTMLInputElement>('#answer'),
   choices: $('#choices'),
@@ -68,20 +72,22 @@ const ui = {
   reviewTitle: $('#review-title'),
   reviewMedia: $('#review-media'),
   reviewMap: $('#review-map') as unknown as SVGSVGElement,
-  reviewFlag: $<HTMLImageElement>('#review-flag'),
   reviewSample: $('#review-sample'),
   reviewAnswer: $('#review-answer'),
+  reviewCard: $('#review-card'),
   reviewPrev: $<HTMLButtonElement>('#review-prev'),
   reviewNext: $<HTMLButtonElement>('#review-next'),
   again: $<HTMLButtonElement>('#again'),
-  change: $<HTMLButtonElement>('#change'),
   home: $<HTMLButtonElement>('#home'),
+  toast: $('#toast'),
   edition: $('#edition'),
   globe: $<HTMLCanvasElement>('#globe'),
   menu: $<HTMLDialogElement>('#menu'),
+  practiceSheet: $<HTMLDialogElement>('#practice-sheet'),
   settings: $<HTMLDialogElement>('#settings'),
   about: $<HTMLDialogElement>('#about'),
 };
+const sheets = [ui.menu, ui.practiceSheet, ui.settings, ui.about];
 
 let kb: Knowledge;
 let world: WorldMap;
@@ -93,6 +99,7 @@ let globe: Globe | null = null;
 const sky = new Sky($<HTMLCanvasElement>('#sky'));
 if (!screens.start.hidden) sky.play();
 let menu: { paint(): void } | null = null;
+let practiceSheet: { paint(): void } | null = null;
 let riversLoaded: Promise<void> | null = null;
 
 interface Result {
@@ -137,6 +144,7 @@ const state = {
   daily: false,
   challenge: null as Challenge | null, // the challenge being played
   gordian: false,                      // The Gordian Knot: every question in the game
+  practice: null as Practice | null,   // a practice run: every question of one type in one region
   level: null as Level | null,         // the level of a round of the player's own (not the Daily, a challenge or All)
   ask: { answers: 'both', tempt: 2 } as Ask,
   stopped: false,                      // Esc or Stop: the answers so far, without a score
@@ -182,7 +190,8 @@ async function load() {
   pools = { country: kb.countries, city: kb.cities, language: kb.languages, peak: kb.peaks, river: kb.rivers };
   ui.edition.textContent = data.edition;
   menu = initMenu(kb, ui.menu, paintHome);
-  [ui.play, ui.daily, ui.choose].forEach(b => (b.disabled = false));
+  practiceSheet = initPractice(kb, ui.practiceSheet, p => start(selection, false, null, p));
+  [ui.play, ui.daily, ui.practice].forEach(b => (b.disabled = false));
   paintHome();
   document.body.classList.add('ready');
   if (!screens.start.hidden) globe?.play();
@@ -227,36 +236,45 @@ function chainNear(lon: number, lat: number): [number, number][] {
 }
 
 // ---------------------------------------------------------------- home
-/** What Play starts, in a few words: "Easy", "Easy + custom" (the player changed the question types), "Hard · Europe". */
-function modeLabel(): string {
-  const mode = LEVELS[selection.level].label + (isCustom(selection) ? ' + custom' : '');
-  return selection.places.length ? `${mode} · ${placesLabel(kb)}` : mode;
-}
-
+/** The home screen: the level, and under it one grey line with what, where and how many (it opens the
+ *  configuration), Play, and the Daily and Practice. */
 function paintHome() {
+  // The level and the grey line show at once; the rest waits for the data.
+  paintLevels();
+  paintConfig();
   if (!kb) return;
-  ui.chips.innerHTML = '';
-  ui.chips.hidden = selection.size === 0; // The Gordian Knot asks everything: nothing to pick
-  for (const c of CATS) {
-    const b = document.createElement('button');
-    b.type = 'button';
-    b.className = 'chip';
-    b.dataset.cat = c.id;
-    const on = catOn(c.id);
-    b.setAttribute('aria-pressed', String(on !== 'none'));
-    if (on === 'some') b.classList.add('some');
-    b.innerHTML = `${icon(c.id)}<span>${c.label}</span>`;
-    ui.chips.append(b);
-  }
   const n = available(kb, selection.size === 0 ? GORDIAN : selection);
   ui.play.disabled = !n;
   // A challenge link waits on the Play button until it is taken or put aside.
   ui.playLabel.textContent = challenge ? 'Take the challenge' : 'Play';
-  ui.playSub.textContent = challenge ? `Beat ${challenge.pct}% · ${challenge.items.length} questions` : selection.size === 0 ? 'The Gordian Knot' : modeLabel();
+  ui.playSub.textContent = challenge ? `Beat ${challenge.pct}% · ${challenge.items.length} questions` : selection.size === 0 ? 'The Gordian Knot' : '';
+  ui.playSub.hidden = !ui.playSub.textContent;
   ui.notNow.hidden = !challenge;
   const done = dailyResult();
   ui.dailySub.textContent = done === null ? new Date().toLocaleDateString(undefined, { day: 'numeric', month: 'short' }) : `${Math.round(done * 100)}%`;
   ui.daily.classList.toggle('done', done !== null);
+}
+
+/** Easy, Medium and Hard; Impossible joins them once it is open (or when it is already the level). */
+function paintLevels() {
+  const shown = LEVEL_IDS.filter(l => l !== 'impossible' || gordianOpen() || selection.level === 'impossible');
+  if (ui.homeLevel.dataset.shown !== shown.join()) {
+    ui.homeLevel.dataset.shown = shown.join();
+    ui.homeLevel.innerHTML = shown.map(l => `<button type="button" data-level="${l}" class="${l}">${LEVELS[l].label}</button>`).join('');
+  }
+  for (const b of ui.homeLevel.querySelectorAll<HTMLButtonElement>('button')) b.setAttribute('aria-pressed', String(b.dataset.level === selection.level));
+}
+
+/** The configuration in one line: the categories as icons (half-lit when only some of their questions are picked),
+ *  where, how many, and how to answer when that isn't the level's own way. */
+function paintConfig() {
+  const all = selection.size === 0, view = all ? GORDIAN : selection;
+  const cats = CATS.map(c => ({ ...c, on: catOn(c.id, view.kinds) })).filter(c => c.on !== 'none');
+  ui.configWhat.innerHTML = cats.map(c => `<span class="${c.on}" title="${c.label}">${icon(c.id)}</span>`).join('');
+  const where = all || !selection.places.length ? 'World' : kb ? placesLabel(kb) : '';
+  const how = !all && selection.answers ? ANSWERS.find(a => a.id === selection.answers)?.label ?? '' : '';
+  ui.configRest.innerHTML = [esc(where), all ? 'All' : `${selection.size}<span class="wide"> questions</span>`, how].filter(Boolean).join(' · ');
+  ui.config.setAttribute('aria-label', `${[cats.map(c => c.label).join(', '), where, all ? 'every question' : `${selection.size} questions`, how].filter(Boolean).join(' · ')}. Change`);
 }
 
 // ---------------------------------------------------------------- screens and sheets
@@ -277,12 +295,13 @@ function themeColor() {
 }
 
 function open(d: HTMLDialogElement) {
-  for (const other of [ui.menu, ui.settings, ui.about]) if (other !== d && other.open) other.close();
+  for (const other of sheets) if (other !== d && other.open) other.close();
   if (d === ui.menu) menu?.paint();
+  if (d === ui.practiceSheet) practiceSheet?.paint();
   if (d === ui.settings) paintSettings();
   if (!d.open) d.showModal();
 }
-for (const d of [ui.menu, ui.settings, ui.about]) {
+for (const d of sheets) {
   d.addEventListener('click', e => {
     // A click on the backdrop (the dialog box itself, outside its panel) or a close button closes it.
     if (e.target === d || (e.target as HTMLElement).closest('.close')) d.close();
@@ -290,20 +309,23 @@ for (const d of [ui.menu, ui.settings, ui.about]) {
 }
 
 // ---------------------------------------------------------------- a round
-async function start(sel: Selection, daily = false, ch: Challenge | null = null) {
+async function start(sel: Selection, daily = false, ch: Challenge | null = null, practice: Practice | null = null) {
   if (!kb) return;
   state.sel = sel;
   state.daily = daily;
   state.challenge = ch;
-  state.gordian = !daily && !ch && sel.size === 0;
+  state.practice = practice;
+  state.gordian = !daily && !ch && !practice && sel.size === 0;
   if (state.gordian) state.sel = sel = GORDIAN; // every question in the game, whatever else was picked
-  state.level = daily || ch || state.gordian ? null : levelOf(sel);
-  state.ask = ch ? ch.ask : askOf(sel);
+  state.level = daily || ch || practice || state.gordian ? null : levelOf(sel);
+  state.ask = ch ? ch.ask : practice ? practiceAsk(practice.answers, practice.kind) : askOf(sel);
   state.stopped = false;
-  // Every round has a seed, so it can be played again by someone else from a link.
-  state.seed = ch ? ch.seed : daily ? `daily-${today()}` : Math.random().toString(36).slice(2, 10);
+  // Every round has a seed, so it can be played again by someone else from a link. A practice's seed is its name:
+  // the same order every time.
+  state.seed = ch ? ch.seed : daily ? `daily-${today()}` : practice ? practiceSeed(practice) : Math.random().toString(36).slice(2, 10);
   state.round = ch ? rebuildRound(kb, ch.items, ch.seed, ch.ask)
-    : buildRound(kb, sel, daily ? seeded(state.seed) : Math.random, daily, state.seed);
+    : practice ? practiceRound(kb, practice.kind, practicePlaces(kb, practice.region), practice.answers, state.seed)
+      : buildRound(kb, sel, daily ? seeded(state.seed) : Math.random, daily, state.seed);
   if (!state.round.length) return;
   state.planned = state.round.length;
   if (state.gordian && !stats.gordianSeen) { stats.gordianSeen = true; saveStats(); }
@@ -311,7 +333,7 @@ async function start(sel: Selection, daily = false, ch: Challenge | null = null)
   if (state.round.some(q => q.media.kind === 'map' && q.media.river)) {
     try { await loadRivers(); } catch { state.round = state.round.filter(q => !(q.media.kind === 'map' && q.media.river)); }
   }
-  for (const d of [ui.menu, ui.settings, ui.about]) if (d.open) d.close();
+  for (const d of sheets) if (d.open) d.close();
   state.i = 0;
   state.results = [];
   state.streak = state.best = 0;
@@ -333,7 +355,6 @@ function clock(ms: number) {
 }
 
 // ---------------------------------------------------------------- one question
-const ARROW = '<svg viewBox="0 0 14 10" aria-hidden="true"><path d="M1 5h11M8.5 1.5 12 5 8.5 8.5"/></svg>';
 const esc = (s: string) => s.replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]!);
 
 function ask() {
@@ -348,8 +369,8 @@ function ask() {
   [...ui.beads.children].forEach((el, j) => el.classList.toggle('now', j === state.i));
   trailNow();
   ui.clock.textContent = `${state.i + 1}/${state.round.length}`;
-  // What is given and what is asked, top left: MAP → COUNTRY.
-  ui.tags.innerHTML = `<span class="tag">${esc(q.given)}</span>${ARROW}<span class="tag ask">${esc(q.asked)}</span>`;
+  // What is given and what is asked, top left, one above the other: MAP, then COUNTRY.
+  ui.tags.innerHTML = `<span class="tag given">${esc(q.given)}</span><span class="tag ask">${esc(q.asked)}</span>`;
 
   // the clue
   const m = q.media;
@@ -367,7 +388,6 @@ function ask() {
     ui.sample.lang = m.lang;
   }
   ui.prompt.textContent = q.prompt;
-  ui.badge.innerHTML = m.kind === 'none' ? icon(q.cat) : '';
 
   // the answer
   if (q.format === 'type') {
@@ -703,11 +723,12 @@ function end(stopped = false) {
   const right = knots.filter(k => k !== 'miss').length, loose = knots.filter(k => k === 'loose').length;
   const share = scoreOf(state.results);
   const pct = Math.round(share * 100);
-  remember(state.round.map(q => q.key));
+  // Recently seen questions rest in the next rounds; a practice run goes through them all on purpose, so it doesn't.
+  if (!state.practice) remember(state.round.map(q => q.key));
   state.stopped = stopped;
   screens.results.classList.toggle('stopped', stopped);
-  ui.resultsTitle.hidden = !state.gordian && !stopped;
-  ui.resultsTitle.textContent = stopped ? 'Stopped' : 'The Gordian Knot';
+  ui.resultsTitle.hidden = !state.gordian && !state.practice && !stopped;
+  ui.resultsTitle.textContent = stopped ? 'Stopped' : state.practice ? 'Practice' : 'The Gordian Knot';
   ui.versus.hidden = ui.best.hidden = ui.unlock.hidden = true;
   ui.shareNote.hidden = true;
   if (stopped) {
@@ -734,12 +755,18 @@ function end(stopped = false) {
       ui.versus.className = `versus ${won ? 'won' : lost ? 'lost' : 'draw'}`;
     }
 
-    // The Gordian Knot keeps one record: the best score, then the fastest.
+    // The Gordian Knot keeps one record: the best score, then the fastest. So does each practice.
     if (state.gordian) {
       const prev = stats.record, now = { pct, ms };
       if (better(now, prev)) stats.record = now;
       ui.best.hidden = false;
       ui.best.textContent = better(now, prev) ? (prev ? 'New record!' : 'Your first Gordian Knot.') : `Record: ${prev!.pct}% in ${clock(prev!.ms)}`;
+    }
+    if (state.practice) {
+      const prev = practiceBest(state.practice), now = { pct, ms };
+      if (better(now, prev)) (stats.practice ??= {})[practiceKey(state.practice)] = now;
+      ui.best.hidden = false;
+      ui.best.textContent = `${practiceLabel(state.practice)} · ${better(now, prev) ? (prev ? 'New best!' : 'First run') : `Best ${bestLabel(prev!)}`}`;
     }
 
     // After a few rounds, Impossible and The Gordian Knot show themselves, once.
@@ -764,21 +791,26 @@ function end(stopped = false) {
   ui.again.focus({ preventScroll: true });
 }
 
-// ---- looking back: an answer on a big map (or its flag or text), with the right answer lit up
-/** What to show for a question afterwards: its own map, or the map of the country it was about. */
-function reviewOf(q: Question): { map?: MapOptions; reveal: string[]; flag?: string; text?: { text: string; lang: string } } {
+// ---- looking back: an answer on a big map (or its text), with the right answer lit up and the countries around it
+// named, and a card about what the question was about.
+/** What to show for a question afterwards: the map of the country it was about, with its neighbours named, or the
+ *  question's own map (a river or a mountain, with its countries named). A language's text stays a text. */
+function reviewOf(q: Question): { map?: MapOptions; reveal: string[]; text?: { text: string; lang: string } } {
   const m = q.media;
   const at = (id?: string) => { const c = id ? kb.country(id) : undefined; return c ? { num: c.num, ll: c.ll } : {}; };
-  if (m.kind === 'flag') return { flag: m.country, reveal: [] };
+  const labelled = (ids: string[], main?: string): MapLabel[] => (main ? [main, ...ids.filter(x => x !== main)] : ids).flatMap(id => {
+    const c = kb.country(id);
+    return c ? [{ num: c.num, name: c.name, main: id === main }] : [];
+  });
   if (m.kind === 'text') return { text: m, reveal: [] };
-  if (m.kind === 'map') {
+  if (m.kind === 'map' && (m.river || m.peak)) {
     const reveal = q.reveal ?? (m.river ? kb.riverCountries(m.river) : []);
-    return { map: { ...at(m.country), dot: m.dot, peak: m.peak, river: m.river }, reveal };
+    return { map: { ...at(m.country), dot: m.dot, peak: m.peak, river: m.river, labels: labelled(reveal) }, reveal };
   }
-  if (q.kind === 'flag.pick') return { flag: q.accept[0], reveal: [] };
   const id = q.countries[0];
   if (!id) return { reveal: [] };
-  const map: MapOptions = at(id);
+  const map: MapOptions = { ...at(id), labels: labelled(kb.neighbours(id), id) };
+  if (m.kind === 'map' && m.dot) map.dot = m.dot;
   if (q.kind.startsWith('cap.')) {
     const city = kb.cities.find(x => x.id === kb.mainCapitals(id)[0]);
     if (city?.ll) map.dot = city.ll;
@@ -790,6 +822,62 @@ function reviewOf(q: Question): { map?: MapOptions; reveal: string[]; flag?: str
   return { map, reveal: q.kind === 'nb.name' ? q.accept : [] };
 }
 
+/** A few facts about what a question was about. A country: its flag, capital, languages, highest point, rivers and
+ *  neighbours. A river: its length and where it flows. A language: where it is official and spoken. A mountain: its
+ *  height and whose highest point it is. All from the same checked facts the questions come from. */
+interface Card { flag?: string; title: string; sub: string; rows: [string, string][] }
+const fmt = (n: number) => n.toLocaleString('en-GB');
+function listOf(ids: string[], max = 8): string {
+  const list = [...new Set(ids.map(id => kb.name(id)))].sort((a, b) => a.localeCompare(b));
+  return list.length > max ? `${list.slice(0, max).join(', ')} and ${list.length - max} more` : list.join(', ');
+}
+function cardOf(q: Question): Card | null {
+  if (q.cat === 'rivers') {
+    const r = kb.get<River>(q.subject);
+    return r ? { title: r.name, sub: 'River', rows: [['Length', `${fmt(r.km)} km`], ['Flows through', listOf(kb.riverCountries(r.id))]] } : null;
+  }
+  if (q.kind === 'lang.text') {
+    const l = kb.get<Language>(q.subject);
+    if (!l) return null;
+    const official = kb.whereSpoken(l.id, false), spoken = kb.whereSpoken(l.id).filter(id => !official.includes(id));
+    const rows: [string, string][] = [];
+    if (official.length) rows.push(['Official in', listOf(official)]);
+    if (spoken.length) rows.push([official.length ? 'Also spoken in' : 'Spoken in', listOf(spoken)]);
+    return { title: l.name, sub: 'Language', rows };
+  }
+  if (q.kind === 'peak.map') {
+    const p = kb.get<Peak>(q.subject);
+    return p ? { title: p.name, sub: `${fmt(p.m)} m`, rows: [['Highest point of', listOf(kb.peakCountries(p.id))]] } : null;
+  }
+  const id = q.countries[0], c = id ? kb.country(id) : undefined;
+  if (!c) return null;
+  const caps = kb.mainCapitals(id).map(x => kb.name(x)), langs = kb.languagesOf(id);
+  const peak = kb.get<Peak>(kb.highestPoint(id) ?? '');
+  const rivers = [...new Set(kb.in(id, 'flows_through').filter(f => f[3] !== 'also').map(f => kb.get<River>(f[0]))
+    .filter((r): r is River => !!r).sort((a, b) => b.km - a.km).map(r => r.name))];
+  const nb = kb.neighbours(id);
+  const rows: [string, string][] = [];
+  if (caps.length) rows.push([caps.length > 1 ? 'Capitals' : 'Capital', caps.join(', ')]);
+  if (langs.length) rows.push([langs.length > 1 ? 'Languages' : 'Language', listOf(langs, 6)]);
+  if (peak) rows.push(['Highest point', `${peak.name} · ${fmt(peak.m)} m`]);
+  if (rivers.length) rows.push(['Rivers', rivers.length > 4 ? `${rivers.slice(0, 4).join(', ')} and ${rivers.length - 4} more` : rivers.join(', ')]);
+  // (A question about the neighbours lists them as its answer already.)
+  if (q.kind !== 'nb.name') rows.push(['Neighbours', nb.length ? listOf(nb, 12) : 'None']);
+  return { flag: c.flag, title: c.name, sub: kb.continent(id) ?? '', rows };
+}
+
+function paintCard(q: Question) {
+  const card = cardOf(q);
+  ui.reviewCard.hidden = !card;
+  if (!card) return;
+  ui.reviewCard.innerHTML = `
+    <header class="facts-head">
+      ${card.flag ? `<img class="facts-flag${q.cat === 'flags' ? ' big' : ''}" src="${url(`flags/${card.flag}.svg`)}" alt="Flag of ${esc(card.title)}" />` : ''}
+      <div><b>${esc(card.title)}</b><small>${esc(card.sub)}</small></div>
+    </header>
+    <dl>${card.rows.map(([k, v]) => `<div><dt>${k}</dt><dd>${esc(v)}</dd></div>`).join('')}</dl>`;
+}
+
 function openReview(j: number) {
   const r = state.results[j];
   if (!r) return;
@@ -798,24 +886,24 @@ function openReview(j: number) {
   ui.reviewN.textContent = `${j + 1}/${state.results.length}`;
   ui.reviewN.className = `review-n ${knotOf(r)}`;
   ui.reviewTitle.textContent = q.prompt;
-  ui.reviewMedia.dataset.kind = v.map ? 'map' : v.flag ? 'flag' : v.text ? 'text' : 'none';
-  if (v.map) {
-    world.render(ui.reviewMap, v.map);
-    world.reveal(v.reveal.map(id => kb.country(id)?.num).filter((n): n is string => !!n));
-    reviewZoom?.reset();
-  } else if (v.flag) {
-    ui.reviewFlag.src = url(`flags/${kb.country(v.flag)!.flag}.svg`);
-    ui.reviewFlag.alt = `Flag of ${kb.name(v.flag)}`;
-  } else if (v.text) {
+  ui.reviewMedia.dataset.kind = v.map ? 'map' : v.text ? 'text' : 'none';
+  if (v.text) {
     ui.reviewSample.textContent = v.text.text;
     ui.reviewSample.lang = v.text.lang;
   }
   // Lists cut short in the quiz ("Hungary, Romania +4") are given in full here.
   const all = q.kind === 'nb.name' ? q.accept : q.kind === 'river.map' ? q.reveal ?? [] : [];
   ui.reviewAnswer.textContent = all.length > 1 ? all.map(id => kb.name(id)).sort((a, b) => a.localeCompare(b)).join(', ') : q.answer;
+  paintCard(q);
   ui.reviewPrev.disabled = j === 0;
   ui.reviewNext.disabled = j === state.results.length - 1;
   if (!ui.review.open) ui.review.showModal();
+  // The map is drawn once the dialog shows, so the names on it can be sized for the width it is shown at.
+  if (v.map) {
+    world.render(ui.reviewMap, v.map);
+    world.reveal(v.reveal.map(id => kb.country(id)?.num).filter((n): n is string => !!n));
+    reviewZoom?.reset();
+  }
 }
 ui.reviewPrev.addEventListener('click', () => openReview(reviewAt - 1));
 ui.reviewNext.addEventListener('click', () => openReview(reviewAt + 1));
@@ -835,7 +923,7 @@ async function shareResult() {
   if (!r) return;
   const signs = r.knots.map(k => ({ tight: '●', loose: '○', miss: '·' })[k]).join('');
   const what = state.daily ? `Daily ${new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}` : state.gordian ? 'The Gordian Knot'
-    : `${state.level ? `${LEVELS[state.level].label} · ` : ''}${r.knots.length} questions`;
+    : state.practice ? `Practice · ${practiceLabel(state.practice)}` : `${state.level ? `${LEVELS[state.level].label} · ` : ''}${r.knots.length} questions`;
   const text = `Globoknot · ${what}\n${r.rank} · ${r.pct}%\n${signs.length <= 50 ? signs : ''}`.trim();
   let link = location.origin + location.pathname;
   if (state.round.length <= CHALLENGE_MAX) {
@@ -849,8 +937,7 @@ async function shareResult() {
   } catch (e) { if ((e as Error).name === 'AbortError') return; }
   try {
     await navigator.clipboard.writeText(full);
-    ui.shareNote.textContent = 'Copied. Send it to a friend.';
-    ui.shareNote.hidden = false;
+    toast('Copied');
     return;
   } catch { /* no clipboard here: show the text to copy by hand */ }
   ui.shareNote.hidden = false;
@@ -861,6 +948,27 @@ async function shareResult() {
   box.rows = 4;
   ui.shareNote.append(box);
   box.select();
+}
+
+/** The site itself, from the share button at the top: the phone's own share sheet, or the link copied. */
+async function shareSite() {
+  const link = location.origin + location.pathname;
+  try {
+    if (navigator.share) { await navigator.share({ title: 'Globoknot', text: 'Our world in a knot. A geography quiz.', url: link }); return; }
+  } catch (e) { if ((e as Error).name === 'AbortError') return; }
+  try { await navigator.clipboard.writeText(link); toast('Link copied'); } catch { toast(link); }
+}
+
+/** A word or two at the bottom of the screen for a moment ("Copied"). */
+let toastTimer = 0;
+function toast(text: string) {
+  clearTimeout(toastTimer);
+  ui.toast.textContent = text;
+  ui.toast.hidden = false;
+  ui.toast.classList.remove('show');
+  void ui.toast.offsetWidth; // restart the animation
+  ui.toast.classList.add('show');
+  toastTimer = window.setTimeout(() => (ui.toast.hidden = true), 1900);
 }
 
 const ordinal = (n: number) => `${n}${n % 10 === 2 && n % 100 !== 12 ? 'nd' : n % 10 === 3 && n % 100 !== 13 ? 'rd' : 'th'}`;
@@ -945,30 +1053,23 @@ ui.settings.addEventListener('click', e => {
 });
 
 // ---------------------------------------------------------------- events
-ui.chips.addEventListener('click', e => {
-  const b = (e.target as HTMLElement).closest<HTMLButtonElement>('.chip');
-  if (!b) return;
-  const cat = b.dataset.cat as Cat;
-  const on = catOn(cat) === 'none';
-  // Something always stays selected: the last category can't be switched off.
-  if (!on && selection.kinds.every(k => TEMPLATES.find(t => t.id === k)?.cat === cat)) {
-    b.classList.remove('shake');
-    void b.offsetWidth;
-    b.classList.add('shake');
-    return;
-  }
-  setCat(cat, on);
+// A level on the home screen picks its own questions and answers, as in the configuration.
+ui.homeLevel.addEventListener('click', e => {
+  const b = (e.target as HTMLElement).closest<HTMLButtonElement>('[data-level]');
+  if (!b || b.dataset.level === selection.level) return;
+  setLevel(b.dataset.level as Level);
   saveSelection();
   paintHome();
 });
+ui.config.addEventListener('click', () => open(ui.menu));
+ui.practice.addEventListener('click', () => open(ui.practiceSheet));
+$('#share-site').addEventListener('click', () => void shareSite());
 ui.play.addEventListener('click', () => (challenge ? start(selection, false, challenge) : start(selection)));
 ui.notNow.addEventListener('click', () => { challenge = null; history.replaceState(null, '', location.pathname + location.search); paintHome(); });
 ui.share.addEventListener('click', () => void shareResult());
 // A tap on the flag shows it bigger (and again, back to its size).
 ui.flag.addEventListener('click', () => ui.media.classList.toggle('big'));
 ui.daily.addEventListener('click', () => start(DAILY, true));
-ui.choose.addEventListener('click', () => open(ui.menu));
-$('#open-menu').addEventListener('click', () => open(ui.menu));
 $('#open-settings').addEventListener('click', () => open(ui.settings));
 $('#open-about').addEventListener('click', () => open(ui.about));
 $('#menu-play').addEventListener('click', () => start(selection));
@@ -977,7 +1078,7 @@ ui.input.addEventListener('input', () => autoSubmit());
 ui.skip.addEventListener('click', () => (state.locked ? next() : giveUp()));
 ui.next.addEventListener('click', next);
 ui.quit.addEventListener('click', quit);
-ui.again.addEventListener('click', () => start(state.sel, state.daily));
+ui.again.addEventListener('click', () => start(state.sel, state.daily, null, state.practice));
 // A challenge link opened while the site is already open: show it on the home screen (but never in the middle of a round).
 window.addEventListener('hashchange', () => {
   const c = parseChallenge(location.hash);
@@ -985,10 +1086,8 @@ window.addEventListener('hashchange', () => {
   challenge = c;
   if (screens.quiz.hidden) show('start');
 });
-ui.change.addEventListener('click', () => { show('start'); open(ui.menu); });
 ui.home.addEventListener('click', () => show('start'));
 ui.card.addEventListener('animationend', e => { if (e.target === ui.card) ui.card.classList.remove('shake'); });
-ui.chips.addEventListener('animationend', e => (e.target as HTMLElement).classList.remove('shake'));
 ui.card.addEventListener('click', e => {
   // During the verdict a tap anywhere on the card moves on (but not a tap that just answered).
   if (state.locked && !(e.target as HTMLElement).closest('.choice')) next();
@@ -1013,6 +1112,8 @@ document.addEventListener('keydown', e => {
   }
 });
 
+paintHome();
 load().catch(() => {
   ui.playSub.textContent = 'Could not load the data. Please reload.';
+  ui.playSub.hidden = false;
 });

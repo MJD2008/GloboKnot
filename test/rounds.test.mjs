@@ -1,7 +1,8 @@
 // The round builder. The four levels: Easy asks about famous countries only and shows four options far apart,
 // Medium keeps to well-known places, typed or picked, Hard mixes in lesser-known ones and Impossible goes for them,
 // both typed. A level picks its own question types and answers; All (The Gordian Knot) asks everything, typed. Every
-// question type can be typed or picked. And what a round never does: ask about the same country or river twice.
+// question type can be typed or picked. And what a round never does: ask about the same country or river twice. Practice
+// asks every question of one type in one region, in the same order every time.
 // Run: node --test (Node 22.18 or newer, which reads the TypeScript sources directly).
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -174,4 +175,19 @@ test('a round never asks about the same country or river twice', { skip }, async
       }
     }
   }
+});
+
+test('Practice asks every question of one type in one region, in the same order every time', { skip }, async () => {
+  const { available, kb, practiceAsk, practiceRound } = await load();
+  const sa = kb.countries.filter(c => kb.continent(c.id) === 'South America').map(c => c.id);
+  const typed = practiceRound(kb, 'cap.name', sa, 'type', 'p-C-sa-t');
+  assert.deepEqual(practiceRound(kb, 'cap.name', sa, 'type', 'p-C-sa-t'), typed, 'the same seed: the same questions, order and all');
+  assert.equal(typed.length, available(kb, { kinds: ['cap.name'], places: sa, size: 0 }), 'every question there is');
+  assert.ok(typed.every(x => x.format === 'type' && sa.includes(x.subject)));
+  const picked = practiceRound(kb, 'cap.name', sa, 'choose', 'p-C-sa-c');
+  assert.ok(picked.every(x => x.format === 'choice' && x.choices.length === 4), 'picked: four options each');
+  assert.notDeepEqual(picked.map(x => x.subject), typed.map(x => x.subject), 'another practice, another order');
+  assert.deepEqual(practiceAsk('type', 'flag.pick'), { answers: 'choose', tempt: 1 }, 'a flag to find is always picked');
+  const flags = practiceRound(kb, 'flag.name', [], 'type', 'p-F-w-t');
+  assert.equal(new Set(flags.map(x => x.subject)).size, kb.countries.length, 'the whole world: every flag once');
 });
