@@ -201,8 +201,8 @@ kbd {
   filter: drop-shadow(0 0 28px rgba(90, 150, 255, 0.28));
 }
 .hero {
-  text-wrap: balance;
-  font-size: clamp(2.1rem, 8vw, 3.4rem);
+  white-space: nowrap; /* one line: "Our world in a knot." */
+  font-size: clamp(1.6rem, 7.6vw, 3.2rem);
   line-height: 1.02;
   letter-spacing: -0.04em;
   font-weight: 800;
@@ -812,7 +812,7 @@ kbd {
 }
 @media (max-height: 720px) and (max-width: 480px) {
   .globe { width: min(100%, 28vh); margin-bottom: 8px; }
-  .hero { font-size: 2rem; }
+  .hero { font-size: min(1.9rem, 7.6vw); }
   /* Small phones: no category icon above a question without a picture, so the answer box stays higher up. */
   .badge-cat { display: none; }
   .media[data-kind="none"] + .badge-cat + .prompt { margin-top: 44px; }
@@ -825,7 +825,7 @@ kbd {
 }
 @media (max-height: 600px) and (max-width: 480px) {
   .globe { width: min(100%, 20vh); }
-  .hero { font-size: 1.7rem; margin-bottom: 12px; }
+  .hero { font-size: min(1.7rem, 7.6vw); margin-bottom: 12px; }
 }
 
 /* ---------- motion */
