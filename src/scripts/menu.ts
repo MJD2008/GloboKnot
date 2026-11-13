@@ -1,9 +1,10 @@
-// The configuration (≡): what to be asked (categories and their question types), where (the whole world,
-// continents or single countries) and how many questions. Every change is kept at once; Play starts it.
+// The configuration (≡): the level (Easy, Medium or Hard, which ticks a set of question types and decides how well
+// known the places asked about are), what to be asked (categories and their question types), where (the whole
+// world, continents or single countries) and how many questions. Every change is kept at once; Play starts it.
 // Something always stays selected: the last ticked box can't be unticked until another one is ticked.
 import { CONTINENTS, type Knowledge } from './kb';
-import { CATS, TEMPLATES, available, type Cat } from './questions';
-import { MAX_SIZE, SIZES, clampSize, gordianOpen, saveSelection, saveStats, selection, stats } from './prefs';
+import { CATS, LEVELS, LEVEL_IDS, TEMPLATES, available, isCustom, type Cat, type Level } from './questions';
+import { MAX_SIZE, SIZES, clampSize, gordianOpen, saveSelection, saveStats, selection, setLevel, stats } from './prefs';
 
 export const ICONS: Record<Cat | 'world', string> = {
   locations: '<path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2zM9 4v14M15 6v14"/>',
@@ -40,9 +41,14 @@ export function placesLabel(kb: Knowledge): string {
 }
 
 export function initMenu(kb: Knowledge, root: HTMLElement, onChange: () => void) {
+  const levels = root.querySelector<HTMLElement>('#menu-level')!;
+  const levelHint = root.querySelector<HTMLElement>('#menu-level-hint')!;
   const what = root.querySelector<HTMLElement>('#menu-what')!;
   const where = root.querySelector<HTMLElement>('#menu-where')!;
   const sizes = root.querySelector<HTMLElement>('#menu-size')!;
+
+  // ---- level
+  levels.innerHTML = LEVEL_IDS.map(l => `<button type="button" data-level="${l}">${LEVELS[l].label}</button>`).join('');
 
   // ---- what
   what.innerHTML = CATS.map(c => `
@@ -80,7 +86,7 @@ export function initMenu(kb: Knowledge, root: HTMLElement, onChange: () => void)
   custom.addEventListener('input', () => {
     custom.value = custom.value.replace(/\D/g, '');
     const n = parseInt(custom.value, 10);
-    if (n > 0) { selection.size = clampSize(n); saveSelection(); paintSizes(true); onChange(); }
+    if (n > 0) { selection.size = clampSize(n); saveSelection(); paintSizes(true); paintLevel(); onChange(); }
   });
   custom.addEventListener('blur', () => paintSizes());
   custom.addEventListener('keydown', e => { if (e.key === 'Enter') custom.blur(); });
@@ -92,6 +98,13 @@ export function initMenu(kb: Knowledge, root: HTMLElement, onChange: () => void)
       const subs = ex.closest('.group')!.querySelector<HTMLElement>('.subs')!;
       subs.hidden = !subs.hidden;
       ex.setAttribute('aria-expanded', String(!subs.hidden));
+      return;
+    }
+    // A level (or Reset, which is the level again) ticks that level's own question types.
+    const level = t.closest<HTMLButtonElement>('[data-level]');
+    if (level) {
+      setLevel(level.dataset.level as Level);
+      changed();
       return;
     }
     const size = t.closest<HTMLButtonElement>('[data-size]');
@@ -130,7 +143,18 @@ export function initMenu(kb: Knowledge, root: HTMLElement, onChange: () => void)
     box.closest('.check')!.setAttribute('title', locked ? 'Tick something else first' : '');
   };
 
+  function paintLevel() {
+    const l = LEVELS[selection.level];
+    for (const b of levels.querySelectorAll<HTMLButtonElement>('button')) b.setAttribute('aria-pressed', String(b.dataset.level === selection.level));
+    // All (The Gordian Knot) asks every question there is, so the level has no say in it.
+    const hint = selection.size === 0 ? 'The Gordian Knot asks about every place, whatever the level.'
+      : isCustom(selection) ? `${l.who} · Your own question types <button type="button" class="link" data-level="${selection.level}">Reset</button>`
+        : `${l.who} · ${l.what}`;
+    if (levelHint.innerHTML !== hint) levelHint.innerHTML = hint; // only when it changes, so it is read out once
+  }
+
   function paint() {
+    paintLevel();
     const kinds = new Set(selection.kinds);
     for (const g of what.querySelectorAll<HTMLElement>('.group')) {
       const cat = g.dataset.cat as Cat;

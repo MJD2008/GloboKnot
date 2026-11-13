@@ -10,7 +10,7 @@ import { Knowledge, type Country, type Entity, type KBData } from './kb';
 import { WorldMap, type MapOptions } from './map';
 import { catOn, icon, initMenu, placesLabel, setCat } from './menu';
 import { ACCENTS, TIME, UNLOCK_ROUNDS, applySettings, configKey, dailyResult, gordianOpen, saveDaily, saveSelection, saveSettings, saveStats, selection, settings, stats, today, type Accent, type Theme } from './prefs';
-import { CATS, DAILY, TEMPLATES, available, buildRound, codeOf, rebuildRound, remember, seeded, type Cat, type Pool, type Question, type Selection } from './questions';
+import { CATS, DAILY, LEVELS, TEMPLATES, available, buildRound, codeOf, isCustom, levelOf, rebuildRound, remember, seeded, type Cat, type Level, type Pool, type Question, type Selection } from './questions';
 import { zoomable, type Zoom } from './zoom';
 import { sound } from './sound';
 
@@ -129,6 +129,7 @@ const state = {
   daily: false,
   challenge: null as Challenge | null, // the challenge being played
   gordian: false,                      // every question of the configuration
+  level: null as Level | null,         // the level of a round of the player's own (not the Daily, a challenge or All)
   planned: 0,                          // questions in the round as it began (a stop cuts it short)
   seed: '',
   round: [] as Question[],
@@ -216,6 +217,12 @@ function chainNear(lon: number, lat: number): [number, number][] {
 }
 
 // ---------------------------------------------------------------- home
+/** What Play starts, in a few words: "Easy", "Easy + custom" (the player changed the question types), "Hard · Europe". */
+function modeLabel(): string {
+  const mode = LEVELS[selection.level].label + (isCustom(selection) ? ' + custom' : '');
+  return selection.places.length ? `${mode} · ${placesLabel(kb)}` : mode;
+}
+
 function paintHome() {
   if (!kb) return;
   ui.chips.innerHTML = '';
@@ -234,7 +241,7 @@ function paintHome() {
   ui.play.disabled = !selection.kinds.length || !n;
   // A challenge link waits on the Play button until it is taken or put aside.
   ui.playLabel.textContent = challenge ? 'Take the challenge' : 'Play';
-  ui.playSub.textContent = challenge ? `Beat ${challenge.pct}% · ${challenge.items.length} questions` : selection.size === 0 && gordianOpen() ? 'The Gordian Knot' : 'As configured';
+  ui.playSub.textContent = challenge ? `Beat ${challenge.pct}% · ${challenge.items.length} questions` : selection.size === 0 && gordianOpen() ? 'The Gordian Knot' : modeLabel();
   ui.notNow.hidden = !challenge;
   const done = dailyResult();
   ui.dailySub.textContent = done === null ? new Date().toLocaleDateString(undefined, { day: 'numeric', month: 'short' }) : `${Math.round(done * 100)}%`;
@@ -276,6 +283,7 @@ async function start(sel: Selection, daily = false, ch: Challenge | null = null)
   state.daily = daily;
   state.challenge = ch;
   state.gordian = !daily && !ch && sel.size === 0;
+  state.level = daily || ch || state.gordian ? null : levelOf(sel);
   // Every round has a seed, so it can be played again by someone else from a link.
   state.seed = ch ? ch.seed : daily ? `daily-${today()}` : Math.random().toString(36).slice(2, 10);
   state.round = ch ? rebuildRound(kb, ch.items, ch.seed)
@@ -768,7 +776,8 @@ async function shareResult() {
   const r = state.last;
   if (!r) return;
   const signs = r.knots.map(k => ({ tight: '●', loose: '○', miss: '·' })[k]).join('');
-  const what = state.daily ? `Daily ${new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}` : state.gordian ? 'The Gordian Knot' : `${r.knots.length} questions`;
+  const what = state.daily ? `Daily ${new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}` : state.gordian ? 'The Gordian Knot'
+    : `${state.level ? `${LEVELS[state.level].label} · ` : ''}${r.knots.length} questions`;
   const text = `Globoknot · ${what}\n${r.rank} · ${r.pct}%\n${signs.length <= 50 ? signs : ''}`.trim();
   let link = location.origin + location.pathname;
   if (state.round.length <= CHALLENGE_MAX) {

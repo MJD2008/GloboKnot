@@ -276,11 +276,30 @@ const FAMOUS_RIVERS = new Set(['rhine', 'danube', 'elbe', 'loire', 'tagus', 'vis
   'zambezi', 'orange', 'limpopo', 'rio-grande', 'colorado', 'saint-lawrence', 'murray', 'senegal', 'gambia']);
 
 // ---------------------------------------------------------------- what to play
-/** size 0 means every question the selection can ask: The Gordian Knot. */
-export interface Selection { kinds: string[]; places: string[]; size: number }
-export const DEFAULT_KINDS = TEMPLATES.map(t => t.id);
-/** The Daily: the same 10 questions for everyone on a day, from every category. */
-export const DAILY: Selection = { kinds: DEFAULT_KINDS, places: [], size: 10 };
+export type Level = 'easy' | 'medium' | 'hard';
+/** size 0 means every question the selection can ask: The Gordian Knot (it has no level: it asks everything). */
+export interface Selection { kinds: string[]; places: string[]; size: number; level?: Level }
+export const ALL_KINDS = TEMPLATES.map(t => t.id);
+/** Three levels. Each ticks a set of question types for the player, who can still change them ("Easy + custom"),
+ *  and says how well known the countries, languages, peaks and rivers asked about are: `known` is the share of
+ *  well-known ones (each template's `core`). Easy asks nothing else as long as it can. */
+export const LEVELS: Record<Level, { label: string; kinds: string[]; known: number; who: string; what: string }> = {
+  easy: {
+    label: 'Easy', known: 1, who: 'Well-known places', what: 'Locations, capitals, flags',
+    kinds: TEMPLATES.filter(t => t.cat === 'locations' || t.cat === 'capitals' || t.cat === 'flags').map(t => t.id),
+  },
+  medium: { label: 'Medium', known: 0.6, who: 'Mostly well-known places', what: 'Every category', kinds: ALL_KINDS },
+  hard: { label: 'Hard', known: 0.2, who: 'Mostly lesser-known places', what: 'Every category', kinds: ALL_KINDS },
+};
+export const LEVEL_IDS = Object.keys(LEVELS) as Level[];
+export const levelOf = (sel: Selection): Level => sel.level ?? 'medium';
+/** Has the player changed the question types the level ticked? */
+export function isCustom(sel: Selection): boolean {
+  const preset = LEVELS[levelOf(sel)].kinds;
+  return sel.kinds.length !== preset.length || !preset.every(k => sel.kinds.includes(k));
+}
+/** The Daily: the same 10 questions for everyone on a day, from every category (the mix of Medium). */
+export const DAILY: Selection = { kinds: ALL_KINDS, places: [], size: 10 };
 
 const placeTest = (sel: Selection) => {
   if (!sel.places.length) return () => true;
@@ -309,21 +328,25 @@ function makeQuestion(kb: Knowledge, t: Template, id: string, seed: string): Que
   return made && { ...made, cat: t.cat, given: t.given, asked: t.asked, subject: id };
 }
 
-/** A round of `size` questions (0: all of them). Categories take turns; within one, about 60% are well-known
- *  subjects. No country comes up twice (except when playing everything), and questions seen recently rest unless
- *  there aren't enough others (`fresh`: ignore that). `seed` fixes each question's options. */
+/** A round of `size` questions (0: all of them). Categories take turns; within one, the level sets how many
+ *  subjects are well-known ones (Medium: about 60%). No country comes up twice (except when playing everything), and
+ *  questions seen recently rest unless there aren't enough others (`fresh`: ignore that). `seed` fixes each
+ *  question's options. */
 export function buildRound(kb: Knowledge, sel: Selection, rng: Rng = Math.random, fresh = false, seed = String(rng())): Question[] {
   const all = sel.size <= 0;
   const size = all ? Infinity : sel.size;
   if (all) fresh = true;
+  const level = LEVELS[all ? 'medium' : levelOf(sel)];
   const inPlace = placeTest(sel);
   const templates = TEMPLATES.filter(t => sel.kinds.includes(t.id));
   const queues = new Map<Template, string[]>();
+  const known = new Map<Template, Set<string>>();
   for (const t of templates) {
     const all = shuffle(t.subjects(kb, inPlace), rng);
     const core = all.filter(id => t.core(kb, id)), other = all.filter(id => !t.core(kb, id));
+    known.set(t, new Set(core));
     const order: string[] = [];
-    while (core.length || other.length) order.push(((core.length && (!other.length || rng() < 0.6)) ? core : other).shift()!);
+    while (core.length || other.length) order.push(((core.length && (!other.length || rng() < level.known)) ? core : other).shift()!);
     queues.set(t, order);
   }
   const cats = shuffle([...new Set(templates.map(t => t.cat))], rng);
@@ -331,7 +354,13 @@ export function buildRound(kb: Knowledge, sel: Selection, rng: Rng = Math.random
   const round: Question[] = [];
   const used = new Set<string>();
   const keys = new Set<string>();
-  for (const pass of [true, false]) { // the first pass rests recently seen questions, the second fills up
+  // The first pass rests recently seen questions, the second fills up. Easy goes through both with well-known
+  // subjects alone first (a famous question seen yesterday is better than an obscure new one), and only asks about
+  // the others when a round can't be filled without them: a long round, or a small region.
+  const passes = level.known >= 1
+    ? [{ rest: true, only: true }, { rest: false, only: true }, { rest: true, only: false }, { rest: false, only: false }]
+    : [{ rest: true, only: false }, { rest: false, only: false }];
+  for (const pass of passes) {
     let stuck = 0;
     for (let i = 0; round.length < size && stuck < cats.length; i++) {
       const cat = cats[i % cats.length];
@@ -340,8 +369,9 @@ export function buildRound(kb: Knowledge, sel: Selection, rng: Rng = Math.random
         const queue = queues.get(t)!;
         for (let j = 0; j < queue.length && !q; j++) {
           const id = queue[j];
+          if (pass.only && !known.get(t)!.has(id)) break; // the well-known come first in an Easy queue
           const cand = makeQuestion(kb, t, id, seed);
-          if (!cand || keys.has(cand.key) || (!all && cand.countries.some(c => used.has(c))) || (pass && seen.has(cand.key))) continue;
+          if (!cand || keys.has(cand.key) || (!all && cand.countries.some(c => used.has(c))) || (pass.rest && seen.has(cand.key))) continue;
           queue.splice(j, 1);
           q = cand;
         }

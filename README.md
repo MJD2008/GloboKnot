@@ -7,11 +7,24 @@ Plan: [docs/PLAN.md](docs/PLAN.md) · Knowledge system: [docs/KNOWLEDGE-SYSTEM.m
 
 ## The site
 
-Astro, built to plain static files. One page: open the configuration (≡), pick what (capitals, flags, languages,
-mountains, rivers...) and where (whole world, continents or single countries) and how many questions (10, 20, 50 or any
-number), play, and see every answer at the end. Every question has 15 seconds, the same for everyone; a wrong typed answer
-is not revealed, so the player can try again until the time runs out. There is also a Daily: the same 10 questions for
-everyone.
+Astro, built to plain static files. One page: open the configuration (≡), pick a level, what (capitals, flags,
+languages, mountains, rivers...) and where (whole world, continents or single countries) and how many questions (10, 20,
+50 or any number), play, and see every answer at the end. Every question has 15 seconds, the same for everyone; a wrong
+typed answer is not revealed, so the player can try again until the time runs out. There is also a Daily: the same 10
+questions for everyone.
+
+Three levels, shown under Play ("Easy", "Easy + custom", "Hard · Europe"). A level does two things: it ticks a set of
+question types, which the player can still change (that is the "+ custom"), and it decides how well known the places
+asked about are.
+
+| Level | Ticks | Places |
+|---|---|---|
+| Easy (new visitors) | Locations, capitals, flags | Well-known only, while there are enough |
+| Medium | Every category | About 60% well-known |
+| Hard | Every category | About 20% well-known |
+
+"Well-known" is each template's `core` test: the countries in `data/countries/tiers.csv`, rivers of 2,500 km and more
+plus a list of famous ones, peaks of 5,000 m and more. The Daily and The Gordian Knot have no level.
 
 Scoring is a rope of knots: right first time ties a tight knot (1 point), right after a retry a loose one (half a point),
 and a miss frays the rope. The score ring shows the rope, and the rank is a knot (Loose end to Endless knot). Share
@@ -30,9 +43,9 @@ src/pages/index.astro     the quiz page: start screen, question card, results
 src/layouts/Base.astro    page frame: header, fonts, PREVIEW switch (noindex and badge)
 src/styles/global.css     all styles; colours are tokens with light and dark values (blue and orange presets)
 src/scripts/app.ts        the quiz screens, keys and timing
-src/scripts/menu.ts       the configuration: what, where, how many
+src/scripts/menu.ts       the configuration: level, what, where, how many
 src/scripts/prefs.ts      what the browser remembers: the selection, settings (sound, auto-submit, theme, colour), the Daily, stats
-src/scripts/questions.ts  question templates (13 kinds, one clue each, given/asked tags): approved facts in, questions out
+src/scripts/questions.ts  question templates (13 kinds, one clue each, given/asked tags), the levels and the round builder: approved facts in, questions out
 src/scripts/kb.ts         the knowledge base as the site reads it
 src/scripts/map.ts        the map: a globe turned and zoomed to the asked country, capital, peak or river
 src/scripts/globe.ts      the globe on the start screen: turns by itself, can be dragged, names the country under the pointer
@@ -80,7 +93,7 @@ public/data/countries.json compact output for the site (generated, approved fact
    places, two places sharing an accepted answer, and more.
 5. `npm run build:data` writes `public/data/countries.json` with approved facts only.
 
-`npm run data` runs steps 2 to 5 and copies the flags. `npm test` tests the answer matcher (silent typo correction).
+`npm run data` runs steps 2 to 5 and copies the flags. `npm test` tests the answer matcher (silent typo correction), the names people type, and the levels (which needs Node 22.18 or newer; older versions skip it).
 
 ## Adding a subject later
 
