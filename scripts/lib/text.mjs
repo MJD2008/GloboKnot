@@ -25,6 +25,7 @@ export function norm(s) {
     .replace(/\bst\.?\s/g, 'saint ')
     .replace(/['’`.]/g, '')
     .replace(/[^a-z0-9]+/g, ' ')
+    .trim()
     .replace(/^the\s+|\s+the$/g, '')
     .trim();
 }

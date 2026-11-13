@@ -27,7 +27,7 @@ BRB,https://www.wikidata.org/wiki/Q244,Barbados,,BB,052,bb,13.17,-59.53,yes,othe
 BRN,https://www.wikidata.org/wiki/Q921,Brunei,"Nation of Brunei, Abode of Peace|Brunei Darussalam|Nation of Brunei|Abode of Peace",BN,096,bn,4.50,114.67,yes,other
 BTN,https://www.wikidata.org/wiki/Q917,Bhutan,Kingdom of Bhutan,BT,064,bt,27.50,90.50,yes,other
 BWA,https://www.wikidata.org/wiki/Q963,Botswana,Republic of Botswana|Lefatshe la Botswana,BW,072,bw,-22.00,24.00,yes,other
-CAF,https://www.wikidata.org/wiki/Q929,Central African Republic,République centrafricaine,CF,140,cf,7.00,21.00,yes,other
+CAF,https://www.wikidata.org/wiki/Q929,Central African Republic,République centrafricaine|CAR,CF,140,cf,7.00,21.00,yes,other
 CAN,https://www.wikidata.org/wiki/Q16,Canada,,CA,124,ca,60.00,-95.00,yes,core
 CHE,https://www.wikidata.org/wiki/Q39,Switzerland,Swiss Confederation|Schweiz|Suisse|Svizzera|Svizra,CH,756,ch,47.00,8.00,yes,core
 CHL,https://www.wikidata.org/wiki/Q298,Chile,Republic of Chile|República de Chile,CL,152,cl,-30.00,-71.00,yes,core
@@ -131,14 +131,14 @@ NLD,https://www.wikidata.org/wiki/Q55,Netherlands,Kingdom of the Netherlands|Hol
 NOR,https://www.wikidata.org/wiki/Q20,Norway,Kingdom of Norway|Norge|Noreg|Kongeriket Norge|Kongeriket Noreg,NO,578,no,62.00,10.00,yes,core
 NPL,https://www.wikidata.org/wiki/Q837,Nepal,Federal Democratic Republic of Nepal|Loktāntrik Ganatantra Nepāl,NP,524,np,28.00,84.00,yes,core
 NRU,https://www.wikidata.org/wiki/Q697,Nauru,Republic of Nauru|Naoero|Pleasant Island|Ripublik Naoero,NR,520,nr,-0.53,166.92,yes,other
-NZL,https://www.wikidata.org/wiki/Q664,New Zealand,Aotearoa,NZ,554,nz,-41.00,174.00,yes,core
+NZL,https://www.wikidata.org/wiki/Q664,New Zealand,Aotearoa|NZ,NZ,554,nz,-41.00,174.00,yes,core
 OMN,https://www.wikidata.org/wiki/Q842,Oman,Sultanate of Oman,OM,512,om,21.00,57.00,yes,other
 PAK,https://www.wikidata.org/wiki/Q843,Pakistan,Islamic Republic of Pakistan|Pākistān|Islāmī Jumhūriya'eh Pākistān,PK,586,pk,30.00,70.00,yes,core
 PAN,https://www.wikidata.org/wiki/Q804,Panama,Republic of Panama|República de Panamá,PA,591,pa,9.00,-80.00,yes,other
 PER,https://www.wikidata.org/wiki/Q419,Peru,Republic of Peru|República del Perú,PE,604,pe,-10.00,-76.00,yes,core
 PHL,https://www.wikidata.org/wiki/Q928,Philippines,Republic of the Philippines|Repúblika ng Pilipinas,PH,608,ph,13.00,122.00,yes,core
 PLW,https://www.wikidata.org/wiki/Q695,Palau,Republic of Palau|Beluu er a Belau,PW,585,pw,7.50,134.50,yes,other
-PNG,https://www.wikidata.org/wiki/Q691,Papua New Guinea,Independent State of Papua New Guinea|Independen Stet bilong Papua Niugini,PG,598,pg,-6.00,147.00,yes,other
+PNG,https://www.wikidata.org/wiki/Q691,Papua New Guinea,Independent State of Papua New Guinea|Independen Stet bilong Papua Niugini|PNG,PG,598,pg,-6.00,147.00,yes,other
 POL,https://www.wikidata.org/wiki/Q36,Poland,Republic of Poland|Rzeczpospolita Polska,PL,616,pl,52.00,20.00,yes,core
 PRK,https://www.wikidata.org/wiki/Q423,North Korea,"Democratic People's Republic of Korea|DPRK|Chosŏn Minjujuŭi Inmin Konghwaguk|Korea, Democratic People's Republic of",KP,408,kp,40.00,127.00,yes,core
 PRT,https://www.wikidata.org/wiki/Q45,Portugal,Portuguese Republic|Portuguesa|República Portuguesa,PT,620,pt,39.50,-8.00,yes,core
@@ -147,7 +147,7 @@ QAT,https://www.wikidata.org/wiki/Q846,Qatar,State of Qatar|Dawlat Qaṭar,QA,63
 ROU,https://www.wikidata.org/wiki/Q218,Romania,Rumania|Roumania|România,RO,642,ro,46.00,25.00,yes,core
 RUS,https://www.wikidata.org/wiki/Q159,Russia,Russian Federation,RU,643,ru,60.00,100.00,yes,core
 RWA,https://www.wikidata.org/wiki/Q1037,Rwanda,Republic of Rwanda|Repubulika y'u Rwanda|République du Rwanda,RW,646,rw,-2.00,30.00,yes,other
-SAU,https://www.wikidata.org/wiki/Q851,Saudi Arabia,Kingdom of Saudi Arabia|Saudi,SA,682,sa,25.00,45.00,yes,core
+SAU,https://www.wikidata.org/wiki/Q851,Saudi Arabia,Kingdom of Saudi Arabia|Saudi|KSA,SA,682,sa,25.00,45.00,yes,core
 SDN,https://www.wikidata.org/wiki/Q1049,Sudan,Republic of the Sudan|Jumhūrīyat as-Sūdān,SD,729,sd,15.00,30.00,yes,other
 SEN,https://www.wikidata.org/wiki/Q1041,Senegal,Republic of Senegal|République du Sénégal,SN,686,sn,14.00,-14.00,yes,core
 SGP,https://www.wikidata.org/wiki/Q334,Singapore,Republic of Singapore|Singapura|Republik Singapura,SG,702,sg,1.37,103.80,yes,core
