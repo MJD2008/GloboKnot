@@ -1,9 +1,12 @@
 // Question templates: each turns approved facts about one subject into a question. Nothing here is a fact itself;
-// facts only come from the knowledge base. Prompts are keywords, readable in under a second ("France — Capital?"),
-// and every question has one clue: a map, a flag, a text or a name, never two.
+// facts only come from the knowledge base. Prompts are short, plain sentences ("What is the capital of France?"),
+// two small tags say what is given and what is asked (MAP → COUNTRY), and every question has one clue: a map, a flag,
+// a text or a name, never two.
 import type { Country, Knowledge, Language, Peak, River } from './kb';
 
-export type Cat = 'locations' | 'capitals' | 'flags' | 'languages' | 'mountains' | 'rivers' | 'neighbours';
+export type Cat = 'locations' | 'capitals' | 'flags' | 'languages' | 'mountains' | 'rivers';
+/** What a question shows (given) and what it asks for, as the two tags on the card. */
+export type Tag = 'Map' | 'Country' | 'Capital' | 'Flag' | 'Text' | 'Language' | 'Highest point' | 'Mountain' | 'River' | 'Neighbour';
 export type Pool = 'country' | 'city' | 'language' | 'peak' | 'river';
 export type LatLng = [number, number];
 export type Media =
@@ -17,9 +20,11 @@ export interface Question {
   key: string;                 // template + subject: used to avoid repeats
   kind: string;                // template id
   cat: Cat;
+  given: Tag;
+  asked: Tag;
   format: 'type' | 'choice';
   prompt: string;
-  clue: string;                // what was asked, for the answers list ("Flag", "Map", "France — Capital?")
+  clue: string;                // what was asked, short, for the answers list ("Flag", "Map", "Capital of France")
   media: Media;
   pools: Pool[];               // which names a typed answer is matched against
   accept: string[];            // entity ids that count as right
@@ -34,9 +39,13 @@ interface Template {
   id: string;
   cat: Cat;
   label: string;               // in the menu: what you see → what you answer
+  given: Tag;
+  asked: Tag;
   subjects(kb: Knowledge, inPlace: (country: string) => boolean): string[];
   core(kb: Knowledge, id: string): boolean;
-  make(kb: Knowledge, id: string, rng: Rng): Omit<Question, 'cat'> | null; // `cat` is filled in by buildRound
+  // `cat`, `given` and `asked` are filled in by buildRound. The answers never depend on what is selected under
+  // Where: a question about France accepts every neighbour of France, also when only France is selected.
+  make(kb: Knowledge, id: string, rng: Rng): Omit<Question, 'cat' | 'given' | 'asked'> | null;
 }
 
 export const CATS: { id: Cat; label: string }[] = [
@@ -46,7 +55,6 @@ export const CATS: { id: Cat; label: string }[] = [
   { id: 'languages', label: 'Languages' },
   { id: 'mountains', label: 'Mountains' },
   { id: 'rivers', label: 'Rivers' },
-  { id: 'neighbours', label: 'Neighbours' },
 ];
 
 const pickOne = <T>(xs: T[], rng: Rng): T => xs[Math.floor(rng() * xs.length)];
@@ -73,6 +81,10 @@ function nearWeights(kb: Knowledge, c: string, near = 6, sameContinent = 2, far 
 }
 const list = (names: string[], max = 3) => (names.length > max ? `${names.slice(0, max).join(', ')} +${names.length - max}` : names.join(' / '));
 const country = (kb: Knowledge, id: string) => kb.country(id)!;
+// Names that take "the" in a sentence: "the capital of the Netherlands".
+const THE = new Set(['ARE', 'BHS', 'CAF', 'CIV', 'COG', 'COM', 'DOM', 'GBR', 'GMB', 'MDV', 'MHL', 'NLD', 'PHL', 'SLB', 'USA']);
+export const theName = (kb: Knowledge, id: string) => `${THE.has(id) ? 'the ' : ''}${country(kb, id).name}`;
+const upper = (s: string) => s[0].toUpperCase() + s.slice(1);
 const isCore = (kb: Knowledge, id: string) => kb.country(id)?.tier === 'core';
 const countriesIn = (kb: Knowledge, inPlace: (c: string) => boolean) => kb.countries.filter(c => inPlace(c.id)).map(c => c.id);
 /** Great-circle distance in km between two [lat, lng] points. */
@@ -92,71 +104,71 @@ const BCP47: Record<string, string> = {
 // ---------------------------------------------------------------- templates
 export const TEMPLATES: Template[] = [
   {
-    id: 'loc.map', cat: 'locations', label: 'Map → country',
+    id: 'loc.map', cat: 'locations', label: 'Map → country', given: 'Map', asked: 'Country',
     subjects: (kb, inPlace) => countriesIn(kb, inPlace),
     core: isCore,
     make: (kb, id) => {
       const c = country(kb, id);
-      return { key: `map:${id}`, kind: 'loc.map', format: 'type', prompt: 'Country?', clue: 'Map', media: { kind: 'map', country: id },
+      return { key: `map:${id}`, kind: 'loc.map', format: 'type', prompt: 'Which country is this?', clue: 'Map', media: { kind: 'map', country: id },
         pools: ['country'], accept: [id], answer: c.name, countries: [id] };
     },
   },
   {
-    id: 'cap.name', cat: 'capitals', label: 'Country → capital',
+    id: 'cap.name', cat: 'capitals', label: 'Country → capital', given: 'Country', asked: 'Capital',
     subjects: (kb, inPlace) => countriesIn(kb, inPlace).filter(c => kb.mainCapitals(c).length),
     core: isCore,
     make: (kb, id) => {
-      const c = country(kb, id);
-      const prompt = `${c.name} — Capital?`;
-      return { key: `capital:${id}`, kind: 'cap.name', format: 'type', prompt, clue: prompt, media: { kind: 'none' },
+      const one = kb.mainCapitals(id).length === 1;
+      const prompt = `What is ${one ? 'the' : 'a'} capital of ${theName(kb, id)}?`;
+      return { key: `capital:${id}`, kind: 'cap.name', format: 'type', prompt, clue: `Capital of ${theName(kb, id)}`, media: { kind: 'none' },
         pools: ['city'], accept: kb.capitals(id), answer: kb.mainCapitals(id).map(x => kb.name(x)).join(' / '), countries: [id] };
     },
   },
   {
-    id: 'cap.map', cat: 'capitals', label: 'Map → capital',
+    id: 'cap.map', cat: 'capitals', label: 'Map → capital', given: 'Map', asked: 'Capital',
     // One capital with a checked position: the dot marks it.
     subjects: (kb, inPlace) => countriesIn(kb, inPlace).filter(c => { const m = kb.mainCapitals(c); return m.length === 1 && kb.cities.find(x => x.id === m[0])?.ll; }),
     core: isCore,
     make: (kb, id) => {
       const city = kb.cities.find(x => x.id === kb.mainCapitals(id)[0])!;
-      return { key: `capital-map:${id}`, kind: 'cap.map', format: 'type', prompt: 'Capital?', clue: `Map: ${country(kb, id).name}`,
+      return { key: `capital-map:${id}`, kind: 'cap.map', format: 'type', prompt: 'What is the capital of this country?', clue: `Map: ${country(kb, id).name}`,
         media: { kind: 'map', country: id, dot: city.ll }, pools: ['city'], accept: kb.capitals(id), answer: city.name, countries: [id] };
     },
   },
   {
-    id: 'cap.reverse', cat: 'capitals', label: 'Capital → country',
+    id: 'cap.reverse', cat: 'capitals', label: 'Capital → country', given: 'Capital', asked: 'Country',
     subjects: (kb, inPlace) => countriesIn(kb, inPlace).filter(c => kb.mainCapitals(c).length === 1),
     core: isCore,
     make: (kb, id) => {
       const city = kb.name(kb.mainCapitals(id)[0]);
-      const prompt = `${city} — Country?`;
-      return { key: `capital-of:${id}`, kind: 'cap.reverse', format: 'type', prompt, clue: prompt, media: { kind: 'none' },
+      return { key: `capital-of:${id}`, kind: 'cap.reverse', format: 'type', prompt: `${city} is the capital of which country?`,
+        clue: `${city} is the capital of`, media: { kind: 'none' },
         pools: ['country'], accept: [id], answer: country(kb, id).name, countries: [id] };
     },
   },
   {
-    id: 'flag.name', cat: 'flags', label: 'Flag → country',
+    id: 'flag.name', cat: 'flags', label: 'Flag → country', given: 'Flag', asked: 'Country',
     subjects: (kb, inPlace) => countriesIn(kb, inPlace),
     core: isCore,
-    make: (kb, id) => ({ key: `flag:${id}`, kind: 'flag.name', format: 'type', prompt: 'Flag?', clue: 'Flag',
+    make: (kb, id) => ({ key: `flag:${id}`, kind: 'flag.name', format: 'type', prompt: 'Which country’s flag is this?', clue: 'Flag',
       media: { kind: 'flag', country: id }, pools: ['country'], accept: [id], answer: country(kb, id).name, countries: [id] }),
   },
   {
-    id: 'flag.pick', cat: 'flags', label: 'Country → flag',
+    id: 'flag.pick', cat: 'flags', label: 'Country → flag', given: 'Country', asked: 'Flag',
     subjects: (kb, inPlace) => countriesIn(kb, inPlace),
     core: isCore,
     make: (kb, id, rng) => {
       const w = nearWeights(kb, id, 8, 3, 0.3);
       const wrong = weightedSample(new Map(kb.countries.filter(o => o.id !== id).map(o => [o.id, w(o.id)])), 3, rng);
       const c = country(kb, id);
-      const prompt = `${c.name} — Flag?`;
-      return { key: `flag-pick:${id}`, kind: 'flag.pick', format: 'choice', prompt, clue: prompt, media: { kind: 'none' },
+      return { key: `flag-pick:${id}`, kind: 'flag.pick', format: 'choice', prompt: `Which is the flag of ${theName(kb, id)}?`,
+        clue: `Flag of ${theName(kb, id)}`, media: { kind: 'none' },
         pools: ['country'], accept: [id], answer: c.name, countries: [id],
         choices: shuffle([id, ...wrong], rng).map(x => ({ id: x, label: kb.name(x), flag: country(kb, x).flag })) };
     },
   },
   {
-    id: 'lang.text', cat: 'languages', label: 'Text → language or country',
+    id: 'lang.text', cat: 'languages', label: 'Text → language or country', given: 'Text', asked: 'Language',
     // Spoken in a selected country (officially or by many people).
     subjects: (kb, inPlace) => kb.languages.filter(l => l.sample && kb.cluster(l.id).some(x => kb.whereSpoken(x).some(inPlace))).map(l => l.id),
     core: (kb, id) => kb.whereSpoken(id, false).some(c => isCore(kb, c)),
@@ -164,13 +176,13 @@ export const TEMPLATES: Template[] = [
       const l = kb.get<Language>(id)!;
       const family = kb.cluster(id);
       const where = [...new Set(family.flatMap(x => kb.whereSpoken(x)))];
-      return { key: `text:${id}`, kind: 'lang.text', format: 'type', prompt: 'Language or country?', clue: `“${l.sample}”`,
+      return { key: `text:${id}`, kind: 'lang.text', format: 'type', prompt: 'Which language is this?', clue: `“${l.sample}”`,
         media: { kind: 'text', text: l.sample!, lang: BCP47[id] ?? id }, pools: ['language', 'country'], accept: [...family, ...where],
         answer: l.name, countries: [] };
     },
   },
   {
-    id: 'lang.official', cat: 'languages', label: 'Country → official language',
+    id: 'lang.official', cat: 'languages', label: 'Country → official language', given: 'Country', asked: 'Language',
     subjects: (kb, inPlace) => countriesIn(kb, inPlace).filter(c => kb.languagesOf(c).length),
     core: isCore,
     make: (kb, id, rng) => {
@@ -188,14 +200,14 @@ export const TEMPLATES: Template[] = [
       }
       const wrong = weightedSample(weight, 3, rng);
       if (wrong.length < 3) return null;
-      const prompt = `${country(kb, id).name} — Language?`;
-      return { key: `language:${id}`, kind: 'lang.official', format: 'choice', prompt, clue: prompt, media: { kind: 'none' },
+      const prompt = `What is ${official.length > 1 ? 'an' : 'the'} official language of ${theName(kb, id)}?`;
+      return { key: `language:${id}`, kind: 'lang.official', format: 'choice', prompt, clue: `Official language of ${theName(kb, id)}`, media: { kind: 'none' },
         pools: ['language'], accept: official, answer: kb.name(right), countries: [id],
         choices: shuffle([right, ...wrong], rng).map(x => ({ id: x, label: kb.name(x) })) };
     },
   },
   {
-    id: 'peak.name', cat: 'mountains', label: 'Country → highest point',
+    id: 'peak.name', cat: 'mountains', label: 'Country → highest point', given: 'Country', asked: 'Highest point',
     subjects: (kb, inPlace) => countriesIn(kb, inPlace).filter(c => kb.highestPoint(c)),
     core: isCore,
     make: (kb, id, rng) => {
@@ -203,14 +215,14 @@ export const TEMPLATES: Template[] = [
       const w = nearWeights(kb, id);
       const weight = new Map<string, number>();
       for (const p of kb.peaks) if (p.id !== right) weight.set(p.id, Math.max(...kb.peakCountries(p.id).map(w)));
-      const prompt = `${country(kb, id).name} — Highest point?`;
-      return { key: `peak:${id}`, kind: 'peak.name', format: 'choice', prompt, clue: prompt, media: { kind: 'none' },
+      return { key: `peak:${id}`, kind: 'peak.name', format: 'choice', prompt: `What is the highest point of ${theName(kb, id)}?`,
+        clue: `Highest point of ${theName(kb, id)}`, media: { kind: 'none' },
         pools: ['peak'], accept: [right], answer: kb.name(right), countries: [id],
         choices: shuffle([right, ...weightedSample(weight, 3, rng)], rng).map(x => ({ id: x, label: kb.name(x) })) };
     },
   },
   {
-    id: 'peak.map', cat: 'mountains', label: 'Highest point → country',
+    id: 'peak.map', cat: 'mountains', label: 'Highest point → country', given: 'Mountain', asked: 'Country',
     subjects: (kb, inPlace) => kb.peaks.filter(p => kb.peakCountries(p.id).some(inPlace)).map(p => p.id),
     core: (kb, id) => kb.peakCountries(id).some(c => isCore(kb, c)) || (kb.get<Peak>(id)?.m ?? 0) >= 5000,
     make: (kb, id) => {
@@ -218,41 +230,42 @@ export const TEMPLATES: Template[] = [
       // Two countries' highest points can be a few km apart (Rysy and Gerlachovsky stit are 3 km apart): one
       // triangle can't tell them apart, so the neighbour whose highest point is that close counts as right too.
       const near = kb.peaks.filter(o => o.id !== id && km(o.ll, p.ll) < 25).flatMap(o => kb.peakCountries(o.id));
-      return { key: `peak-map:${id}`, kind: 'peak.map', format: 'type', prompt: 'Highest point — Country?', clue: p.name,
+      return { key: `peak-map:${id}`, kind: 'peak.map', format: 'type', prompt: 'Which country has its highest point here?', clue: `${p.name} is the highest point of`,
         media: { kind: 'map', peak: p.ll }, pools: ['country'], accept: [...new Set([...where, ...near])], answer: where.map(c => kb.name(c)).join(' / '),
         reveal: where, countries: where };
     },
   },
   {
-    id: 'river.name', cat: 'rivers', label: 'River → name',
+    id: 'river.name', cat: 'rivers', label: 'River → name', given: 'Map', asked: 'River',
     subjects: (kb, inPlace) => kb.rivers.filter(r => kb.riverCountries(r.id).some(inPlace)).map(r => r.id),
     core: (kb, id) => (kb.get<River>(id)?.km ?? 0) >= 2500 || FAMOUS_RIVERS.has(id),
     make: (kb, id) => {
       const r = kb.get<River>(id)!;
-      return { key: `river:${id}`, kind: 'river.name', format: 'type', prompt: 'River?', clue: `River in ${list(kb.riverCountries(id).map(c => kb.name(c)), 2)}`,
+      return { key: `river:${id}`, kind: 'river.name', format: 'type', prompt: 'Which river is this?', clue: `River in ${list(kb.riverCountries(id).map(c => kb.name(c)), 2)}`,
         media: { kind: 'map', river: id }, pools: ['river'], accept: kb.rivers.filter(x => x.name === r.name).map(x => x.id),
         answer: r.name, countries: [] };
     },
   },
   {
-    id: 'river.map', cat: 'rivers', label: 'River → country',
+    id: 'river.map', cat: 'rivers', label: 'River → country', given: 'River', asked: 'Country',
     subjects: (kb, inPlace) => kb.rivers.filter(r => kb.riverCountries(r.id).some(inPlace)).map(r => r.id),
     core: (kb, id) => (kb.get<River>(id)?.km ?? 0) >= 2500 || FAMOUS_RIVERS.has(id),
     make: (kb, id) => {
       const shown = kb.riverCountries(id);
-      return { key: `river-map:${id}`, kind: 'river.map', format: 'type', prompt: 'River — Country?', clue: kb.name(id),
+      return { key: `river-map:${id}`, kind: 'river.map', format: 'type', prompt: 'Name a country this river flows through.', clue: `${kb.name(id)} flows through`,
         media: { kind: 'map', river: id }, pools: ['country'], accept: kb.riverCountries(id, true),
         answer: list(shown.map(c => kb.name(c))), reveal: shown, countries: [] };
     },
   },
   {
-    id: 'nb.name', cat: 'neighbours', label: 'Country → neighbour',
+    // Neighbours are a question type under Locations (on by default), not a category of their own.
+    id: 'nb.name', cat: 'locations', label: 'Country → neighbour', given: 'Country', asked: 'Neighbour',
     subjects: (kb, inPlace) => countriesIn(kb, inPlace).filter(c => kb.neighbours(c).length),
     core: isCore,
     make: (kb, id) => {
-      const next = kb.neighbours(id);
-      const prompt = `${country(kb, id).name} — Neighbour?`;
-      return { key: `neighbour:${id}`, kind: 'nb.name', format: 'type', prompt, clue: prompt, media: { kind: 'none' },
+      const next = kb.neighbours(id); // all of them, whatever is selected under Where
+      return { key: `neighbour:${id}`, kind: 'nb.name', format: 'type', prompt: `Name a country that borders ${theName(kb, id)}.`,
+        clue: `${upper(theName(kb, id))} borders`, media: { kind: 'none' },
         pools: ['country'], accept: next, answer: list(next.map(c => kb.name(c))), countries: [id] };
     },
   },
@@ -262,8 +275,8 @@ const FAMOUS_RIVERS = new Set(['rhine', 'danube', 'elbe', 'loire', 'tagus', 'vis
 
 // ---------------------------------------------------------------- what to play
 export interface Selection { kinds: string[]; places: string[]; size: number }
-export const DEFAULT_KINDS = TEMPLATES.filter(t => t.cat !== 'neighbours').map(t => t.id);
-/** The Daily: the same 10 questions for everyone on a day, from the main categories, untimed. */
+export const DEFAULT_KINDS = TEMPLATES.map(t => t.id);
+/** The Daily: the same 10 questions for everyone on a day, from every category. */
 export const DAILY: Selection = { kinds: DEFAULT_KINDS, places: [], size: 10 };
 
 const placeTest = (sel: Selection) => {
@@ -312,7 +325,7 @@ export function buildRound(kb: Knowledge, sel: Selection, rng: Rng = Math.random
         const queue = queues.get(t)!;
         for (let j = 0; j < queue.length && !q; j++) {
           const made = t.make(kb, queue[j], rng);
-          const cand: Question | null = made && { ...made, cat: t.cat };
+          const cand: Question | null = made && { ...made, cat: t.cat, given: t.given, asked: t.asked };
           if (!cand || round.some(r => r.key === cand.key) || cand.countries.some(c => used.has(c)) || (pass && seen.has(cand.key))) continue;
           queue.splice(j, 1);
           q = cand;

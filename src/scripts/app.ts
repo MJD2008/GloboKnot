@@ -1,13 +1,15 @@
-// The quiz: home → questions → results. The menu (≡) decides what is asked; minimal words, while colour, motion and
-// sound carry the feedback. The answer always appears where the player is looking: in the answer box itself.
+// The quiz: home → questions → results. The configuration (≡) decides what is asked; minimal words, while colour,
+// motion and sound carry the feedback. The answer always appears where the player is looking: in the answer box.
+// Every question has a time limit; a wrong typed answer is not revealed, the player tries again until time runs out.
 import { geoDistance } from 'd3-geo';
 import { resolve } from '../../scripts/lib/match.mjs';
+import { norm } from '../../scripts/lib/text.mjs';
 import { Globe } from './globe';
 import { Knowledge, type Country, type Entity, type KBData } from './kb';
 import { WorldMap } from './map';
 import { catOn, icon, initMenu, placesLabel, setCat } from './menu';
 import { ACCENTS, TIMES, applySettings, dailyResult, saveDaily, saveSelection, saveSettings, selection, settings, today, type Accent } from './prefs';
-import { CATS, DAILY, available, buildRound, remember, seeded, type Cat, type Pool, type Question, type Selection } from './questions';
+import { CATS, DAILY, TEMPLATES, available, buildRound, remember, seeded, type Cat, type Pool, type Question, type Selection } from './questions';
 import { sound } from './sound';
 
 const $ = <T extends HTMLElement = HTMLElement>(sel: string) => document.querySelector(sel) as T;
@@ -27,7 +29,9 @@ const ui = {
   beads: $('#beads'),
   clock: $('#clock'),
   timer: $('#timer'),
+  count: $('#count'),
   card: $('#card'),
+  tags: $('#tags'),
   media: $('#media'),
   svg: $('#map') as unknown as SVGSVGElement,
   flag: $<HTMLImageElement>('#flag'),
@@ -64,7 +68,14 @@ let globe: Globe | null = null;
 let menu: { paint(): void } | null = null;
 let riversLoaded: Promise<void> | null = null;
 
-interface Result { q: Question; ok: boolean; typed: string; late?: boolean }
+interface Result {
+  q: Question;
+  ok: boolean;
+  typed: string;   // the right answer as typed, or the last wrong one
+  late?: boolean;  // the time ran out
+  tries: number;   // answers sent, the right one included (one pick for a choice question)
+  pick?: string;   // the option picked (choice questions)
+}
 const state = {
   sel: selection as Selection,
   daily: false,
@@ -75,11 +86,15 @@ const state = {
   best: 0,
   started: 0,
   locked: false,
-  timed: false,
+  timed: true,
   clock: 0,
   advance: 0,
   low: 0,
   deadline: 0,
+  secs: 0,        // the second last shown in the countdown
+  tries: 0,       // wrong typed answers on this question
+  lastWrong: '',  // the last of them
+  auto: 0,        // auto-submit, waiting for a pause in typing
 };
 
 // ---------------------------------------------------------------- loading
@@ -193,32 +208,38 @@ async function start(sel: Selection, daily = false) {
   state.i = 0;
   state.results = [];
   state.streak = state.best = 0;
-  state.timed = !daily && sel.size > 10;
+  state.timed = true; // every round, the Daily too
   state.started = performance.now();
   ui.beads.innerHTML = state.round.map(() => '<i></i>').join('');
   ui.beads.classList.toggle('many', state.round.length > 20);
-  ui.timer.hidden = !state.timed;
-  ui.clock.hidden = state.timed;
+  ui.clock.hidden = state.round.length <= 20; // long rounds also count: "12/50"
   clearInterval(state.clock);
-  if (!state.timed) { state.clock = window.setInterval(tick, 250); tick(); }
   show('quiz');
   ask();
 }
 
-function tick() { ui.clock.textContent = clock(performance.now() - state.started); }
 function clock(ms: number) {
   const s = Math.floor(ms / 1000);
   return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
 }
 
 // ---------------------------------------------------------------- one question
+const ARROW = '<svg viewBox="0 0 14 10" aria-hidden="true"><path d="M1 5h11M8.5 1.5 12 5 8.5 8.5"/></svg>';
+const esc = (s: string) => s.replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]!);
+
 function ask() {
   const q = state.round[state.i];
   state.locked = false;
+  state.tries = 0;
+  state.lastWrong = '';
+  clearTimeout(state.auto);
   ui.skip.style.visibility = '';
   ui.card.classList.remove('ok', 'bad');
   ui.verdict.hidden = true;
   [...ui.beads.children].forEach((el, j) => el.classList.toggle('now', j === state.i));
+  ui.clock.textContent = `${state.i + 1}/${state.round.length}`;
+  // What is given and what is asked, top left: MAP → COUNTRY.
+  ui.tags.innerHTML = `<span class="tag">${esc(q.given)}</span>${ARROW}<span class="tag ask">${esc(q.asked)}</span>`;
 
   // the clue
   const m = q.media;
@@ -228,12 +249,12 @@ function ask() {
     world.render(ui.svg, { num: c?.num, ll: c?.ll, dot: m.dot, peak: m.peak, river: m.river });
     ui.svg.setAttribute('aria-label', m.river ? 'Map with a river' : m.peak ? 'Map with a mountain' : m.dot ? 'Map with a country and its capital' : 'Map with one country highlighted');
   } else if (m.kind === 'flag') {
-    ui.flag.src = url(`flags/${kb.country(m.country)!.flag}.svg`);
+    showFlag(ui.flag, url(`flags/${kb.country(m.country)!.flag}.svg`));
   } else if (m.kind === 'text') {
     ui.sample.textContent = m.text;
     ui.sample.lang = m.lang;
   }
-  ui.prompt.textContent = q.prompt.replace(' — ', ' \u2014\u00a0'); // a line breaks before the dash, never after
+  ui.prompt.textContent = q.prompt;
   ui.badge.innerHTML = m.kind === 'none' ? icon(q.cat) : '';
 
   // the answer
@@ -242,12 +263,14 @@ function ask() {
     ui.choices.hidden = true;
     ui.input.value = '';
     ui.input.readOnly = false;
+    ui.input.classList.remove('miss', 'unknown');
     ui.input.placeholder = placeholder(q.pools);
     ui.input.focus({ preventScroll: true });
   } else {
     ui.form.hidden = true;
     ui.choices.hidden = false;
-    ui.choices.className = `choices${q.choices!.some(c => c.flag) ? ' flags' : ''}`;
+    const flags = q.choices!.some(c => c.flag);
+    ui.choices.className = `choices${flags ? ' flags loading' : ''}`;
     ui.choices.innerHTML = '';
     q.choices!.forEach((ch, j) => {
       const b = document.createElement('button');
@@ -262,67 +285,154 @@ function ask() {
       b.addEventListener('click', () => answer(ch.id, ch.label));
       ui.choices.append(b);
     });
+    // Flag options appear together, once their images are ready (at most a moment later).
+    if (flags) {
+      const imgs = [...ui.choices.querySelectorAll('img')];
+      const shown = () => { if (state.round[state.i] === q) ui.choices.classList.remove('loading'); };
+      Promise.all(imgs.map(i => i.decode().catch(() => undefined))).then(shown);
+      setTimeout(shown, 600);
+    }
     (document.activeElement as HTMLElement | null)?.blur();
   }
-  if (state.timed) startTimer();
+  preload(state.round[state.i + 1]);
+  startTimer();
 }
 
 function placeholder(p: Pool[]): string {
-  if (p.length > 1) return 'Language or country';
+  if (p.length > 1) return 'Language, or a country where it’s spoken';
   return { country: 'Country', city: 'City', language: 'Language', peak: 'Mountain', river: 'River' }[p[0]];
 }
 
-// ---- the answer window (20 or 50 questions). Drawn frame by frame: it is information, so it runs even when the
-// player asked for reduced motion (which turns CSS transitions off).
+// ---- flags: the new flag shows only once it is decoded, so the old one never flashes up. The next question's
+// flags load while this one is played.
+let flagToken = 0;
+function showFlag(img: HTMLImageElement, src: string) {
+  const token = ++flagToken;
+  img.classList.add('loading');
+  img.src = src;
+  const done = () => { if (token === flagToken) img.classList.remove('loading'); };
+  img.decode().then(done, done);
+}
+const preloaded = new Set<string>();
+function preload(q?: Question) {
+  if (!q) return;
+  const flags = q.media.kind === 'flag' ? [kb.country(q.media.country)!.flag] : (q.choices ?? []).map(c => c.flag).filter((f): f is string => !!f);
+  for (const f of flags) {
+    const src = url(`flags/${f}.svg`);
+    if (preloaded.has(src)) continue;
+    preloaded.add(src);
+    const img = new Image();
+    img.src = src;
+    img.decode().catch(() => undefined);
+  }
+}
+
+// ---- the time limit, under the answer box (a phone's keyboard covers the bottom of the screen). The bar runs from
+// green to red; the last five seconds are counted, with a heartbeat. Drawn frame by frame: it is information, so it
+// runs even when the player asked for reduced motion (which only stops the heartbeat).
 function startTimer() {
-  state.deadline = performance.now() + settings.time * 1000;
-  ui.timer.classList.remove('low');
+  const total = settings.time * 1000;
+  state.deadline = performance.now() + total;
+  state.secs = 0;
+  ui.timer.classList.remove('low', 'out', 'beat', 'stopped');
+  ui.count.textContent = '';
   cancelAnimationFrame(state.low);
-  const bar = ui.timer.firstElementChild as HTMLElement;
   const frame = () => {
-    const left = Math.max(0, state.deadline - performance.now()) / (settings.time * 1000);
-    bar.style.transform = `scaleX(${left.toFixed(4)})`;
-    ui.timer.classList.toggle('low', left * settings.time < 4);
-    if (left <= 0) { if (!state.locked) finish(state.round[state.i], false, '', true); return; }
-    if (!state.locked) state.low = requestAnimationFrame(frame);
+    if (state.locked) return;
+    const ms = Math.max(0, state.deadline - performance.now());
+    ui.timer.style.setProperty('--left', (ms / total).toFixed(4));
+    const s = Math.ceil(ms / 1000);
+    if (ms > 0 && s <= 5 && s !== state.secs) {
+      state.secs = s;
+      ui.count.textContent = String(s);
+      ui.timer.classList.add('low');
+      ui.timer.classList.remove('beat');
+      void ui.timer.offsetWidth; // restart the heartbeat on every second
+      ui.timer.classList.add('beat');
+      sound.tick(s);
+    }
+    if (ms <= 0) { timeUp(); return; }
+    state.low = requestAnimationFrame(frame);
   };
   frame();
 }
 function stopTimer() {
-  if (state.timed) cancelAnimationFrame(state.low);
+  cancelAnimationFrame(state.low);
+  ui.timer.classList.remove('beat');
+  ui.timer.classList.add('stopped');
+  ui.count.textContent = '';
+}
+function timeUp() {
+  if (state.locked) return;
+  ui.timer.classList.add('out'); // the bar leaves an empty box behind
+  finish(state.round[state.i], false, state.lastWrong, true);
+}
+
+/** The entity a typed answer means. One name can belong to two things (Tonga is a country and a language): an exact
+ *  match on an accepted one comes first. Typos are still judged against everything, so a slip never turns into a
+ *  near neighbour. */
+function match(typed: string, q: Question): Entity | null {
+  const pool = q.pools.flatMap(p => pools[p]), right = (e: Entity) => q.accept.includes(e.id);
+  return resolve(typed, [...pool.filter(right), ...pool.filter(e => !right(e))]);
 }
 
 /** `given` is the typed text or a choice id. */
 function answer(given: string, label = given) {
   if (state.locked) return;
   const q = state.round[state.i];
-  let ok = false, typed = label.trim();
   if (q.format === 'type') {
+    const typed = label.trim();
     if (!typed) { nudge(); return; }
-    // One name can belong to two things (Tonga is a country and a language): an exact match on an accepted one
-    // comes first. Typos are still judged against everything, so a slip never turns into a near neighbour.
-    const pool = q.pools.flatMap(p => pools[p]), right = (e: Entity) => q.accept.includes(e.id);
-    const hit = resolve(typed, [...pool.filter(right), ...pool.filter(e => !right(e))]);
-    ok = !!hit && q.accept.includes(hit.id);
-    if (ok && hit) typed = hit.name; // silent auto-correct
-  } else {
-    ok = q.accept.includes(given);
-    ui.choices.querySelector(`.choice[data-id="${CSS.escape(given)}"]`)?.classList.add(ok ? 'right' : 'wrong');
+    const hit = match(typed, q);
+    if (hit && q.accept.includes(hit.id)) { finish(q, true, hit.name); return; } // silent auto-correct
+    // Wrong: nothing is revealed. The box shows how the answer was read (struck through) and is selected, so typing
+    // replaces it. A name we don't know gets a dotted underline instead.
+    state.tries++;
+    state.lastWrong = hit?.name ?? typed;
+    if (hit) ui.input.value = hit.name;
+    ui.input.classList.remove('miss', 'unknown');
+    void ui.input.offsetWidth;
+    ui.input.classList.add(hit ? 'miss' : 'unknown');
+    ui.input.select();
+    nudge();
+    sound.retry();
+    return;
   }
-  finish(q, ok, typed);
+  const ok = q.accept.includes(given);
+  ui.choices.querySelector(`.choice[data-id="${CSS.escape(given)}"]`)?.classList.add(ok ? 'right' : 'wrong');
+  finish(q, ok, label, false, given);
+}
+
+// ---- auto-submit: a typed answer that is exactly a right name (or alias) is sent without Enter. A name that is the
+// start of a longer one waits a little longer ("Niger" on the way to "Nigeria"). Only right answers go by themselves.
+const names = (e: Entity) => [e.name, ...e.aliases];
+function autoSubmit() {
+  clearTimeout(state.auto);
+  const q = state.round[state.i];
+  if (!settings.auto || state.locked || q?.format !== 'type') return;
+  const k = norm(ui.input.value);
+  if (!k) return;
+  const pool = q.pools.flatMap(p => pools[p]);
+  if (!pool.some(e => q.accept.includes(e.id) && names(e).some(n => norm(n) === k))) return;
+  const longer = pool.some(e => names(e).some(n => { const m = norm(n); return m.length > k.length && m.startsWith(k); }));
+  state.auto = window.setTimeout(() => {
+    if (!state.locked && state.round[state.i] === q && norm(ui.input.value) === k) answer(ui.input.value);
+  }, longer ? 500 : 150);
 }
 
 function giveUp() {
   if (state.locked) return;
-  finish(state.round[state.i], false, '');
+  finish(state.round[state.i], false, state.lastWrong);
 }
 
-function finish(q: Question, ok: boolean, typed: string, late = false) {
+function finish(q: Question, ok: boolean, typed: string, late = false, pick?: string) {
   state.locked = true;
+  clearTimeout(state.auto);
   ui.skip.style.visibility = 'hidden';
   stopTimer();
   ui.input.readOnly = true; // not disabled: that would close a phone's keyboard between questions
-  state.results.push({ q, ok, typed, late });
+  ui.input.classList.remove('miss', 'unknown');
+  state.results.push({ q, ok, typed, late, tries: q.format === 'type' ? state.tries + (ok ? 1 : 0) : 1, pick });
   state.streak = ok ? state.streak + 1 : 0;
   state.best = Math.max(state.best, state.streak);
   ui.beads.children[state.i].classList.add(ok ? 'ok' : 'bad');
@@ -346,9 +456,9 @@ function finish(q: Question, ok: boolean, typed: string, late = false) {
   }
   if (q.media.kind === 'map' && q.reveal?.length) world.reveal(q.reveal.map(id => kb.country(id)?.num).filter((n): n is string => !!n));
 
-  if (ok) sound.right(state.streak - 1); else sound.wrong();
+  if (ok) sound.right(state.streak - 1); else if (late) sound.timeout(); else sound.wrong();
   clearTimeout(state.advance);
-  state.advance = window.setTimeout(next, ok ? 900 : state.timed ? 2000 : 2600);
+  state.advance = window.setTimeout(next, ok ? 900 : 2200);
 }
 
 function next() {
@@ -360,6 +470,7 @@ function next() {
 
 function quit() {
   clearTimeout(state.advance);
+  clearTimeout(state.auto);
   cancelAnimationFrame(state.low);
   clearInterval(state.clock);
   if (!state.results.length) { show('start'); return; }
@@ -414,11 +525,22 @@ function end() {
     } else clue.textContent = r.q.clue;
     const a = document.createElement('span');
     a.className = 'ans';
-    if (!r.ok && r.typed) { const s = document.createElement('s'); s.textContent = r.typed; a.append(s, ' '); }
-    if (r.late) { const s = document.createElement('small'); s.textContent = "Time's up"; a.append(s, ' '); }
-    const b = document.createElement('strong');
-    b.textContent = r.ok && r.q.format === 'type' ? r.typed : r.q.answer;
-    a.append(b);
+    const flagOf = (id: string) => { const img = document.createElement('img'); img.src = url(`flags/${kb.country(id)!.flag}.svg`); img.alt = kb.name(id); return img; };
+    if (r.q.kind === 'flag.pick') {
+      // The flags themselves: the right one, and the one picked if that was another.
+      const b = document.createElement('strong');
+      b.append(flagOf(r.q.accept[0]));
+      a.append(b);
+      if (!r.ok && r.pick) { const s = document.createElement('s'); s.append(flagOf(r.pick)); a.append(s); }
+      if (r.late) { const s = document.createElement('small'); s.textContent = "Time's up"; a.append(s); }
+    } else {
+      if (!r.ok && r.typed) { const s = document.createElement('s'); s.textContent = r.typed; a.append(s, ' '); }
+      if (r.late) { const s = document.createElement('small'); s.textContent = "Time's up"; a.append(s, ' '); }
+      if (r.ok && r.tries > 1) { const s = document.createElement('small'); s.textContent = `${ordinal(r.tries)} try`; a.append(s, ' '); }
+      const b = document.createElement('strong');
+      b.textContent = r.ok && r.q.format === 'type' ? r.typed : r.q.answer;
+      a.append(b);
+    }
     li.append(n, clue, a);
     ui.answers.append(li);
   });
@@ -426,6 +548,8 @@ function end() {
   show('results');
   ui.again.focus({ preventScroll: true });
 }
+
+const ordinal = (n: number) => `${n}${n % 10 === 2 && n % 100 !== 12 ? 'nd' : n % 10 === 3 && n % 100 !== 13 ? 'rd' : 'th'}`;
 
 /** The knot: one strand per question around a ring, tied (accent) when right. All right closes the ring. */
 function drawRing(oks: boolean[], closed: boolean) {
@@ -445,8 +569,8 @@ function drawRing(oks: boolean[], closed: boolean) {
 
 // ---------------------------------------------------------------- settings
 function paintSettings() {
-  const sw = $<HTMLButtonElement>('#set-sound');
-  sw.setAttribute('aria-checked', String(!sound.muted));
+  $('#set-sound').setAttribute('aria-checked', String(!sound.muted));
+  $('#set-auto').setAttribute('aria-checked', String(settings.auto));
   $('#set-time').innerHTML = TIMES.map(t => `<button type="button" data-time="${t}" aria-pressed="${settings.time === t}">${t} s</button>`).join('');
   $('#set-theme').innerHTML = (['auto', 'light', 'dark'] as const).map(t => `<button type="button" data-theme="${t}" aria-pressed="${settings.theme === t}">${t[0].toUpperCase() + t.slice(1)}</button>`).join('');
   $('#set-accent').innerHTML = (Object.keys(ACCENTS) as Accent[]).map(a => `<button type="button" data-accent="${a}" aria-pressed="${settings.accent === a}" title="${ACCENTS[a].label}" aria-label="${ACCENTS[a].label}" style="--sw:${ACCENTS[a].light}"></button>`).join('');
@@ -455,6 +579,7 @@ ui.settings.addEventListener('click', e => {
   const t = (e.target as HTMLElement).closest<HTMLButtonElement>('button');
   if (!t) return;
   if (t.id === 'set-sound') sound.toggle();
+  else if (t.id === 'set-auto') settings.auto = !settings.auto;
   else if (t.dataset.time) settings.time = Number(t.dataset.time);
   else if (t.dataset.theme) settings.theme = t.dataset.theme as typeof settings.theme;
   else if (t.dataset.accent) settings.accent = t.dataset.accent as Accent;
@@ -469,7 +594,15 @@ ui.chips.addEventListener('click', e => {
   const b = (e.target as HTMLElement).closest<HTMLButtonElement>('.chip');
   if (!b) return;
   const cat = b.dataset.cat as Cat;
-  setCat(cat, catOn(cat) === 'none');
+  const on = catOn(cat) === 'none';
+  // Something always stays selected: the last category can't be switched off.
+  if (!on && selection.kinds.every(k => TEMPLATES.find(t => t.id === k)?.cat === cat)) {
+    b.classList.remove('shake');
+    void b.offsetWidth;
+    b.classList.add('shake');
+    return;
+  }
+  setCat(cat, on);
   saveSelection();
   paintHome();
 });
@@ -481,13 +614,15 @@ $('#open-settings').addEventListener('click', () => open(ui.settings));
 $('#open-about').addEventListener('click', () => open(ui.about));
 $('#menu-play').addEventListener('click', () => start(selection));
 ui.form.addEventListener('submit', e => { e.preventDefault(); if (state.locked) next(); else answer(ui.input.value); });
+ui.input.addEventListener('input', () => { ui.input.classList.remove('miss', 'unknown'); autoSubmit(); });
 ui.skip.addEventListener('click', () => (state.locked ? next() : giveUp()));
 ui.next.addEventListener('click', next);
 ui.quit.addEventListener('click', quit);
 ui.again.addEventListener('click', () => start(state.sel, state.daily));
 ui.change.addEventListener('click', () => { show('start'); open(ui.menu); });
 ui.home.addEventListener('click', () => show('start'));
-ui.card.addEventListener('animationend', () => ui.card.classList.remove('shake'));
+ui.card.addEventListener('animationend', e => { if (e.target === ui.card) ui.card.classList.remove('shake'); });
+ui.chips.addEventListener('animationend', e => (e.target as HTMLElement).classList.remove('shake'));
 ui.card.addEventListener('click', e => {
   // During the verdict a tap anywhere on the card moves on (but not a tap that just answered).
   if (state.locked && !(e.target as HTMLElement).closest('.choice')) next();

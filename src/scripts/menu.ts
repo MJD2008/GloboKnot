@@ -1,8 +1,9 @@
-// The selection menu (≡): what to be asked (categories and their question types), where (the whole world,
+// The configuration (≡): what to be asked (categories and their question types), where (the whole world,
 // continents or single countries) and how many questions. Every change is kept at once; Play starts it.
+// Something always stays selected: the last ticked box can't be unticked until another one is ticked.
 import { CONTINENTS, type Knowledge } from './kb';
 import { CATS, TEMPLATES, available, type Cat } from './questions';
-import { SIZES, saveSelection, selection, settings } from './prefs';
+import { MAX_SIZE, SIZES, clampSize, saveSelection, selection } from './prefs';
 
 export const ICONS: Record<Cat | 'world', string> = {
   locations: '<path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2zM9 4v14M15 6v14"/>',
@@ -11,7 +12,6 @@ export const ICONS: Record<Cat | 'world', string> = {
   languages: '<path d="M4 5h16v11H9l-5 4z"/><path d="M8 9h8M8 12h5"/>',
   mountains: '<path d="m2.5 19 6.5-11 4 6.5 2.5-3.5 6 8z"/><path d="m7.4 10.7 1.6 1.3 1.5-1.3"/>',
   rivers: '<path d="M3 8c3-2 5 2 8 0s5-2 8 0M3 13c3-2 5 2 8 0s5-2 8 0M3 18c3-2 5 2 8 0s5-2 8 0"/>',
-  neighbours: '<path d="M3 6h8v6H3zM11 9h10v9H11zM3 12h8v6"/>',
   world: '<circle cx="12" cy="12" r="9"/><path d="M12 3c-3 3-3 15 0 18M12 3c3 3 3 15 0 18M3.5 9h17M3.5 15h17"/>',
 };
 export const icon = (k: keyof typeof ICONS) => `<svg viewBox="0 0 24 24" aria-hidden="true">${ICONS[k]}</svg>`;
@@ -43,8 +43,6 @@ export function initMenu(kb: Knowledge, root: HTMLElement, onChange: () => void)
   const what = root.querySelector<HTMLElement>('#menu-what')!;
   const where = root.querySelector<HTMLElement>('#menu-where')!;
   const sizes = root.querySelector<HTMLElement>('#menu-size')!;
-  const hint = root.querySelector<HTMLElement>('#size-hint')!;
-  const count = root.querySelector<HTMLElement>('#menu-count')!;
 
   // ---- what
   what.innerHTML = CATS.map(c => `
@@ -73,8 +71,17 @@ export function initMenu(kb: Knowledge, root: HTMLElement, onChange: () => void)
       </div>
     </div>`).join('')}`;
 
-  // ---- length
-  sizes.innerHTML = SIZES.map(n => `<button type="button" data-size="${n}">${n}</button>`).join('');
+  // ---- length: three presets and a box for any other number
+  sizes.innerHTML = SIZES.map(n => `<button type="button" data-size="${n}">${n}</button>`).join('')
+    + `<label class="custom"><input id="size-custom" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="${String(MAX_SIZE).length}" placeholder="Other" aria-label="Other number of questions" autocomplete="off" /></label>`;
+  const custom = sizes.querySelector<HTMLInputElement>('#size-custom')!;
+  custom.addEventListener('input', () => {
+    custom.value = custom.value.replace(/\D/g, '');
+    const n = parseInt(custom.value, 10);
+    if (n > 0) { selection.size = clampSize(n); saveSelection(); paintSizes(true); onChange(); }
+  });
+  custom.addEventListener('blur', () => paintSizes());
+  custom.addEventListener('keydown', e => { if (e.key === 'Enter') custom.blur(); });
 
   root.addEventListener('click', e => {
     const t = e.target as HTMLElement;
@@ -90,6 +97,7 @@ export function initMenu(kb: Knowledge, root: HTMLElement, onChange: () => void)
   });
   root.addEventListener('change', e => {
     const t = e.target as HTMLInputElement;
+    if (t.id === 'size-custom') return;
     if (t.classList.contains('cat-check')) setCat(t.closest<HTMLElement>('.group')!.dataset.cat as Cat, t.checked);
     else if (t.dataset.kind) selection.kinds = t.checked ? [...selection.kinds, t.dataset.kind] : selection.kinds.filter(k => k !== t.dataset.kind);
     else if (t.id === 'world-check') selection.places = [];
@@ -109,29 +117,54 @@ export function initMenu(kb: Knowledge, root: HTMLElement, onChange: () => void)
     onChange();
   }
 
+  /** A box is locked when unticking it would leave nothing selected. */
+  const lock = (box: HTMLInputElement, locked: boolean) => {
+    box.disabled = locked;
+    box.closest('.check')!.classList.toggle('locked', locked);
+    box.closest('.check')!.setAttribute('title', locked ? 'Tick something else first' : '');
+  };
+
   function paint() {
+    const kinds = new Set(selection.kinds);
     for (const g of what.querySelectorAll<HTMLElement>('.group')) {
-      const state = catOn(g.dataset.cat as Cat);
+      const cat = g.dataset.cat as Cat;
+      const state = catOn(cat);
       const box = g.querySelector<HTMLInputElement>('.cat-check')!;
       box.checked = state === 'all';
       box.indeterminate = state === 'some';
+      // A fully ticked category that holds every selected type can't be unticked (a half-ticked one can: that adds).
+      lock(box, state === 'all' && selection.kinds.every(k => TEMPLATES.find(t => t.id === k)?.cat === cat));
     }
-    for (const b of what.querySelectorAll<HTMLInputElement>('[data-kind]')) b.checked = selection.kinds.includes(b.dataset.kind!);
+    for (const b of what.querySelectorAll<HTMLInputElement>('[data-kind]')) {
+      b.checked = kinds.has(b.dataset.kind!);
+      lock(b, b.checked && kinds.size === 1);
+    }
+
     const set = new Set(selection.places);
-    where.querySelector<HTMLInputElement>('#world-check')!.checked = !set.size;
+    const world = where.querySelector<HTMLInputElement>('#world-check')!;
+    world.checked = !set.size;
+    lock(world, !set.size);
     for (const g of where.querySelectorAll<HTMLElement>('.group')) {
       const ids = kb.countries.filter(c => kb.continent(c.id) === g.dataset.continent).map(c => c.id);
       const n = ids.filter(id => set.has(id)).length;
       const box = g.querySelector<HTMLInputElement>('.cont-check')!;
       box.checked = n === ids.length;
       box.indeterminate = n > 0 && n < ids.length;
+      lock(box, n === ids.length && n === set.size);
     }
-    for (const b of where.querySelectorAll<HTMLInputElement>('[data-country]')) b.checked = set.has(b.dataset.country!);
+    for (const b of where.querySelectorAll<HTMLInputElement>('[data-country]')) {
+      b.checked = set.has(b.dataset.country!);
+      lock(b, b.checked && set.size === 1);
+    }
+    paintSizes();
+    root.querySelector<HTMLButtonElement>('#menu-play')!.disabled = !selection.kinds.length || !available(kb, selection);
+  }
+
+  function paintSizes(typing = false) {
+    const preset = (SIZES as readonly number[]).includes(selection.size);
     for (const b of sizes.querySelectorAll<HTMLButtonElement>('[data-size]')) b.setAttribute('aria-pressed', String(Number(b.dataset.size) === selection.size));
-    hint.textContent = selection.size > 10 ? `${settings.time} seconds per answer` : 'No time limit';
-    const n = available(kb, selection);
-    count.textContent = !selection.kinds.length ? 'Pick something to play' : n < selection.size ? `only ${n} questions` : `${selection.size} of ${n} questions`;
-    root.querySelector<HTMLButtonElement>('#menu-play')!.disabled = !selection.kinds.length || !n;
+    custom.closest('.custom')!.classList.toggle('on', !preset);
+    if (!typing) custom.value = preset ? '' : String(selection.size);
   }
 
   paint();

@@ -13,12 +13,17 @@ function save(key: string, value: unknown) {
 }
 
 // ---------- the quiz selection
-export const SIZES = [10, 20, 50] as const;
+export const SIZES = [10, 20, 50] as const; // presets; any other number can be typed in
+export const MAX_SIZE = 9999;
+export const clampSize = (n: number) => Math.min(MAX_SIZE, Math.max(1, Math.round(n) || 10));
 const SEL_KEY = 'gk-selection';
-export const selection: Selection = load<Selection>(SEL_KEY, { kinds: DEFAULT_KINDS, places: [], size: 10 });
-selection.kinds = selection.kinds.filter(k => TEMPLATES.some(t => t.id === k));
-if (!SIZES.includes(selection.size as 10)) selection.size = 10;
-export const saveSelection = () => save(SEL_KEY, selection);
+type Saved = Selection & { v?: number };
+const saved: Saved = load<Saved>(SEL_KEY, { kinds: DEFAULT_KINDS, places: [], size: 10, v: 3 });
+// Before v3, neighbours were a category of their own and off by default; now they belong to Locations.
+if (!saved.v && saved.kinds.includes('loc.map') && !saved.kinds.includes('nb.name')) saved.kinds.push('nb.name');
+export const selection: Selection = { kinds: saved.kinds.filter(k => TEMPLATES.some(t => t.id === k)), places: saved.places, size: clampSize(saved.size) };
+if (!selection.kinds.length) selection.kinds = [...DEFAULT_KINDS];
+export const saveSelection = () => save(SEL_KEY, { ...selection, v: 3 });
 
 // ---------- settings
 export const ACCENTS = {
@@ -30,9 +35,14 @@ export const ACCENTS = {
 } as const;
 export type Accent = keyof typeof ACCENTS;
 export const TIMES = [10, 15, 20] as const;
-export interface Settings { theme: 'auto' | 'light' | 'dark'; accent: Accent; time: number }
+export interface Settings {
+  theme: 'auto' | 'light' | 'dark';
+  accent: Accent;
+  time: number;      // seconds per question
+  auto: boolean;     // send a typed answer as soon as it is exactly right
+}
 const SET_KEY = 'gk-settings';
-export const settings: Settings = load<Settings>(SET_KEY, { theme: 'auto', accent: 'coral', time: 15 });
+export const settings: Settings = load<Settings>(SET_KEY, { theme: 'auto', accent: 'coral', time: 15, auto: true });
 if (!(settings.accent in ACCENTS)) settings.accent = 'coral';
 if (!TIMES.includes(settings.time as 10)) settings.time = 15;
 
