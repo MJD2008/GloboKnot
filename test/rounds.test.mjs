@@ -2,7 +2,8 @@
 // Medium keeps to well-known places, typed or picked, Hard mixes in lesser-known ones and Impossible goes for them,
 // both typed. A level picks its own question types and answers; All (The Gordian Knot) asks everything, typed. Every
 // question type can be typed or picked. And what a round never does: ask about the same country or river twice. Practice
-// asks every question of one type in one region, in the same order every time.
+// asks every question of one type in one region, in the same order every time. On Hard and Impossible the wrong
+// options of a flag question are flags that look alike.
 // Run: node --test (Node 22.18 or newer, which reads the TypeScript sources directly).
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -89,6 +90,23 @@ test('Easy shows four options, far apart and familiar', { skip }, async () => {
   }
   assert.ok(near / options < 0.2, `${Math.round((near / options) * 100)}% of wrong options on the same continent`);
   assert.ok(obscure / options < 0.1, `${Math.round((obscure / options) * 100)}% of wrong options lesser known`);
+});
+
+test('Hard and Impossible offer flags that look alike as wrong options', { skip }, async () => {
+  const { kb, level, rounds } = await load();
+  const alikeShare = sel => {
+    let options = 0, alike = 0;
+    for (const x of rounds(sel, 30, `flags${sel.level}`).flat()) {
+      const like = new Set(kb.flagsLike(x.subject).filter(([, d]) => d < 0.7).map(([o]) => o));
+      for (const c of x.choices) if (!x.accept.includes(c.id)) { options++; if (like.has(c.id)) alike++; }
+    }
+    return alike / options;
+  };
+  const flags = { kinds: ['flag.name', 'flag.pick'], answers: 'choose' };
+  const hard = alikeShare(level('hard', flags)), medium = alikeShare(level('medium', flags));
+  assert.ok(hard > 0.5, `Hard: ${Math.round(hard * 100)}% of wrong flags look alike`);
+  assert.ok(medium < hard - 0.25, `Medium: ${Math.round(medium * 100)}% (only by chance, from nearby)`);
+  assert.deepEqual(kb.flagsLike('TCD').slice(0, 2).map(([o]) => o), ['ROU', 'BEL'], "Chad's flag looks most like Romania's");
 });
 
 test('Medium keeps to well-known places, typed and picked', { skip }, async () => {

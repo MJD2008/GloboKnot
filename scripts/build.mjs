@@ -39,6 +39,9 @@ const out = {
   // [subject, relation, object, qualifier?]
   facts: [...facts, ...also.map(f => ({ ...f, qualifier: 'also' }))].map(f => f.qualifier ? [f.subject, f.relation, f.object, f.qualifier] : [f.subject, f.relation, f.object]),
   confusables: JSON.parse(await read('data/countries/confusables.json')),
+  // For each country, the flags most like its own with how far apart they are (scripts/flags-alike.mjs). Hard and
+  // Impossible use them as wrong options in flag questions.
+  flagsAlike: JSON.parse(await read('data/countries/flags-alike.json')),
 };
 await fs.mkdir(root + 'public/data', { recursive: true });
 const json = JSON.stringify(out);

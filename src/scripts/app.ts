@@ -12,7 +12,7 @@ import { WorldMap, type MapLabel, type MapOptions } from './map';
 import { catOn, icon, initMenu, placesLabel } from './menu';
 import { bestLabel, initPractice, practiceBest, practiceKey, practiceLabel, practicePlaces, practiceSeed, type Practice } from './practice';
 import { ACCENTS, TIME, UNLOCK_ROUNDS, applySettings, better, dailyResult, gordianOpen, saveDaily, saveSelection, saveSettings, saveStats, selection, setLevel, settings, stats, today, type Accent, type Theme } from './prefs';
-import { ANSWERS, CATS, DAILY, GORDIAN, LEVELS, LEVEL_IDS, askOf, available, buildRound, codeOf, practiceAsk, practiceRound, rebuildRound, remember, seeded, levelOf, type Answers, type Ask, type Level, type Pool, type Question, type Selection, type Tempt } from './questions';
+import { ANSWERS, CATS, DAILY, GORDIAN, LEVELS, LEVEL_IDS, askOf, available, buildRound, codeOf, isCustom, practiceAsk, practiceRound, rebuildRound, remember, seeded, levelOf, type Answers, type Ask, type Level, type Pool, type Question, type Selection, type Tempt } from './questions';
 import { zoomable, type Zoom } from './zoom';
 import { sound } from './sound';
 
@@ -58,7 +58,12 @@ const ui = {
   ring: $('#ring') as unknown as SVGSVGElement,
   pct: $('#pct'),
   rank: $('#rank'),
-  rankLine: $('#rank-line'),
+  stats: $('#stats'),
+  statRun: $('#stat-run'),
+  statFast: $('#stat-fast'),
+  statTime: $('#stat-time'),
+  nextLevel: $('#next-level'),
+  nextGo: $<HTMLButtonElement>('#next-go'),
   resultsTitle: $('#results-title'),
   versus: $('#versus'),
   best: $('#best'),
@@ -109,6 +114,7 @@ interface Result {
   late?: boolean;  // the time ran out
   tries: number;   // answers sent, the right one included (one pick for a choice question)
   pick?: string;   // the option picked (choice questions)
+  ms: number;      // how long it took
 }
 /** Each answer ties a knot: tight on the first try, loose after a retry (worth half), or the rope frays. */
 type Knot = 'tight' | 'loose' | 'miss';
@@ -177,7 +183,7 @@ async function load() {
     globe.chainNear = chainNear;
     globe.countryAt = countryAt;
     if (!screens.start.hidden) globe.play();
-  }).catch(() => { ui.globe.hidden = true; });
+  }).catch(() => { ui.globe.parentElement!.hidden = true; });
 
   const [data, topo] = await Promise.all([
     fetch(url('data/countries.json')).then(r => r.json() as Promise<KBData>),
@@ -189,6 +195,7 @@ async function load() {
   reviewZoom = zoomable(ui.reviewMap, world);
   pools = { country: kb.countries, city: kb.cities, language: kb.languages, peak: kb.peaks, river: kb.rivers };
   ui.edition.textContent = data.edition;
+  paintNumbers(data);
   menu = initMenu(kb, ui.menu, paintHome);
   practiceSheet = initPractice(kb, ui.practiceSheet, p => start(selection, false, null, p));
   [ui.play, ui.daily, ui.practice].forEach(b => (b.disabled = false));
@@ -286,6 +293,8 @@ function show(name: keyof typeof screens) {
   document.body.classList.toggle('gordian', name !== 'start' && state.gordian);
   themeColor();
   if (name === 'start') { globe?.play(); sky.play(); paintHome(); } else { globe?.pause(); sky.pause(); }
+  sound.scene(name === 'quiz' ? 'music-quiz' : 'music-home');
+  if (name !== 'results') clearKnotSounds();
   window.scrollTo({ top: 0 });
 }
 /** The browser's own bar takes the colour of the page. */
@@ -580,7 +589,8 @@ function finish(q: Question, ok: boolean, typed: string, late = false, pick?: st
   clearTimeout(clearing);
   clearing = 0;
   ui.input.classList.remove('wrong');
-  state.results.push({ q, ok, typed, late, tries: q.format === 'type' ? state.tries + (ok ? 1 : 0) : 1, pick });
+  const ms = Math.min(TIME * 1000, Math.max(0, TIME * 1000 - (state.deadline - performance.now())));
+  state.results.push({ q, ok, typed, late, tries: q.format === 'type' ? state.tries + (ok ? 1 : 0) : 1, pick, ms });
   state.streak = ok ? state.streak + 1 : 0;
   state.best = Math.max(state.best, state.streak);
   const knot = knotOf(state.results[state.results.length - 1]);
@@ -606,7 +616,7 @@ function finish(q: Question, ok: boolean, typed: string, late = false, pick?: st
   }
   if (q.media.kind === 'map' && q.reveal?.length) world.reveal(q.reveal.map(id => kb.country(id)?.num).filter((n): n is string => !!n));
 
-  if (ok) sound.right(state.streak - 1); else if (late) sound.timeout(); else sound.wrong();
+  if (knot === 'loose') sound.loose(state.streak - 1); else if (ok) sound.right(state.streak - 1); else if (late) sound.timeout(); else sound.wrong();
   clearTimeout(state.advance);
   state.advance = window.setTimeout(next, ok ? 900 : 2200);
 }
@@ -702,15 +712,23 @@ ui.trail.addEventListener('scroll', () => ui.trail.classList.toggle('scrolled', 
 
 // ---------------------------------------------------------------- results
 /** Ranks are knots, from a loose end to the knot with no end. */
-const RANKS: [number, string, string][] = [
-  [100, 'Endless knot', 'No beginning, no end, no mistakes.'],
-  [90, 'Figure-eight', 'The knot climbers trust their lives to.'],
-  [75, 'Bowline', 'The king of knots. It holds.'],
-  [50, 'Reef knot', 'Square, steady, sailor-approved.'],
-  [25, 'Granny knot', 'It holds. Mostly.'],
-  [0, 'Loose end', 'Plenty of rope left to tie.'],
+const RANKS: [number, string][] = [
+  [100, 'Endless knot'],
+  [90, 'Figure-eight'],
+  [75, 'Bowline'],
+  [50, 'Reef knot'],
+  [25, 'Granny knot'],
+  [0, 'Loose end'],
 ];
 const rankOf = (pct: number) => RANKS.find(([min]) => pct >= min)!;
+/** After a great round (90% or more) of a level's own questions, the next level is offered. Hard leads to Impossible
+ *  only once Impossible has been found. */
+const NEXT_AT = 90;
+function levelUp(): Level | null {
+  if (!state.level || isCustom(state.sel) || state.results.length < 5) return null;
+  const next = LEVEL_IDS[LEVEL_IDS.indexOf(state.level) + 1];
+  return next && (next !== 'impossible' || gordianOpen()) ? next : null;
+}
 
 /** The end of a round. A stopped round (Esc or Stop) shows the answers so far and nothing else: no score, no knot,
  *  no record, nothing to share, and it doesn't count towards what opens up after a few rounds. */
@@ -729,20 +747,26 @@ function end(stopped = false) {
   screens.results.classList.toggle('stopped', stopped);
   ui.resultsTitle.hidden = !state.gordian && !state.practice && !stopped;
   ui.resultsTitle.textContent = stopped ? 'Stopped' : state.practice ? 'Practice' : 'The Gordian Knot';
-  ui.versus.hidden = ui.best.hidden = ui.unlock.hidden = true;
+  ui.versus.hidden = ui.best.hidden = ui.unlock.hidden = ui.nextLevel.hidden = true;
   ui.shareNote.hidden = true;
   if (stopped) {
     state.last = null;
     ui.summary.textContent = `${total} of ${state.planned} answered · ${clock(ms)}`;
   } else {
     if (state.daily && total === 10) saveDaily(share);
-    const [, rank, line] = rankOf(pct);
+    const [, rank] = rankOf(pct);
     state.last = { pct, ms, rank, knots };
     ui.pct.textContent = `${pct}%`;
     ui.rank.textContent = rank;
-    ui.rankLine.textContent = line;
-    ui.summary.textContent = `${right} of ${total}${loose ? ` · ${loose} loose` : ''} · ${clock(ms)}${state.best >= 3 ? ` · ${state.best} in a row` : ''}`;
+    ui.summary.textContent = `${right} of ${total}${loose ? ` · ${loose} loose` : ''}`;
+    // The longest run of right answers, the fastest right answer and the time, as three small numbers.
+    const fastest = Math.min(...state.results.filter(r => r.ok).map(r => r.ms));
+    ui.statRun.textContent = String(state.best);
+    ui.statFast.textContent = Number.isFinite(fastest) ? `${(Math.max(0.1, fastest / 1000)).toFixed(1)} s` : '–';
+    ui.statTime.textContent = clock(ms);
     drawRing(knots);
+    const next = pct >= NEXT_AT ? levelUp() : null;
+    if (next) { ui.nextLevel.hidden = false; ui.nextGo.textContent = `Try ${LEVELS[next].label}`; ui.nextGo.dataset.level = next; }
 
     // Against a challenge: their score next to yours.
     if (state.challenge) {
@@ -1025,11 +1049,40 @@ function drawRing(knots: Knot[]) {
     svg += `<circle class="knot ${k}" cx="${x}" cy="${y}" r="${(k === 'loose' ? size * 0.9 : size).toFixed(2)}" style="--d:${sec((j + 0.5) * step)}"/>`;
   });
   ui.ring.innerHTML = svg;
+  // Sounds in time with the drawing: each knot as it pops up, then the score (not for very long rounds).
+  clearKnotSounds();
+  if (n > 60) return;
+  if (size >= 1.6) knots.forEach((k, j) => { if (k !== 'miss') knotSounds.push(window.setTimeout(() => sound.knot(j), (j + 0.5) * step * 1000)); });
+  knotSounds.push(window.setTimeout(() => sound.rank(knots.every(k => k === 'tight')), n * step * 1000 + 250));
+}
+let knotSounds: number[] = [];
+function clearKnotSounds() {
+  knotSounds.forEach(clearTimeout);
+  knotSounds = [];
+}
+
+// ---------------------------------------------------------------- about
+/** About opens with the numbers, counted from the facts as they are: a river crossing that only one source names
+ *  ("also") counts as a right answer but isn't a checked fact. */
+function paintNumbers(data: KBData) {
+  const put = (id: string, n: number) => { $(`#n-${id}`).textContent = n.toLocaleString('en-GB'); };
+  put('facts', data.facts.filter(f => f[3] !== 'also').length);
+  put('countries', data.countries.length);
+  put('capitals', data.cities.length);
+  put('languages', data.languages.length);
+  put('peaks', data.peaks.length);
+  put('rivers', data.rivers.length);
+  put('questions', available(kb, GORDIAN));
 }
 
 // ---------------------------------------------------------------- settings
 function paintSettings() {
-  $('#set-sound').setAttribute('aria-checked', String(!sound.muted));
+  const v = sound.levels;
+  $<HTMLInputElement>('#set-master').value = String(v.master);
+  $<HTMLInputElement>('#set-effects').value = String(v.effects);
+  $<HTMLInputElement>('#set-music').value = String(v.music);
+  $('#set-music-row').hidden = !sound.hasMusic;
+  for (const r of ui.settings.querySelectorAll<HTMLInputElement>('input[type="range"]')) r.style.setProperty('--fill', `${r.value}%`);
   $('#set-auto').setAttribute('aria-checked', String(settings.auto));
   $('#set-theme').innerHTML = (['light', 'dark'] as const).map(t => `<button type="button" data-theme="${t}" aria-pressed="${settings.theme === t}">${t[0].toUpperCase() + t.slice(1)}</button>`).join('');
   // The colour belongs to the theme shown: each theme keeps its own.
@@ -1039,8 +1092,7 @@ function paintSettings() {
 ui.settings.addEventListener('click', e => {
   const t = (e.target as HTMLElement).closest<HTMLButtonElement>('button');
   if (!t) return;
-  if (t.id === 'set-sound') sound.toggle();
-  else if (t.id === 'set-auto') settings.auto = !settings.auto;
+  if (t.id === 'set-auto') settings.auto = !settings.auto;
   else if (t.dataset.theme) settings.theme = t.dataset.theme as Theme;
   else if (t.dataset.accent) settings.accents[settings.theme] = t.dataset.accent as Accent;
   else return;
@@ -1050,6 +1102,19 @@ ui.settings.addEventListener('click', e => {
   globe?.refresh();
   sky.readAccent();
   menu?.paint();
+});
+
+// The volumes change as the slider moves; the effects play a sample once it is let go.
+ui.settings.addEventListener('input', e => {
+  const r = e.target as HTMLInputElement;
+  const which = ({ 'set-master': 'master', 'set-effects': 'effects', 'set-music': 'music' } as const)[r.id as 'set-master'];
+  if (!which) return;
+  sound.set({ [which]: Number(r.value) });
+  r.style.setProperty('--fill', `${r.value}%`);
+});
+ui.settings.addEventListener('change', e => {
+  const id = (e.target as HTMLElement).id;
+  if (id === 'set-master' || id === 'set-effects') sound.sample();
 });
 
 // ---------------------------------------------------------------- events
@@ -1079,6 +1144,23 @@ ui.skip.addEventListener('click', () => (state.locked ? next() : giveUp()));
 ui.next.addEventListener('click', next);
 ui.quit.addEventListener('click', quit);
 ui.again.addEventListener('click', () => start(state.sel, state.daily, null, state.practice));
+// ⓘ buttons show the few words they control, and hide them again; a sheet closes with them hidden.
+document.addEventListener('click', e => {
+  const b = (e.target as HTMLElement).closest<HTMLButtonElement>('button.info[aria-controls]');
+  if (!b) return;
+  const box = document.getElementById(b.getAttribute('aria-controls')!)!;
+  box.hidden = !box.hidden;
+  b.setAttribute('aria-expanded', String(!box.hidden));
+});
+for (const d of document.querySelectorAll('dialog')) d.addEventListener('close', () => {
+  for (const b of d.querySelectorAll<HTMLButtonElement>('button.info[aria-expanded="true"]')) b.click();
+});
+// "Too easy? Try Medium": the next level, at once.
+ui.nextGo.addEventListener('click', () => {
+  setLevel(ui.nextGo.dataset.level as Level);
+  saveSelection();
+  start(selection);
+});
 // A challenge link opened while the site is already open: show it on the home screen (but never in the middle of a round).
 window.addEventListener('hashchange', () => {
   const c = parseChallenge(location.hash);
@@ -1113,6 +1195,11 @@ document.addEventListener('keydown', e => {
 });
 
 paintHome();
+sound.scene('music-home');
+// The Gordian Knot's heartbeat at the edges of the screen gets its sound, beat for beat, while a question is open.
+document.body.addEventListener('animationiteration', e => {
+  if (e.animationName === 'heartbeat' && !screens.quiz.hidden) sound.heartbeat();
+});
 load().catch(() => {
   ui.playSub.textContent = 'Could not load the data. Please reload.';
   ui.playSub.hidden = false;

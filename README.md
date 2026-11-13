@@ -27,7 +27,9 @@ configuration, and decides how well known the places asked about are. Impossible
 
 Answers: Choose (four options), Type, or Both (each question its own way: a flag to name is typed, a flag to find is
 picked). Every question type has both forms. On Easy the wrong options are far apart and familiar; on Hard and
-Impossible they are the tempting ones (neighbours, nearby rivers).
+Impossible they are the tempting ones (neighbours, nearby rivers, and flags that look alike: Chad's among Romania's and
+Andorra's). Which flags look alike is worked out once by `scripts/flags-alike.mjs`, which draws every flag small and
+compares them colour by colour and by layout, also mirrored (`data/countries/flags-alike.json`).
 
 How well known: countries by `data/countries/tiers.csv` (37 famous, 37 well known, the rest); languages through the
 countries where most people speak them (not Irish or Romansh); rivers of 2,500 km and more plus a list of famous ones;
@@ -43,7 +45,9 @@ right side is left free: an advertisement can go there later (`.rail.right`, com
 the answer box and the buttons.
 
 Scoring is a rope of knots: right first time ties a tight knot (1 point), right after a retry a loose one (half a point),
-and a miss frays the rope. The score ring shows the rope, and the rank is a knot (Loose end to Endless knot). Share
+and a miss frays the rope. The score ring shows the rope, and the rank is a knot (Loose end to Endless knot). Under it,
+three numbers: the best run of right answers, the fastest right answer and the time. After 90% or more on a level's own
+questions, the next level is offered ("Too easy? Try Medium"). Share
 sends the score with a challenge link (`#c=...`: the question codes and subjects plus a seed, so a friend gets the same
 questions, asked the same way, and a score to beat); the share icon at the top shares the site. Stopping a round shows
 the answers so far, without a score.
@@ -56,6 +60,12 @@ Practice: one question type (Country → capital, Flag → country...) in the wh
 there is, in the same order every time (the order and the options come from a seed named after the practice, such as
 `p-C-eu-t`: capitals of Europe, typed). Typed or picked from four. Each practice keeps its best run (score, then time).
 For learning a set until it sticks, and for speedruns.
+
+The logo is the world in a loop of rope whose ends cross below it, as in a knot; the globe on the home screen sits in the
+same loop. A few words are only shown when asked for, behind an ⓘ (what the levels mean, what Practice is, what
+Auto-submit does). About opens with the numbers (194 countries, 1,417 checked facts...), counted from the facts as they
+load, then how a fact gets in, how to play, and the sources. Settings has three volumes (Volume, Effects, Music); the
+sounds and music go in named slots, listed in [docs/AUDIO.md](docs/AUDIO.md).
 After three rounds Impossible appears, and under it All: The Gordian Knot, every question in the game (2,109), typed,
 in crimson, with one record (best score, then fastest).
 
@@ -72,13 +82,14 @@ src/styles/global.css     all styles; colours are tokens with light and dark val
 src/scripts/app.ts        the quiz screens, keys and timing
 src/scripts/menu.ts       the configuration: level, answers, what, where, how many
 src/scripts/practice.ts   Practice: one question type in one region, in a fixed order, with a best run each
-src/scripts/prefs.ts      what the browser remembers: the selection, settings (sound, auto-submit, theme, colour), the Daily, stats
+src/scripts/prefs.ts      what the browser remembers: the selection, settings (auto-submit, theme, colour), the Daily, stats
 src/scripts/questions.ts  question templates (13 kinds, one clue each, given/asked tags), the levels and the round builder: approved facts in, questions out
 src/scripts/kb.ts         the knowledge base as the site reads it
 src/scripts/map.ts        the map: a globe turned and zoomed to the asked country, capital, peak or river
 src/scripts/globe.ts      the globe on the start screen: turns by itself, can be dragged, names the country under the pointer
 src/scripts/sky.ts        the night sky behind the start screen: stars that light up and tie together when touched
-src/scripts/sound.ts      small synthesised placeholder sounds (no audio files yet)
+src/scripts/sound.ts      sounds and music in named slots (docs/AUDIO.md): a file in public/audio per slot, else a
+                          small synthesised placeholder; the three volumes in Settings
 public/data/              countries.json (npm run build:data), rivers.json (npm run import), world.json and globe.json (npm run build:map)
 public/flags/             flags from flag-icons (npm run build:flags)
 ```

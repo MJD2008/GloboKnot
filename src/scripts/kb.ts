@@ -24,6 +24,8 @@ export interface KBData {
   rivers: River[];
   facts: Fact[];
   confusables: [string, string][];
+  /** For each country, the flags most like its own and how far apart they are (0 the same, 1 nothing alike). */
+  flagsAlike?: Record<string, [string, number][]>;
 }
 
 export const CONTINENTS = ['Africa', 'Asia', 'Europe', 'North America', 'South America', 'Oceania'] as const;
@@ -44,6 +46,7 @@ export class Knowledge {
   private readonly byId = new Map<string, Entity>();
   private readonly fwd = new Map<string, Fact[]>();
   private readonly back = new Map<string, Fact[]>();
+  private readonly alike: Record<string, [string, number][]>;
 
   constructor(data: KBData) {
     this.edition = data.edition;
@@ -53,6 +56,7 @@ export class Knowledge {
     this.languages = data.languages;
     this.peaks = data.peaks ?? [];
     this.rivers = data.rivers ?? [];
+    this.alike = data.flagsAlike ?? {};
     for (const e of [...data.countries, ...data.cities, ...data.languages, ...this.peaks, ...this.rivers]) this.byId.set(e.id, e);
     for (const f of data.facts) {
       push(this.fwd, `${f[0]}|${f[1]}`, f);
@@ -77,6 +81,8 @@ export class Knowledge {
   neighbours(country: string): string[] {
     return [...this.out(country, 'borders').map(f => f[2]), ...this.in(country, 'borders').map(f => f[0])];
   }
+  /** The flags most like a country's own, most alike first, with how far apart they are (scripts/flags-alike.mjs). */
+  flagsLike(country: string): [string, number][] { return this.alike[country] ?? []; }
   continent(country: string): string | undefined { return this.out(country, 'continent')[0]?.[2]; }
 
   /** The language and the languages too close to tell apart in writing (Serbian, Croatian, Bosnian...). */

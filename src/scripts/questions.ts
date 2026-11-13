@@ -142,6 +142,12 @@ function wrongCountries(kb: Knowledge, c: string, n: number, rng: Rng, tempt: Te
   const weight = (o: string) => (close?.has(o) ? w[0] : near(o)) * familiar(kb, o, tempt);
   return weightedSample(new Map(kb.countries.filter(o => !skip.has(o.id)).map(o => [o.id, weight(o.id)])), n, rng);
 }
+/** Wrong options for a flag question. On Hard and Impossible two of them are flags that look like the right one (the
+ *  closer, the likelier: scripts/flags-alike.mjs), the rest from nearby, so the eye has to look closely. */
+function wrongFlags(kb: Knowledge, c: string, n: number, rng: Rng, tempt: Tempt, w = NEAR[tempt]): string[] {
+  const alike = tempt < 2 ? [] : weightedSample(new Map(kb.flagsLike(c).filter(([, d]) => d < 0.7).map(([o, d]) => [o, (0.75 - d) ** 2])), Math.min(2, n), rng);
+  return [...alike, ...wrongCountries(kb, c, n - alike.length, rng, tempt, alike, w)];
+}
 /** The first n of `ids` with names unlike each other's and unlike those of `not` (two rivers can share a name). */
 function distinctNames(kb: Knowledge, ids: string[], n: number, not: string[]): string[] {
   const names = new Set(not.map(x => kb.name(x))), out: string[] = [];
@@ -275,7 +281,7 @@ export const TEMPLATES: Template[] = [
     make: (kb, id, rng, { format, tempt }) => inForm(kb, rng,
       { key: `flag:${id}`, kind: 'flag.name', format, prompt: 'Which country’s flag is this?', clue: 'Flag',
         media: { kind: 'flag', country: id }, pools: ['country'], accept: [id], countries: [id] },
-      country(kb, id).name, () => id, () => wrongCountries(kb, id, 3, rng, tempt)),
+      country(kb, id).name, () => id, () => wrongFlags(kb, id, 3, rng, tempt)),
   },
   {
     // Its answer is a picture, so it is always four flags to pick from.
@@ -283,7 +289,7 @@ export const TEMPLATES: Template[] = [
     subjects: (kb, inPlace) => countriesIn(kb, inPlace),
     fame: tierFame,
     make: (kb, id, rng, { tempt }) => {
-      const wrong = wrongCountries(kb, id, 3, rng, tempt, [], tempt === 2 ? [8, 3, 0.3] : NEAR[tempt]);
+      const wrong = wrongFlags(kb, id, 3, rng, tempt, tempt === 2 ? [8, 3, 0.3] : NEAR[tempt]);
       return { key: `flag-pick:${id}`, kind: 'flag.pick', format: 'choice', prompt: `Which is the flag of ${theName(kb, id)}?`,
         clue: `Flag of ${theName(kb, id)}`, media: { kind: 'none' }, pools: ['country'], accept: [id], answer: country(kb, id).name, countries: [id],
         choices: shuffle([id, ...wrong], rng).map(x => ({ id: x, label: kb.name(x), flag: country(kb, x).flag })) };

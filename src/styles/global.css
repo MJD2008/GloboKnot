@@ -23,7 +23,7 @@
   --border: #b9c1c8;
   --hl: var(--a-light, #2f63ff);
   --hl-line: #c24a22;
-  --flag-edge: rgba(0, 0, 0, 0.08);
+  --flag-edge: rgba(18, 24, 33, 0.24); /* a hairline round every flag, so white and dark edges still read */
   --globe-shadow: rgba(40, 80, 120, 0.18);
   --shadow-sm: 0 1px 2px rgba(20, 22, 30, 0.05);
   --shadow: 0 1px 2px rgba(20, 22, 30, 0.05), 0 10px 30px rgba(20, 22, 30, 0.07);
@@ -61,7 +61,7 @@ body.home > .top {
   --border: #5a6774;
   --hl: var(--a-dark, #ff7447);
   --hl-line: #ffb08f;
-  --flag-edge: rgba(255, 255, 255, 0.1);
+  --flag-edge: rgba(255, 255, 255, 0.26);
   --globe-shadow: rgba(0, 0, 0, 0.5);
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
   --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 10px 30px rgba(0, 0, 0, 0.35);
@@ -140,9 +140,11 @@ kbd {
   font-size: 1.15rem;
   letter-spacing: -0.03em;
 }
-.logo { width: 28px; height: 28px; }
+.logo { width: 30px; height: 30px; overflow: visible; }
 .logo circle { fill: var(--accent); transition: fill 0.2s; }
-.logo path { fill: none; stroke: #fff; stroke-width: 1.8; stroke-linecap: round; }
+.logo .lines { fill: none; stroke: #fff; stroke-width: 1.5; stroke-linecap: round; }
+.logo .rope { fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+body.home .logo circle { fill: var(--glow, var(--accent)); }
 .badge {
   font-size: 0.68rem;
   font-weight: 700;
@@ -185,7 +187,7 @@ kbd {
 /* ---------- home: a night sky in both themes */
 .top { position: relative; z-index: 2; }
 .start { padding-top: clamp(0px, 2vh, 28px); text-align: center; }
-.start > :not(.sky):not(.globe-label) { position: relative; z-index: 1; }
+.start > :not(.sky):not(.globe-label):not(.globe-box) { position: relative; z-index: 1; }
 .sky {
   position: fixed;
   inset: 0;
@@ -195,12 +197,30 @@ kbd {
   pointer-events: none;
   background: radial-gradient(ellipse 90% 70% at 50% 28%, #101a33 0%, #080d1b 55%, #04060c 100%);
 }
+/* The globe sits in a loop of rope whose ends cross below it, like the logo: the box is the globe, the rope hangs
+   out of it (10.5% above and at the sides, 28% below), so the box keeps that much room round it. */
+.globe-box {
+  --gw: min(100%, 270px, 31vh);
+  position: relative;
+  width: var(--gw);
+  margin: calc(var(--gw) * 0.09) auto calc(var(--gw) * 0.28 + 6px);
+}
+.globe-rope { position: absolute; z-index: 1; left: -10.5%; top: -10.5%; width: 121%; height: auto; overflow: visible; pointer-events: none; }
+.globe-rope .rope { fill: none; stroke: var(--glow, var(--accent)); stroke-width: 5; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 1; stroke-dashoffset: 1; animation: draw 1.3s cubic-bezier(0.5, 0, 0.3, 1) 0.25s forwards; transition: stroke 0.2s; }
+.globe-rope .over { opacity: 0; animation: appear 0.15s ease-out 1.45s forwards; }
+.globe-rope .over path { fill: none; }
+.globe-rope .over .gap { stroke: #060912; stroke-width: 7.6; }
+.globe-rope .over .top { stroke: var(--glow, var(--accent)); stroke-width: 5; transition: stroke 0.2s; }
+.globe-rope .over .twist { opacity: 0.4; animation: none; }
+.globe-rope .twist { fill: none; stroke: #040812; stroke-width: 0.9; stroke-linecap: round; opacity: 0; animation: twist 0.5s ease-out 1.5s forwards; }
 .globe {
+  position: relative;
+  z-index: 1;
   display: block;
-  width: min(100%, 300px, 34vh);
+  width: 100%;
   height: auto;
   aspect-ratio: 1 / 1;
-  margin: 0 auto 14px;
+  margin: 0;
   cursor: grab;
   touch-action: none;
   -webkit-user-select: none;
@@ -670,8 +690,17 @@ kbd {
 .score-in b { font-size: clamp(2.8rem, 14vw, 4rem); font-weight: 800; letter-spacing: -0.05em; line-height: 1; font-variant-numeric: tabular-nums; animation: rise 0.4s ease-out; }
 .score-in span { font-weight: 700; color: var(--muted); margin-top: 6px; font-size: 0.95rem; }
 .results-title { margin: 0 0 10px; font: 500 15px/1 'Pixelify Sans', ui-monospace, monospace; text-transform: uppercase; letter-spacing: 0.1em; color: var(--accent); }
-.rank-line { margin: 10px 0 0; font-weight: 600; font-style: italic; color: var(--ink); }
-.summary { color: var(--muted); font-weight: 650; font-size: 1.05rem; margin: 6px 0 20px; font-variant-numeric: tabular-nums; }
+/* Three small numbers under the score: best run, fastest answer, time. */
+.stats { display: flex; justify-content: center; gap: 10px; margin: 0 auto 20px; padding: 0; max-width: 420px; }
+.stats div { flex: 1; display: flex; flex-direction: column-reverse; align-items: center; gap: 2px; padding: 10px 6px; border-radius: 14px; background: var(--surface); box-shadow: 0 0 0 1px var(--line); }
+.stats dd { margin: 0; font-size: 1.35rem; font-weight: 800; letter-spacing: -0.02em; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.stats dt { color: var(--muted); font-size: 0.78rem; font-weight: 650; text-transform: uppercase; letter-spacing: 0.06em; }
+/* After a great round: the next level, one tap away. */
+.next-level { margin: -6px auto 18px; font-weight: 650; color: var(--muted); animation: rise 0.4s ease-out 1s both; }
+.next-level .link { border: 0; background: none; color: var(--accent); box-shadow: inset 0 0 0 1.5px var(--accent); font: inherit; font-weight: 750; padding: 6px 14px; margin-left: 6px; border-radius: 99px; cursor: pointer; }
+.next-level .link::after { content: ' →'; }
+.next-level .link:hover { background: var(--accent); color: var(--accent-ink); }
+.summary { color: var(--muted); font-weight: 650; font-size: 1.05rem; margin: 10px 0 14px; font-variant-numeric: tabular-nums; }
 .versus, .best { margin: -8px auto 18px; width: fit-content; max-width: 100%; padding: 8px 14px; border-radius: 12px; font-weight: 700; background: var(--surface); box-shadow: 0 0 0 1px var(--line); }
 .versus.won { color: var(--ok); box-shadow: 0 0 0 1.5px var(--ok); }
 .versus.lost { color: var(--bad); }
@@ -928,6 +957,19 @@ kbd {
 .sizes .all { position: relative; }
 .sizes .all.new::after { content: ''; position: absolute; top: 4px; right: 4px; width: 7px; height: 7px; border-radius: 50%; }
 .hint { color: var(--muted); font-size: 0.88rem; margin: 6px 0 0; }
+/* ⓘ: a small round button by a heading or a setting; its few words open in a box under it. */
+.info { position: relative; display: inline-grid; place-items: center; width: 22px; height: 22px; padding: 0; margin: -4px 0 -4px 2px; border: 0; border-radius: 50%; background: none; color: var(--muted); cursor: pointer; vertical-align: middle; }
+.info::after { content: ''; position: absolute; inset: -10px; } /* a finger-sized target */
+.info svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; }
+.info:hover, .info[aria-expanded="true"] { color: var(--accent); }
+h3 .info { margin-top: -6px; margin-bottom: -6px; }
+.info-text { margin: 8px 0 0; padding: 10px 12px; border-radius: 12px; background: var(--bg); box-shadow: 0 0 0 1px var(--line); color: var(--muted); font-size: 0.88rem; font-weight: 550; line-height: 1.45; animation: rise 0.2s ease-out; }
+.setting .info-text { flex-basis: 100%; margin: 0; }
+.level-about { display: grid; gap: 6px; }
+.level-about div { display: grid; grid-template-columns: 6.2em 1fr; gap: 8px; }
+.level-about dt { font-weight: 750; color: var(--ink); }
+.level-about .impossible dt { color: var(--crimson); }
+.level-about dd { margin: 0; }
 /* The level: three steps (four once Impossible shows itself, in crimson) and one line on what the level asks. */
 .levels, .modes { display: flex; }
 .levels button, .modes button { flex: 1 1 auto; min-width: 0; padding-left: 6px; padding-right: 6px; }
@@ -951,6 +993,14 @@ kbd {
 
 .setting { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 0; border-bottom: 1px solid var(--line); font-weight: 650; flex-wrap: wrap; }
 .setting small { display: block; color: var(--muted); font-weight: 550; font-size: 0.8rem; }
+/* The volumes: a track filled with the accent up to the thumb. */
+.setting.volume input { flex: 0 1 58%; min-width: 150px; height: 28px; margin: 0; background: none; cursor: pointer; -webkit-appearance: none; appearance: none; --fill: 100%; }
+.setting.volume input::-webkit-slider-runnable-track { height: 6px; border-radius: 3px; background: linear-gradient(to right, var(--accent) var(--fill), var(--line) var(--fill)); }
+.setting.volume input::-moz-range-track { height: 6px; border-radius: 3px; background: var(--line); }
+.setting.volume input::-moz-range-progress { height: 6px; border-radius: 3px; background: var(--accent); }
+.setting.volume input::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 22px; height: 22px; margin-top: -8px; border: 0; border-radius: 50%; background: var(--surface); box-shadow: 0 0 0 1.5px var(--accent), 0 2px 6px rgba(0, 0, 0, 0.2); }
+.setting.volume input::-moz-range-thumb { width: 22px; height: 22px; border: 0; border-radius: 50%; background: var(--surface); box-shadow: 0 0 0 1.5px var(--accent), 0 2px 6px rgba(0, 0, 0, 0.2); }
+.setting.volume input:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; border-radius: 4px; }
 .switch { width: 50px; height: 30px; border-radius: 99px; border: 0; background: var(--line-strong); position: relative; cursor: pointer; transition: background 0.15s; }
 .switch i { position: absolute; left: 3px; top: 3px; width: 24px; height: 24px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2); transition: transform 0.15s; }
 .switch[aria-checked="true"] { background: var(--accent); }
@@ -960,7 +1010,29 @@ kbd {
 .swatches button[aria-pressed="true"] { box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--ink); }
 .swatches button:active { transform: scale(0.92); }
 
-.about .lead { font-size: 1.05rem; font-weight: 550; margin: 14px 0 10px; }
+.about .lead { font-size: 1.05rem; font-weight: 650; margin: 14px 0 12px; }
+/* About opens with the numbers: the checked facts big, then what they are about. */
+.numbers { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.numbers div { display: flex; flex-direction: column; padding: 10px 12px; border-radius: 14px; background: var(--bg); box-shadow: 0 0 0 1px var(--line); min-width: 0; }
+.numbers b { font-size: 1.35rem; font-weight: 800; letter-spacing: -0.02em; line-height: 1.15; font-variant-numeric: tabular-nums; }
+.numbers span { color: var(--muted); font-size: 0.8rem; font-weight: 650; }
+.numbers .big { grid-column: 1 / -1; flex-direction: row; align-items: baseline; gap: 10px; padding: 14px 16px; background: var(--accent); color: var(--accent-ink); box-shadow: none; }
+.numbers .big b { font-size: 2.4rem; }
+.numbers .big span { color: inherit; font-size: 1.05rem; font-weight: 700; opacity: 0.92; }
+/* How a fact gets in: three steps down a thin line. */
+.steps { list-style: none; padding: 0; margin: 0; position: relative; }
+.steps::before { content: ''; position: absolute; left: 15px; top: 20px; bottom: 20px; width: 2px; background: var(--line); }
+.steps li { position: relative; display: flex; align-items: center; gap: 12px; padding: 6px 0; font-weight: 600; }
+.steps svg { width: 32px; height: 32px; flex: none; padding: 5px; border-radius: 50%; background: var(--surface); box-shadow: 0 0 0 1.5px var(--line); fill: none; stroke: var(--accent); stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+/* the knots, drawn: tight, loose, and a miss where the rope is cut */
+.how .knot-legend { display: block; width: min(100%, 264px); height: auto; margin: 10px 0 2px; overflow: visible; fill: none; stroke: none; }
+.knot-legend .rope { fill: none; stroke: var(--accent); stroke-width: 8; }
+.knot-legend .twist { fill: none; stroke: var(--surface); stroke-width: 1.4; stroke-linecap: round; opacity: 0.85; }
+.knot-legend .fray { fill: none; stroke: var(--accent); stroke-width: 1.5; stroke-linecap: round; }
+.knot-legend .knot { stroke-width: 2.5; }
+.knot-legend .tight { fill: var(--accent); stroke: var(--surface); }
+.knot-legend .loose { fill: var(--surface); stroke: var(--accent); }
+.knot-legend text { fill: var(--muted); stroke: none; font-size: 10.5px; font-weight: 650; text-anchor: middle; }
 .how { list-style: none; padding: 0; margin: 0; }
 .how li { display: flex; gap: 12px; align-items: flex-start; padding: 8px 0; }
 .how svg { width: 22px; height: 22px; flex: none; fill: none; stroke: var(--icon); stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; margin-top: 1px; }
@@ -1025,7 +1097,7 @@ kbd {
   .hero { margin-bottom: 16px; }
 }
 @media (max-height: 720px) and (max-width: 480px) {
-  .globe { width: min(100%, 28vh); margin-bottom: 8px; }
+  .globe-box { --gw: min(100%, 27vh); }
   .hero { font-size: min(1.9rem, 7.6vw); }
 }
 /* Small phones (320-400 px): the buttons at the top must stay on screen. */
@@ -1035,7 +1107,7 @@ kbd {
   .icon-btn { width: 38px; height: 38px; }
 }
 @media (max-height: 600px) and (max-width: 480px) {
-  .globe { width: min(100%, 20vh); }
+  .globe-box { --gw: min(100%, 19vh); }
   .hero { font-size: min(1.7rem, 7.6vw); margin-bottom: 12px; }
 }
 
@@ -1057,7 +1129,7 @@ body.gordian::before {
 :root[data-theme="dark"] body.gordian::before { box-shadow: inset 0 0 22vmin rgba(255, 40, 80, 0.3); }
 @keyframes heartbeat { 0% { opacity: 0.35; } 8% { opacity: 1; } 20% { opacity: 0.5; } 30% { opacity: 0.85; } 55%, 100% { opacity: 0.35; } }
 /* A stopped round: only the answers so far. */
-.results.stopped .score, .results.stopped .rank-line, .results.stopped #share { display: none; }
+.results.stopped .score, .results.stopped .stats, .results.stopped #share { display: none; }
 .results.stopped .results-title { color: var(--muted); }
 
 /* ---------- motion */
@@ -1081,6 +1153,7 @@ body.gordian::before {
 @keyframes knot { to { transform: scale(1); } }
 @keyframes glow { 50% { filter: drop-shadow(0 0 12px var(--accent)); } }
 @keyframes fadein { from { opacity: 0; } }
+@keyframes appear { to { opacity: 1; } }
 @keyframes slidein { from { transform: translateX(40px); opacity: 0; } }
 /* A heartbeat: lub-dub, then rest. */
 @keyframes beat { 0% { transform: scaleY(1); } 8% { transform: scaleY(1.7); } 18% { transform: scaleY(1); } 28% { transform: scaleY(1.4); } 42%, 100% { transform: scaleY(1); } }

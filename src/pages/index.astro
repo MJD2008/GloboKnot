@@ -1,12 +1,64 @@
 ---
 import Base from '../layouts/Base.astro';
+import { readdirSync } from 'node:fs';
+// The sounds James has made so far: every audio file in public/audio, listed into the page so the game knows which
+// slots have one (see docs/AUDIO.md). Adding a sound is dropping the file in and building again.
+const AUDIO_FILES = (() => {
+  try { return readdirSync('public/audio').filter(n => /\.(mp3|m4a|ogg|wav)$/i.test(n)).sort(); } catch { return []; }
+})();
 const X = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg>';
+// About: a short rope with a tight knot, a loose one and a miss, drawn the way the ring on the results draws them.
+const Y = 18;
+const lay = (x0: number, x1: number) => {
+  let d = '';
+  for (let x = x0 + 4; x < x1 - 2; x += 7) d += `M${x - 2.6} ${Y - 3.2}L${x + 2.6} ${Y + 3.2}`;
+  return d;
+};
+const fray = (x: number, dir: number) => ([[-3.4, -6.5, 0.75], [-1.2, -2.2, 1], [1.2, 2.6, 0.9], [3.4, 6.9, 0.65]] as const)
+  .map(([o0, o1, k]) => `M${x} ${Y + o0}L${(x + dir * 13 * k).toFixed(1)} ${Y + o1}`).join('');
+const ROPE = `<svg class="knot-legend" viewBox="0 0 264 44" role="img" aria-label="A tight knot, a loose knot, and a miss where the rope is cut and frays">`
+  + `<path class="rope" d="M4 ${Y}H178M216 ${Y}H260"/><path class="twist" d="${lay(4, 178)}${lay(216, 260)}"/>`
+  + `<path class="fray" d="${fray(178, 1)}${fray(216, -1)}"/>`
+  + `<circle class="knot tight" cx="56" cy="${Y}" r="7.5"/><circle class="knot loose" cx="124" cy="${Y}" r="6.8"/>`
+  + `<text x="56" y="42">tight · 1</text><text x="124" y="42">loose · ½</text><text x="197" y="42">miss · 0</text></svg>`;
+// The home globe in a loop of rope, as in the logo: in units where the globe's box is 0-100, the rope runs round it at
+// radius 57.4, leaves the ring 24 degrees either side of the bottom and the two ends cross under it. Short slanted
+// lines across it, like the ring on the results, make it a rope.
+const R = 57.4, PHI = (24 * Math.PI) / 180;
+const pr = [50 + R * Math.sin(PHI), 50 + R * Math.cos(PHI)], pl = [100 - pr[0], pr[1]];
+const dir = [-Math.cos(PHI), Math.sin(PHI)], reach = ((pr[0] - 50) / Math.cos(PHI)) * 2.2;
+const endL = [pr[0] + dir[0] * reach, pr[1] + dir[1] * reach], endR = [100 - endL[0], endL[1]];
+const cross = pr[1] + (pr[0] - 50) * Math.tan(PHI); // where the two ends cross, under the middle of the globe
+const f = (n: number) => n.toFixed(2);
+const over = `M${f(50 - 7 * Math.cos(PHI))} ${f(cross - 7 * Math.sin(PHI))}L${f(50 + 7 * Math.cos(PHI))} ${f(cross + 7 * Math.sin(PHI))}`;
+const twistAt = (x: number, y: number, nx: number, ny: number) => // across the rope at (x, y), slanted along it
+  `M${f(x - nx * 2.2 + ny * 1.3)} ${f(y - ny * 2.2 - nx * 1.3)}L${f(x + nx * 2.2 - ny * 1.3)} ${f(y + ny * 2.2 + nx * 1.3)}`;
+let twists = '';
+for (let a = PHI + 0.04; a < 2 * Math.PI - PHI - 0.03; a += 4.4 / R) { // round the ring: a = 0 is the bottom
+  twists += twistAt(50 + R * Math.sin(a), 50 + R * Math.cos(a), Math.sin(a), Math.cos(a));
+}
+for (const [s, e] of [[pr, endL], [pl, endR]]) { // down each end
+  const len = Math.hypot(e[0] - s[0], e[1] - s[1]), ux = (e[0] - s[0]) / len, uy = (e[1] - s[1]) / len;
+  for (let d = 3; d < len - 2.5; d += 4.4) twists += twistAt(s[0] + ux * d, s[1] + uy * d, -uy, ux);
+}
+let overTwists = '';
+for (let d = -6.6; d < 7; d += 4.4) overTwists += twistAt(50 + d * Math.cos(PHI), cross + d * Math.sin(PHI), -Math.sin(PHI), Math.cos(PHI));
+const GLOBE_ROPE = `<svg class="globe-rope" viewBox="-10.5 -10.5 121 140" aria-hidden="true">`
+  + `<path class="rope" pathLength="1" d="M${f(endL[0])} ${f(endL[1])}L${f(pr[0])} ${f(pr[1])}A${R} ${R} 0 1 0 ${f(pl[0])} ${f(pl[1])}L${f(endR[0])} ${f(endR[1])}"/>`
+  + `<path class="twist" d="${twists}"/>`
+  // where the ends cross, the second passes over the first: drawn again on a dark edge, which shows the gap
+  + `<g class="over"><path class="gap" d="${over}"/><path class="top" d="${over}"/><path class="twist" d="${overTwists}"/></g></svg>`;
+// ⓘ: a few words, only for whoever asks for them (the button shows the box it controls).
+const INFO = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" /><path d="M12 11v5.5M12 7.6v.2" /></svg>';
 ---
 <Base title="Globoknot" description="A geography quiz: countries, capitals, flags, languages, mountains and rivers. Pick what you want, type your answers; typos are forgiven.">
   <main class="wrap">
     <section id="start" class="screen start">
       <canvas id="sky" class="sky" aria-hidden="true"></canvas>
-      <canvas id="globe" class="globe" aria-label="A globe: drag to turn it, point at a country to see its name"></canvas>
+      <div class="globe-box">
+        <canvas id="globe" class="globe" aria-label="A globe: drag to turn it, point at a country to see its name"></canvas>
+        <Fragment set:html={GLOBE_ROPE} />
+      </div>
       <h1 class="hero">Our world <em>in a knot.</em></h1>
       <!-- The level, and under it what, where and how many in one grey line that opens the configuration. -->
       <div id="home-level" class="seg levels home-levels" role="group" aria-label="Level"></div>
@@ -81,10 +133,16 @@ const X = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 
           <span id="rank"></span>
         </div>
       </div>
-      <p id="rank-line" class="rank-line"></p>
       <p id="summary" class="summary"></p>
+      <!-- Three small numbers instead of words: the longest run of right answers, the fastest right answer, the time. -->
+      <dl id="stats" class="stats">
+        <div><dt>Best run</dt><dd id="stat-run">0</dd></div>
+        <div><dt>Fastest</dt><dd id="stat-fast">–</dd></div>
+        <div><dt>Time</dt><dd id="stat-time">0:00</dd></div>
+      </dl>
       <p id="versus" class="versus" hidden></p>
       <p id="best" class="best" hidden></p>
+      <p id="next-level" class="next-level" hidden>Too easy? <button id="next-go" class="link" type="button"></button></p>
       <p id="unlock" class="unlock" hidden>
         <b>Impossible is open.</b>
         <span>And under it, The Gordian Knot: every question in the game, in one go. Pick <em>Impossible</em>, then <em>All</em>.</span>
@@ -100,6 +158,7 @@ const X = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 
     </section>
   </main>
   <p id="toast" class="toast" role="status" hidden></p>
+  <script is:inline id="audio-files" type="application/json" set:html={JSON.stringify(AUDIO_FILES)} />
 
   <dialog id="review" class="review" aria-labelledby="review-title">
     <div class="review-in">
@@ -131,9 +190,10 @@ const X = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 
       </header>
       <div class="sheet-body">
         <section>
-          <h3>Level</h3>
+          <h3>Level <button class="info" type="button" aria-label="What the levels mean" aria-expanded="false" aria-controls="level-about" set:html={INFO} /></h3>
           <div id="menu-level" class="seg levels" role="group" aria-label="Level"></div>
-          <p id="menu-level-hint" class="hint" aria-live="polite"></p>
+          <dl id="level-about" class="info-text level-about" hidden></dl>
+          <p id="menu-level-hint" class="hint" aria-live="polite" hidden></p>
         </section>
         <section class="fixed-by-all">
           <h3>Answers</h3>
@@ -161,11 +221,11 @@ const X = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 
   <dialog id="practice-sheet" class="sheet" aria-labelledby="practice-title">
     <div class="sheet-in">
       <header class="sheet-head">
-        <h2 id="practice-title">Practice</h2>
+        <h2 id="practice-title">Practice <button class="info" type="button" aria-label="What Practice is" aria-expanded="false" aria-controls="practice-about" set:html={INFO} /></h2>
         <button class="icon-btn close" type="button" aria-label="Close" set:html={X} />
       </header>
       <div class="sheet-body">
-        <p class="hint">Every question of one kind, in the same order every time. Learn them, then beat your time.</p>
+        <p id="practice-about" class="info-text" hidden>Every question of one kind, in the same order every time. Learn them, then beat your time.</p>
         <section>
           <h3>What</h3>
           <div id="practice-what" class="p-what"></div>
@@ -192,13 +252,23 @@ const X = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 
         <button class="icon-btn close" type="button" aria-label="Close" set:html={X} />
       </header>
       <div class="sheet-body">
-        <div class="setting">
-          <span>Sound</span>
-          <button id="set-sound" class="switch" type="button" role="switch" aria-checked="true" aria-label="Sound"><i></i></button>
+        <!-- Three volumes: everything, the effects, and the music (shown once there is music in the build). -->
+        <div class="setting volume">
+          <span>Volume</span>
+          <input id="set-master" type="range" min="0" max="100" step="5" aria-label="Volume" />
+        </div>
+        <div class="setting volume">
+          <span>Effects</span>
+          <input id="set-effects" type="range" min="0" max="100" step="5" aria-label="Effects" />
+        </div>
+        <div id="set-music-row" class="setting volume" hidden>
+          <span>Music</span>
+          <input id="set-music" type="range" min="0" max="100" step="5" aria-label="Music" />
         </div>
         <div class="setting">
-          <span>Auto-submit <small>Sends a right answer as soon as it is typed</small></span>
+          <span>Auto-submit <button class="info" type="button" aria-label="What Auto-submit does" aria-expanded="false" aria-controls="auto-about" set:html={INFO} /></span>
           <button id="set-auto" class="switch" type="button" role="switch" aria-checked="true" aria-label="Auto-submit"><i></i></button>
+          <p id="auto-about" class="info-text" hidden>A right answer is sent as soon as it is typed, without Enter.</p>
         </div>
         <div class="setting">
           <span>Theme</span>
@@ -219,14 +289,31 @@ const X = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 
         <button class="icon-btn close" type="button" aria-label="Close" set:html={X} />
       </header>
       <div class="sheet-body about">
-        <p class="lead">A geography quiz on checked facts: everything it asks comes from two independent sources that agree, or from a recorded review.</p>
+        <p class="lead">A geography quiz on checked facts.</p>
+        <!-- The numbers first, counted from the facts themselves once they load (these are the counts at the time of writing). -->
+        <div class="numbers">
+          <div class="big"><b id="n-facts">1,417</b><span>checked facts</span></div>
+          <div><b id="n-countries">194</b><span>countries</span></div>
+          <div><b id="n-capitals">198</b><span>capitals</span></div>
+          <div><b id="n-languages">129</b><span>languages</span></div>
+          <div><b id="n-peaks">165</b><span>mountains</span></div>
+          <div><b id="n-rivers">83</b><span>rivers</span></div>
+          <div><b id="n-questions">2,109</b><span>questions</span></div>
+        </div>
+        <h3>How a fact gets in</h3>
+        <ol class="steps">
+          <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5.5A1.5 1.5 0 0 1 5.5 4H11v13H5.5A1.5 1.5 0 0 1 4 15.5zM20 5.5A1.5 1.5 0 0 0 18.5 4H13v13h5.5a1.5 1.5 0 0 0 1.5-1.5z" /><path d="M6.5 8h2M6.5 11h2M15.5 8h2M15.5 11h2M12 17v3" /></svg><span>Two independent sources are read.</span></li>
+          <li><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5" /><path d="M8 12.5l2.5 2.5L16 9.5" /></svg><span>They agree: the fact is in.</span></li>
+          <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9a2.1 2.1 0 0 0-3-3L5 17z" /><path d="M14 8l2 2M13 20h7" /></svg><span>They don't: a person decides, and writes down why.</span></li>
+        </ol>
+        <h3>How to play</h3>
         <ul class="how">
-          <li><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="7" width="18" height="10" rx="3" /><path d="m14 11 2 2 2-2" /></svg><span>Pick a level. The grey line under it says what, where and how many: tap it to change them.</span></li>
-          <li><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="6" width="18" height="12" rx="2" /><path d="M7 10h1M11 10h1M15 10h1M8 14h8" /></svg><span>Type the answer, or pick one of four. Small typos are fixed for you, and capitals don't matter.</span></li>
-          <li><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="13" r="8" /><path d="M12 9v4l2.5 2M10 3h4" /></svg><span>Each question gives you 15 seconds. Wrong? Try again until the time runs out.</span></li>
-          <li><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5" /><path d="M8 12.5l2.5 2.5L16 9.5" /></svg><span>Every answer ties a knot: tight first time, loose after a retry (half a point). A miss frays the rope. All tight, and the knot closes.</span></li>
+          <li><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="7" width="18" height="10" rx="3" /><path d="m14 11 2 2 2-2" /></svg><span>Pick a level. Tap the grey line under it to change what, where and how many.</span></li>
+          <li><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="6" width="18" height="12" rx="2" /><path d="M7 10h1M11 10h1M15 10h1M8 14h8" /></svg><span>Type the answer or pick one of four. Small typos are fixed for you.</span></li>
+          <li><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="13" r="8" /><path d="M12 9v4l2.5 2M10 3h4" /></svg><span>15 seconds a question. Wrong? Try again until the time runs out.</span></li>
+          <li class="knots"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12h4.5M16.5 12H21" /><circle cx="12" cy="12" r="4.5" /></svg><span>Every answer ties a knot. All tight, and the rope closes into a ring.<Fragment set:html={ROPE} /></span></li>
         </ul>
-        <p class="keys"><kbd>Enter</kbd> answer · <kbd>&rarr;</kbd> skip (with nothing typed) · <kbd>1</kbd>–<kbd>4</kbd> pick · <kbd>Esc</kbd> stop</p>
+        <p class="keys"><kbd>Enter</kbd> answer · <kbd>&rarr;</kbd> skip · <kbd>1</kbd>–<kbd>4</kbd> pick · <kbd>Esc</kbd> stop</p>
         <h3>Sources</h3>
         <ul class="sources">
           <li><a href="https://github.com/mledoze/countries">mledoze/countries</a> <span>ODbL 1.0</span></li>

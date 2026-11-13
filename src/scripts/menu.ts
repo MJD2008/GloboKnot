@@ -51,8 +51,11 @@ export function initMenu(kb: Knowledge, root: HTMLElement, onChange: () => void)
   const where = root.querySelector<HTMLElement>('#menu-where')!;
   const sizes = root.querySelector<HTMLElement>('#menu-size')!;
 
-  // ---- level
+  // ---- level, and behind the ⓘ by its heading, what each level asks
   levels.innerHTML = LEVEL_IDS.map(l => `<button type="button" data-level="${l}" class="${l}">${LEVELS[l].label}</button>`).join('');
+  const how = { choose: 'Pick from four', both: 'Typed or picked', type: 'Typed' } satisfies Record<Answers, string>;
+  const levelAbout = root.querySelector<HTMLElement>('#level-about')!;
+  levelAbout.innerHTML = LEVEL_IDS.map(l => `<div class="${l}" data-row="${l}"><dt>${LEVELS[l].label}</dt><dd>${LEVELS[l].who} · ${LEVELS[l].what} · ${how[LEVELS[l].answers]}</dd></div>`).join('');
 
   // ---- answers: picked from four (easier), typed, or each question its own way
   answers.innerHTML = ANSWERS.map(a => `<button type="button" data-answers="${a.id}">${a.label}${a.id === 'choose' ? ' <small>easier</small>' : ''}</button>`).join('');
@@ -158,16 +161,16 @@ export function initMenu(kb: Knowledge, root: HTMLElement, onChange: () => void)
   };
 
   function paintLevel() {
-    const l = LEVELS[selection.level];
     for (const b of levels.querySelectorAll<HTMLButtonElement>('button')) {
       b.setAttribute('aria-pressed', String(b.dataset.level === selection.level));
       // Impossible shows itself with The Gordian Knot, after a few rounds (or when it was already the level).
-      if (b.dataset.level === 'impossible') b.hidden = !gordianOpen() && selection.level !== 'impossible';
+      if (b.dataset.level === 'impossible') b.hidden = levelAbout.querySelector<HTMLElement>('[data-row="impossible"]')!.hidden = !gordianOpen() && selection.level !== 'impossible';
     }
+    // Under the levels, words only when something needs saying: All, or a mix of the player's own (with Reset).
     const hint = selection.size === 0 ? 'The Gordian Knot: every question in the game, typed, in one go.'
-      : isCustom(selection) ? `${l.who} · Your own mix <button type="button" class="link" data-level="${selection.level}">Reset</button>`
-        : `${l.who} · ${l.what}`;
+      : isCustom(selection) ? `Your own mix <button type="button" class="link" data-level="${selection.level}">Reset</button>` : '';
     if (levelHint.innerHTML !== hint) levelHint.innerHTML = hint; // only when it changes, so it is read out once
+    levelHint.hidden = !hint;
   }
 
   function paint() {
