@@ -35,22 +35,21 @@ export const ACCENTS = {
 } as const;
 export type Accent = keyof typeof ACCENTS;
 export type Theme = 'light' | 'dark';
-export const TIMES = [10, 15, 20] as const;
+/** Seconds per question, the same for everyone. (A choice of time may come back as an option for multiplayer rooms.) */
+export const TIME = 15;
 /** Each theme has its own colour: blue in Light, orange in Dark, unless the player picks another. */
 export const PRESETS: Record<Theme, Accent> = { light: 'cobalt', dark: 'coral' };
 export interface Settings {
   theme: Theme;      // Light by default; the page never switches by itself
   accents: Record<Theme, Accent>;
-  time: number;      // seconds per question
   auto: boolean;     // send a typed answer as soon as it is exactly right
 }
 const SET_KEY = 'gk-settings';
-type SavedSettings = Partial<Settings> & { theme?: string; accent?: Accent };
+type SavedSettings = Partial<Settings> & { theme?: string; accent?: Accent; time?: number }; // time: a setting until v3 C
 const savedSettings = load<SavedSettings>(SET_KEY, {});
 export const settings: Settings = {
   theme: savedSettings.theme === 'dark' ? 'dark' : 'light', // 'auto' (before v3) becomes Light
   accents: { ...PRESETS, ...savedSettings.accents },
-  time: TIMES.includes(savedSettings.time as 10) ? savedSettings.time! : 15,
   auto: savedSettings.auto ?? true,
 };
 // Before v3 there was one colour for both themes, coral by default: a colour picked on purpose is kept for both.

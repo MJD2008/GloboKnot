@@ -7,10 +7,11 @@ import { norm } from '../../scripts/lib/text.mjs';
 import { Globe } from './globe';
 import { Sky } from './sky';
 import { Knowledge, type Country, type Entity, type KBData } from './kb';
-import { WorldMap } from './map';
+import { WorldMap, type MapOptions } from './map';
 import { catOn, icon, initMenu, placesLabel, setCat } from './menu';
-import { ACCENTS, TIMES, UNLOCK_ROUNDS, applySettings, configKey, dailyResult, gordianOpen, saveDaily, saveSelection, saveSettings, saveStats, selection, settings, stats, today, type Accent, type Theme } from './prefs';
+import { ACCENTS, TIME, UNLOCK_ROUNDS, applySettings, configKey, dailyResult, gordianOpen, saveDaily, saveSelection, saveSettings, saveStats, selection, settings, stats, today, type Accent, type Theme } from './prefs';
 import { CATS, DAILY, TEMPLATES, available, buildRound, codeOf, rebuildRound, remember, seeded, type Cat, type Pool, type Question, type Selection } from './questions';
+import { zoomable, type Zoom } from './zoom';
 import { sound } from './sound';
 
 const $ = <T extends HTMLElement = HTMLElement>(sel: string) => document.querySelector(sel) as T;
@@ -61,6 +62,16 @@ const ui = {
   shareNote: $('#share-note'),
   summary: $('#summary'),
   answers: $('#answers'),
+  review: $<HTMLDialogElement>('#review'),
+  reviewN: $('#review-n'),
+  reviewTitle: $('#review-title'),
+  reviewMedia: $('#review-media'),
+  reviewMap: $('#review-map') as unknown as SVGSVGElement,
+  reviewFlag: $<HTMLImageElement>('#review-flag'),
+  reviewSample: $('#review-sample'),
+  reviewAnswer: $('#review-answer'),
+  reviewPrev: $<HTMLButtonElement>('#review-prev'),
+  reviewNext: $<HTMLButtonElement>('#review-next'),
   again: $<HTMLButtonElement>('#again'),
   change: $<HTMLButtonElement>('#change'),
   home: $<HTMLButtonElement>('#home'),
@@ -73,6 +84,9 @@ const ui = {
 
 let kb: Knowledge;
 let world: WorldMap;
+let mapZoom: Zoom | null = null;    // the quiz map's zoom
+let reviewZoom: Zoom | null = null; // the answers' map
+let reviewAt = 0;                   // the answer being looked at
 let pools: Record<Pool, Entity[]>;
 let globe: Globe | null = null;
 const sky = new Sky($<HTMLCanvasElement>('#sky'));
@@ -152,6 +166,8 @@ async function load() {
   ]);
   kb = new Knowledge(data);
   world = new WorldMap(topo);
+  mapZoom = zoomable(ui.svg, world);
+  reviewZoom = zoomable(ui.reviewMap, world);
   pools = { country: kb.countries, city: kb.cities, language: kb.languages, peak: kb.peaks, river: kb.rivers };
   ui.edition.textContent = data.edition;
   menu = initMenu(kb, ui.menu, paintHome);
@@ -242,7 +258,6 @@ function themeColor() {
 
 function open(d: HTMLDialogElement) {
   for (const other of [ui.menu, ui.settings, ui.about]) if (other !== d && other.open) other.close();
-  $('#about-time').textContent = String(settings.time);
   if (d === ui.menu) menu?.paint();
   if (d === ui.settings) paintSettings();
   if (!d.open) d.showModal();
@@ -313,9 +328,11 @@ function ask() {
   // the clue
   const m = q.media;
   ui.media.dataset.kind = m.kind;
+  ui.media.classList.remove('big');
   if (m.kind === 'map') {
     const c = m.country ? kb.country(m.country) : undefined;
     world.render(ui.svg, { num: c?.num, ll: c?.ll, dot: m.dot, peak: m.peak, river: m.river });
+    mapZoom?.reset();
     ui.svg.setAttribute('aria-label', m.river ? 'Map with a river' : m.peak ? 'Map with a mountain' : m.dot ? 'Map with a country and its capital' : 'Map with one country highlighted');
   } else if (m.kind === 'flag') {
     showFlag(ui.flag, url(`flags/${kb.country(m.country)!.flag}.svg`));
@@ -332,7 +349,9 @@ function ask() {
     ui.choices.hidden = true;
     ui.input.value = '';
     ui.input.readOnly = false;
-    ui.input.classList.remove('miss', 'unknown');
+    clearTimeout(clearing);
+    clearing = 0;
+    ui.input.classList.remove('wrong');
     ui.input.placeholder = placeholder(q.pools);
     ui.input.focus({ preventScroll: true });
   } else {
@@ -400,7 +419,7 @@ function preload(q?: Question) {
 // green to red; the last five seconds are counted, with a heartbeat. Drawn frame by frame: it is information, so it
 // runs even when the player asked for reduced motion (which only stops the heartbeat).
 function startTimer() {
-  const total = settings.time * 1000;
+  const total = TIME * 1000;
   state.deadline = performance.now() + total;
   state.secs = 0;
   ui.timer.classList.remove('low', 'out', 'beat', 'stopped');
@@ -454,15 +473,16 @@ function answer(given: string, label = given) {
     if (!typed) { nudge(); return; }
     const hit = match(typed, q);
     if (hit && q.accept.includes(hit.id)) { finish(q, true, hit.name); return; } // silent auto-correct
-    // Wrong: nothing is revealed. The box shows how the answer was read (struck through) and is selected, so typing
-    // replaces it. A name we don't know gets a dotted underline instead.
+    // Wrong: nothing is revealed. The card shakes and the typed text fades out and clears itself, ready for the next
+    // try. (Typing straight away clears it at once.) The last try is still listed with the answers at the end.
     state.tries++;
     state.lastWrong = hit?.name ?? typed;
-    if (hit) ui.input.value = hit.name;
-    ui.input.classList.remove('miss', 'unknown');
+    ui.input.classList.remove('wrong');
     void ui.input.offsetWidth;
-    ui.input.classList.add(hit ? 'miss' : 'unknown');
-    ui.input.select();
+    ui.input.classList.add('wrong');
+    wrongText = ui.input.value;
+    clearTimeout(clearing);
+    clearing = window.setTimeout(clearTry, 420);
     nudge();
     sound.retry();
     return;
@@ -489,6 +509,16 @@ function autoSubmit() {
   }, longer ? 500 : 150);
 }
 
+/** The wrong try fades out of the box; it only goes if it is still what the box holds. */
+let clearing = 0, wrongText = '';
+function clearTry() {
+  clearTimeout(clearing);
+  clearing = 0;
+  if (ui.input.value === wrongText) ui.input.value = '';
+  ui.input.classList.remove('wrong');
+}
+ui.input.addEventListener('beforeinput', () => { if (clearing) clearTry(); });
+
 function giveUp() {
   if (state.locked) return;
   finish(state.round[state.i], false, state.lastWrong);
@@ -500,7 +530,9 @@ function finish(q: Question, ok: boolean, typed: string, late = false, pick?: st
   ui.skip.style.visibility = 'hidden';
   stopTimer();
   ui.input.readOnly = true; // not disabled: that would close a phone's keyboard between questions
-  ui.input.classList.remove('miss', 'unknown');
+  clearTimeout(clearing);
+  clearing = 0;
+  ui.input.classList.remove('wrong');
   state.results.push({ q, ok, typed, late, tries: q.format === 'type' ? state.tries + (ok ? 1 : 0) : 1, pick });
   state.streak = ok ? state.streak + 1 : 0;
   state.best = Math.max(state.best, state.streak);
@@ -653,6 +685,11 @@ function end() {
       a.append(b);
     }
     li.append(n, clue, a);
+    li.tabIndex = 0;
+    li.setAttribute('role', 'button');
+    li.setAttribute('aria-label', `Answer ${j + 1}: see it on the map`);
+    li.addEventListener('click', () => openReview(j));
+    li.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openReview(j); } });
     ui.answers.append(li);
   });
   sound.done(share);
@@ -660,6 +697,71 @@ function end() {
   show('results');
   ui.again.focus({ preventScroll: true });
 }
+
+// ---- looking back: an answer on a big map (or its flag or text), with the right answer lit up
+/** What to show for a question afterwards: its own map, or the map of the country it was about. */
+function reviewOf(q: Question): { map?: MapOptions; reveal: string[]; flag?: string; text?: { text: string; lang: string } } {
+  const m = q.media;
+  const at = (id?: string) => { const c = id ? kb.country(id) : undefined; return c ? { num: c.num, ll: c.ll } : {}; };
+  if (m.kind === 'flag') return { flag: m.country, reveal: [] };
+  if (m.kind === 'text') return { text: m, reveal: [] };
+  if (m.kind === 'map') {
+    const reveal = q.reveal ?? (m.river ? kb.riverCountries(m.river) : []);
+    return { map: { ...at(m.country), dot: m.dot, peak: m.peak, river: m.river }, reveal };
+  }
+  if (q.kind === 'flag.pick') return { flag: q.accept[0], reveal: [] };
+  const id = q.countries[0];
+  if (!id) return { reveal: [] };
+  const map: MapOptions = at(id);
+  if (q.kind.startsWith('cap.')) {
+    const city = kb.cities.find(x => x.id === kb.mainCapitals(id)[0]);
+    if (city?.ll) map.dot = city.ll;
+  }
+  if (q.kind === 'peak.name') {
+    const peak = kb.peaks.find(p => p.id === kb.highestPoint(id));
+    if (peak?.ll) map.peak = peak.ll;
+  }
+  return { map, reveal: q.kind === 'nb.name' ? q.accept : [] };
+}
+
+function openReview(j: number) {
+  const r = state.results[j];
+  if (!r) return;
+  reviewAt = j;
+  const q = r.q, v = reviewOf(q);
+  ui.reviewN.textContent = `${j + 1}/${state.results.length}`;
+  ui.reviewN.className = `review-n ${knotOf(r)}`;
+  ui.reviewTitle.textContent = q.prompt;
+  ui.reviewMedia.dataset.kind = v.map ? 'map' : v.flag ? 'flag' : v.text ? 'text' : 'none';
+  if (v.map) {
+    world.render(ui.reviewMap, v.map);
+    world.reveal(v.reveal.map(id => kb.country(id)?.num).filter((n): n is string => !!n));
+    reviewZoom?.reset();
+  } else if (v.flag) {
+    ui.reviewFlag.src = url(`flags/${kb.country(v.flag)!.flag}.svg`);
+    ui.reviewFlag.alt = `Flag of ${kb.name(v.flag)}`;
+  } else if (v.text) {
+    ui.reviewSample.textContent = v.text.text;
+    ui.reviewSample.lang = v.text.lang;
+  }
+  // Lists cut short in the quiz ("Hungary, Romania +4") are given in full here.
+  const all = q.kind === 'nb.name' ? q.accept : q.kind === 'river.map' ? q.reveal ?? [] : [];
+  ui.reviewAnswer.textContent = all.length > 1 ? all.map(id => kb.name(id)).sort((a, b) => a.localeCompare(b)).join(', ') : q.answer;
+  ui.reviewPrev.disabled = j === 0;
+  ui.reviewNext.disabled = j === state.results.length - 1;
+  if (!ui.review.open) ui.review.showModal();
+}
+ui.reviewPrev.addEventListener('click', () => openReview(reviewAt - 1));
+ui.reviewNext.addEventListener('click', () => openReview(reviewAt + 1));
+ui.review.addEventListener('click', e => {
+  if (e.target === ui.review || (e.target as HTMLElement).closest('.close')) ui.review.close();
+});
+ui.review.addEventListener('keydown', e => {
+  if (e.key === 'ArrowLeft' && reviewAt > 0) { e.preventDefault(); openReview(reviewAt - 1); }
+  if (e.key === 'ArrowRight' && reviewAt < state.results.length - 1) { e.preventDefault(); openReview(reviewAt + 1); }
+});
+// The answer's row keeps the focus when the review closes.
+ui.review.addEventListener('close', () => (ui.answers.children[reviewAt] as HTMLElement | undefined)?.focus({ preventScroll: true }));
 
 // ---- sharing: the score, the knots as a row of signs, and a link to the same questions
 async function shareResult() {
@@ -753,7 +855,6 @@ function drawRing(knots: Knot[]) {
 function paintSettings() {
   $('#set-sound').setAttribute('aria-checked', String(!sound.muted));
   $('#set-auto').setAttribute('aria-checked', String(settings.auto));
-  $('#set-time').innerHTML = TIMES.map(t => `<button type="button" data-time="${t}" aria-pressed="${settings.time === t}">${t} s</button>`).join('');
   $('#set-theme').innerHTML = (['light', 'dark'] as const).map(t => `<button type="button" data-theme="${t}" aria-pressed="${settings.theme === t}">${t[0].toUpperCase() + t.slice(1)}</button>`).join('');
   // The colour belongs to the theme shown: each theme keeps its own.
   const mine = settings.accents[settings.theme];
@@ -764,7 +865,6 @@ ui.settings.addEventListener('click', e => {
   if (!t) return;
   if (t.id === 'set-sound') sound.toggle();
   else if (t.id === 'set-auto') settings.auto = !settings.auto;
-  else if (t.dataset.time) settings.time = Number(t.dataset.time);
   else if (t.dataset.theme) settings.theme = t.dataset.theme as Theme;
   else if (t.dataset.accent) settings.accents[settings.theme] = t.dataset.accent as Accent;
   else return;
@@ -796,6 +896,8 @@ ui.chips.addEventListener('click', e => {
 ui.play.addEventListener('click', () => (challenge ? start(selection, false, challenge) : start(selection)));
 ui.notNow.addEventListener('click', () => { challenge = null; history.replaceState(null, '', location.pathname + location.search); paintHome(); });
 ui.share.addEventListener('click', () => void shareResult());
+// A tap on the flag shows it bigger (and again, back to its size).
+ui.flag.addEventListener('click', () => ui.media.classList.toggle('big'));
 ui.daily.addEventListener('click', () => start(DAILY, true));
 ui.choose.addEventListener('click', () => open(ui.menu));
 $('#open-menu').addEventListener('click', () => open(ui.menu));
@@ -803,7 +905,7 @@ $('#open-settings').addEventListener('click', () => open(ui.settings));
 $('#open-about').addEventListener('click', () => open(ui.about));
 $('#menu-play').addEventListener('click', () => start(selection));
 ui.form.addEventListener('submit', e => { e.preventDefault(); if (state.locked) next(); else answer(ui.input.value); });
-ui.input.addEventListener('input', () => { ui.input.classList.remove('miss', 'unknown'); autoSubmit(); });
+ui.input.addEventListener('input', () => autoSubmit());
 ui.skip.addEventListener('click', () => (state.locked ? next() : giveUp()));
 ui.next.addEventListener('click', next);
 ui.quit.addEventListener('click', quit);
@@ -826,8 +928,15 @@ ui.card.addEventListener('click', e => {
 
 document.addEventListener('keydown', e => {
   if (document.querySelector('dialog[open]') || screens.quiz.hidden) return;
-  if (e.key === 'Escape') { e.preventDefault(); state.locked ? next() : giveUp(); return; }
-  if (e.key === 'Enter' && state.locked) { e.preventDefault(); next(); return; }
+  // Esc stops the round, as the X button does. → skips, but only with nothing typed, so it still moves the cursor
+  // through a typed answer; after an answer, → and Enter both go on.
+  if (e.key === 'Escape') { e.preventDefault(); quit(); return; }
+  if ((e.key === 'Enter' || e.key === 'ArrowRight') && state.locked) { e.preventDefault(); next(); return; }
+  if (e.key === 'ArrowRight' && !e.shiftKey && !e.altKey && !e.ctrlKey && !e.metaKey && (state.round[state.i]?.format === 'choice' || !ui.input.value)) {
+    e.preventDefault();
+    giveUp();
+    return;
+  }
   // Typing during the verdict moves straight on, and the letter lands in the next answer box.
   if (state.locked && e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey && /\S/.test(e.key)) { next(); return; }
   const q = state.round[state.i];

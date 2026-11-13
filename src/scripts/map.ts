@@ -7,8 +7,13 @@ import type { Feature, FeatureCollection, MultiPolygon, Polygon, Position } from
 
 type Shape = Feature<Polygon | MultiPolygon, { n: string }>;
 type LonLat = [number, number];
+/** What a map shows: a country (ISO numeric code, its position [lat, lng]), a capital's dot, a peak or a river. */
+export interface MapOptions { num?: string; ll?: [number, number]; dot?: [number, number]; peak?: [number, number]; river?: string }
+/** The view of the map last drawn: where it is centred and how wide (degrees), and where it started. */
+interface View { svg: SVGSVGElement; o: MapOptions; center: LonLat; radius: number; home: LonLat; base: number; revealed: string[] }
 
-const W = 640, H = 400, PAD = 12;
+export const W = 640, H = 400;
+const PAD = 12;
 const RAD = 180 / Math.PI;
 /** A single landmass from about 50,000 km² (steradians) counts as a landmark that helps place a small country. */
 const BIG = (50_000 / 510.1e6) * 4 * Math.PI;
@@ -68,13 +73,14 @@ export class WorldMap {
 
   /** River courses by id ([lon, lat] lines), loaded when a round has river questions. */
   rivers: Record<string, LonLat[][]> = {};
-  private last: { path: ReturnType<typeof geoPath>; svg: SVGSVGElement } | null = null;
+  private last: { path: ReturnType<typeof geoPath>; svg: SVGSVGElement; projection: ReturnType<typeof geoOrthographic> } | null = null;
+  private view: View | null = null;
 
   /**
    * Draws the globe into `svg`. What it centres on, in order: a river's course, the country with ISO numeric code
    * `num` (its capital marked with `dot`), or a `peak`. Positions are [lat, lng].
    */
-  render(svg: SVGSVGElement, o: { num?: string; ll?: [number, number]; dot?: [number, number]; peak?: [number, number]; river?: string }) {
+  render(svg: SVGSVGElement, o: MapOptions) {
     const target = o.num ? this.byNum.get(o.num) : undefined;
     const main = target ? mainPart(target) : null;
     const course = o.river ? this.rivers[o.river] : undefined;
@@ -98,7 +104,50 @@ export class WorldMap {
       center = [o.peak[1], o.peak[0]];
       radius = Math.min(60, Math.max(11, this.nearestLandmark(center) * 1.1 + 5));
     }
+    this.view = { svg, o, center, radius, home: center, base: radius, revealed: [] };
+    this.draw();
+  }
 
+  // ---- zoom: a gesture first scales and moves the drawing (cheap), then settle() draws it again, sharp, from the
+  // new centre and width. Drawing takes tens of milliseconds, too slow for every frame of a pinch.
+  /** How far the view is zoomed in: 1 as first drawn, above 1 closer. */
+  get zoom(): number { return this.view ? this.view.base / this.view.radius : 1; }
+  /** Zoom limits: in to a sixth of the first width (no closer than 0.8°), out to a whole hemisphere. */
+  get minZoom(): number { return this.view ? this.view.base / 90 : 1; }
+  get maxZoom(): number { return this.view ? this.view.base / Math.max(0.8, this.view.base / 6) : 1; }
+  /** Whether the view was zoomed or moved since it was first drawn. */
+  get moved(): boolean {
+    const v = this.view;
+    return !!v && (Math.abs(v.radius - v.base) > 1e-6 || geoDistance(v.center, v.home) > 1e-6);
+  }
+  /** Whether the map in view is the one drawn in `svg` (the quiz and the answers each have one). */
+  drawnIn(svg: SVGSVGElement): boolean { return this.view?.svg === svg; }
+
+  /** Turns a gesture's transform of the drawing (scale `k`, then move by `tx`, `ty` in map units) into a new centre
+   *  and width, and draws the map again. */
+  settle(k: number, tx: number, ty: number) {
+    const v = this.view, p = this.last?.projection;
+    if (!v || !p) return;
+    const c = p.invert?.([(W / 2 - tx) / k, (H / 2 - ty) / k]);
+    if (c && Number.isFinite(c[0]) && Number.isFinite(c[1])) v.center = [c[0], Math.max(-89, Math.min(89, c[1]))];
+    v.radius = Math.min(90, Math.max(Math.max(0.8, v.base / 6), v.radius / k));
+    this.draw();
+  }
+
+  /** Back to the view as first drawn. */
+  resetView() {
+    if (!this.view) return;
+    this.view.center = this.view.home;
+    this.view.radius = this.view.base;
+    this.draw();
+  }
+
+  private draw() {
+    const v = this.view!;
+    const { svg, o, center, radius } = v;
+    const target = o.num ? this.byNum.get(o.num) : undefined;
+    const main = target ? mainPart(target) : null;
+    const course = o.river ? this.rivers[o.river] : undefined;
     const projection = geoOrthographic()
       .rotate([-center[0], -center[1]])
       .fitExtent([[PAD, PAD], [W - PAD, H - PAD]], geoCircle().center(center).radius(radius)() as GeoPermissibleObjects)
@@ -119,12 +168,12 @@ export class WorldMap {
     }
     parts.push(`<path class="land" d="${land}"/>`);
     if (target) parts.push(`<path class="land hl" d="${path(target) ?? ''}"/>`);
-    parts.push('<g class="rv"></g>');
+    parts.push(`<g class="rv">${this.revealPath(path, v.revealed)}</g>`);
     // Tiny or shapeless countries: a ring around them (not needed when the capital's dot marks the spot).
     if (target || (!o.peak && !course)) {
       const [[x0, y0], [x1, y1]] = main ? geoPath(projection).bounds(main) : [[0, 0], [0, 0]];
       if ((!main || Math.max(x1 - x0, y1 - y0) < 12) && !o.dot) {
-        const pt = projection(center);
+        const pt = projection(v.home);
         if (pt) parts.push(`<circle class="ring" cx="${pt[0].toFixed(1)}" cy="${pt[1].toFixed(1)}" r="15"/>`);
       }
     }
@@ -141,16 +190,22 @@ export class WorldMap {
       if (pt) parts.push(`<g class="peak" transform="translate(${pt[0].toFixed(1)} ${pt[1].toFixed(1)})"><circle class="pulse" r="12"/><path d="M0-9 9 6H-9z"/></g>`);
     }
     svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
-    svg.innerHTML = parts.join('');
-    this.last = { path, svg };
+    // One group around everything, so a pinch or a drag can move the drawing before it is drawn again.
+    svg.innerHTML = `<g class="zoomer">${parts.join('')}</g>`;
+    this.last = { path, svg, projection };
   }
 
   /** After an answer: lights up these countries (ISO numeric codes) on the map just drawn. */
   reveal(nums: string[]) {
-    if (!this.last) return;
-    const d = nums.map(n => this.byNum.get(n)).filter((s): s is Shape => !!s).map(s => this.last!.path(s) ?? '').join('');
+    if (!this.last || !this.view) return;
+    this.view.revealed = nums;
     const g = this.last.svg.querySelector('.rv');
-    if (g && d) g.innerHTML = `<path class="land shown" d="${d}"/>`;
+    if (g) g.innerHTML = this.revealPath(this.last.path, nums);
+  }
+
+  private revealPath(path: ReturnType<typeof geoPath>, nums: string[]): string {
+    const d = nums.map(n => this.byNum.get(n)).filter((s): s is Shape => !!s).map(s => path(s) ?? '').join('');
+    return d ? `<path class="land shown" d="${d}"/>` : '';
   }
 
   /** Degrees from `center` to the closest large landmass that doesn't belong to `self`. */

@@ -9,7 +9,7 @@ Plan: [docs/PLAN.md](docs/PLAN.md) · Knowledge system: [docs/KNOWLEDGE-SYSTEM.m
 
 Astro, built to plain static files. One page: open the configuration (≡), pick what (capitals, flags, languages,
 mountains, rivers...) and where (whole world, continents or single countries) and how many questions (10, 20, 50 or any
-number), play, and see every answer at the end. Every question has a time limit (15 s by default); a wrong typed answer
+number), play, and see every answer at the end. Every question has 15 seconds, the same for everyone; a wrong typed answer
 is not revealed, so the player can try again until the time runs out. There is also a Daily: the same 10 questions for
 everyone.
 
@@ -31,7 +31,7 @@ src/layouts/Base.astro    page frame: header, fonts, PREVIEW switch (noindex and
 src/styles/global.css     all styles; colours are tokens with light and dark values (blue and orange presets)
 src/scripts/app.ts        the quiz screens, keys and timing
 src/scripts/menu.ts       the configuration: what, where, how many
-src/scripts/prefs.ts      what the browser remembers: the selection, settings (sound, time, auto-submit, theme, colour), the Daily
+src/scripts/prefs.ts      what the browser remembers: the selection, settings (sound, auto-submit, theme, colour), the Daily, stats
 src/scripts/questions.ts  question templates (13 kinds, one clue each, given/asked tags): approved facts in, questions out
 src/scripts/kb.ts         the knowledge base as the site reads it
 src/scripts/map.ts        the map: a globe turned and zoomed to the asked country, capital, peak or river

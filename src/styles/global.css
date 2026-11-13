@@ -407,7 +407,7 @@ kbd {
 .timer.beat .track { animation: beat 1s ease-out; }
 .timer.beat .count { animation: beat-num 1s ease-out; }
 
-.media { border-radius: 14px; overflow: hidden; background: var(--space); }
+.media { position: relative; border-radius: 14px; overflow: hidden; background: var(--space); }
 .media[data-kind="none"] { display: none; }
 .media > * { display: none; }
 .media[data-kind="map"] .map,
@@ -415,7 +415,30 @@ kbd {
 .media[data-kind="text"] .sample { display: block; }
 .media[data-kind="flag"] { background: transparent; display: grid; place-items: center; padding: 36px 0 6px; }
 .media[data-kind="text"] { background: var(--bg); }
-.map { width: 100%; height: auto; aspect-ratio: 640 / 400; }
+.map { width: 100%; height: auto; aspect-ratio: 640 / 400; touch-action: pan-y; }
+/* Zoomed in, a finger moves the map instead of the page. */
+.map.zoomed { touch-action: none; }
+.map .zoomer { transform-origin: 0 0; transform-box: view-box; }
+.map .zoomer.ease { transition: transform 0.22s ease-out; }
+@media (hover: hover) { .media[data-kind="map"] .map { cursor: grab; } .map.dragging { cursor: grabbing; } }
+/* Zoom buttons, bottom right of a map. */
+.media[data-kind="map"] > .zoom { display: flex; }
+.zoom { position: absolute; right: 8px; bottom: 8px; flex-direction: row-reverse; gap: 6px; }
+.zoom button {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  background: color-mix(in srgb, var(--surface) 88%, transparent);
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+}
+.zoom button[hidden] { display: none; }
+.zoom button:disabled { opacity: 0.4; cursor: default; }
+.zoom svg { width: 18px; height: 18px; fill: none; stroke: var(--ink); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 .map .ocean { fill: var(--ocean); }
 .map .grat { fill: none; stroke: var(--grat); stroke-width: 0.7; }
 .map .land { fill: var(--land); stroke: var(--border); stroke-width: 0.6; stroke-linejoin: round; }
@@ -438,6 +461,9 @@ kbd {
 }
 .card.ok .flag { animation: bump 0.3s ease-out; }
 .flag.loading { visibility: hidden; }
+/* A tap on the flag shows it bigger. */
+.media[data-kind="flag"] .flag { cursor: zoom-in; }
+.media.big .flag { height: auto; width: min(100%, 560px); cursor: zoom-out; animation: bump 0.25s ease-out; }
 .sample {
   margin: 0;
   padding: clamp(48px, 9vw, 56px) clamp(18px, 5vw, 36px) clamp(26px, 6vw, 40px);
@@ -485,9 +511,7 @@ kbd {
 }
 .answer input:focus { border-color: var(--ink); }
 /* A wrong try: struck through when we know the name (it shows how the answer was read), dotted when we don't. */
-.answer input.miss, .answer input.unknown { border-color: var(--bad); }
-.answer input.miss { text-decoration: line-through 2px var(--bad); }
-.answer input.unknown { text-decoration: underline dotted 2px var(--bad); text-underline-offset: 5px; }
+.answer input.wrong { border-color: var(--bad); animation: fade-try 0.42s ease-in forwards; }
 .answer input::placeholder { color: var(--muted); font-weight: 500; opacity: 0.7; }
 .go {
   flex: none;
@@ -651,6 +675,10 @@ kbd {
 .btn.wide { width: 100%; display: flex; flex-direction: column; align-items: center; gap: 1px; }
 .btn.wide small { font-weight: 600; font-size: 0.82rem; opacity: 0.9; }
 .answers-title { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin: 32px 0 6px; text-align: left; }
+.answers-title small { margin-left: 8px; font-size: 0.8rem; font-weight: 600; text-transform: none; letter-spacing: 0; opacity: 0.85; }
+.answers li { cursor: pointer; border-radius: 8px; transition: background 0.15s; }
+.answers li:hover { background: var(--surface); }
+.answers li:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
 .answers { list-style: none; padding: 0; margin: 0; text-align: left; border-top: 1px solid var(--line); }
 .answers li { display: grid; grid-template-columns: 26px minmax(0, 1fr) fit-content(62%); gap: 10px; align-items: center; padding: 10px 2px; border-bottom: 1px solid var(--line); }
 .answers .n {
@@ -676,6 +704,23 @@ kbd {
 .answers .ans s { text-decoration-thickness: 1.5px; }
 .answers .ans img { display: block; height: 24px; width: auto; aspect-ratio: 4 / 3; border-radius: 3px; box-shadow: 0 0 0 1px var(--flag-edge); }
 .answers .ans s img { height: 18px; opacity: 0.5; filter: grayscale(0.6); margin-top: 3px; }
+
+/* ---------- an answer, looked at again: a big map, flag or text */
+.review { width: min(720px, calc(100% - 20px)); max-width: none; max-height: calc(100% - 20px); padding: 0; border: 0; border-radius: 18px; background: var(--surface); color: var(--ink); box-shadow: var(--shadow); }
+.review[open] { animation: pop 0.2s ease-out; }
+.review::backdrop { background: rgba(10, 14, 20, 0.45); animation: fadein 0.2s; }
+.review-in { display: grid; gap: 12px; padding: 12px; }
+.review-head { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 10px; padding-left: 4px; }
+.review-n { min-width: 44px; padding: 4px 8px; border-radius: 99px; text-align: center; font-size: 0.85rem; font-weight: 750; font-variant-numeric: tabular-nums; color: var(--accent-ink); background: var(--accent); }
+.review-n.loose { color: var(--accent); background: transparent; box-shadow: inset 0 0 0 2px var(--accent); }
+.review-n.miss { background: var(--bad); color: #fff; }
+.review-title { margin: 0; font-size: 1.08rem; font-weight: 700; line-height: 1.25; }
+.review .media[data-kind="flag"] { padding: 18px 0; }
+.review .media[data-kind="flag"] .flag { height: auto; width: min(100%, 520px); cursor: default; }
+.review-answer { margin: 0 4px; font-size: 1.25rem; font-weight: 800; letter-spacing: -0.01em; }
+.review-answer::before { content: 'Answer'; display: block; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+.review-foot { display: flex; justify-content: space-between; gap: 8px; }
+.review-foot .btn { padding: 10px 16px; font-size: 0.95rem; }
 
 /* ---------- sheets: the menu, settings and about */
 .sheet {
@@ -842,6 +887,7 @@ kbd {
 @keyframes ring { 0%, 100% { transform: scale(0.85); } 50% { transform: scale(1.15); } }
 @keyframes pulse { from { transform: scale(0.6); opacity: 0.7; } to { transform: scale(1.8); opacity: 0; } }
 @keyframes draw { to { stroke-dashoffset: 0; } }
+@keyframes fade-try { 0%, 55% { color: var(--bad); } 100% { color: transparent; } }
 @keyframes twist { to { opacity: 0.4; } }
 @keyframes undash { to { stroke-dasharray: none; } }
 @keyframes fray { to { opacity: 0.9; } }
