@@ -359,6 +359,10 @@ body.home .logo circle { fill: var(--glow, var(--accent)); }
   transition: background 0.2s, border-color 0.2s, transform 0.2s;
 }
 .beads.many i { width: 8px; height: 8px; border-width: 1.5px; }
+/* The Daily climbs from Easy to Impossible: its knots grow with each level. */
+.beads i.lv-easy { width: 9px; height: 9px; border-width: 1.5px; }
+.beads i.lv-medium { width: 11px; height: 11px; }
+.beads i.lv-impossible { width: 17px; height: 17px; border-width: 2.5px; }
 .beads i.now { border-color: var(--ink); transform: scale(1.3); }
 /* A knot per answer: tight (first try) is solid, loose (after a retry) is open, and a miss breaks the string,
    leaving two frayed ends. */
@@ -881,6 +885,7 @@ body.home .logo circle { fill: var(--glow, var(--accent)); }
 }
 .sheet-head h2 { margin: 0; font-size: 1.2rem; letter-spacing: -0.02em; }
 .sheet-body { flex: 1; overflow-y: auto; padding: 8px 20px 20px; overscroll-behavior: contain; }
+@media (max-width: 360px) { .sheet-body { padding-inline: 16px; } }
 .sheet-body h3 { font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin: 18px 0 6px; }
 .sheet-foot { padding: 12px 20px max(14px, env(safe-area-inset-bottom, 0px)); border-top: 1px solid var(--line); }
 
@@ -938,9 +943,11 @@ body.home .logo circle { fill: var(--glow, var(--accent)); }
 }
 .seg button[aria-pressed="true"] { background: var(--surface); color: var(--ink); box-shadow: var(--shadow-sm); }
 .seg.small button { min-width: 0; padding: 6px 10px; font-size: 0.9rem; }
+/* Four presets, a box for any other number and All under Impossible: a little tighter than other segments. */
+.sizes button { min-width: 44px; padding-inline: 11px; }
 .sizes .custom { display: flex; }
 .sizes .custom input {
-  width: 5.2em;
+  width: 4.8em;
   border: 0;
   border-radius: 9px;
   background: transparent;
@@ -952,6 +959,7 @@ body.home .logo circle { fill: var(--glow, var(--accent)); }
   outline: none;
 }
 .sizes .custom input::placeholder { color: var(--muted); font-weight: 600; opacity: 0.8; }
+@media (max-width: 360px) { .sizes button { min-width: 38px; padding-inline: 8px; } .sizes .custom input { width: 4.4em; padding-inline: 3px; } }
 .sizes .custom.on input, .sizes .custom input:focus { background: var(--surface); color: var(--ink); box-shadow: var(--shadow-sm); }
 /* All: The Gordian Knot, once found; a dot until it is tried. */
 .sizes .all { position: relative; }

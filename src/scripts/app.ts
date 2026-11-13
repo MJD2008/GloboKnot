@@ -12,7 +12,7 @@ import { WorldMap, type MapLabel, type MapOptions } from './map';
 import { catOn, icon, initMenu, placesLabel } from './menu';
 import { bestLabel, initPractice, practiceBest, practiceKey, practiceLabel, practicePlaces, practiceSeed, type Practice } from './practice';
 import { ACCENTS, TIME, UNLOCK_ROUNDS, applySettings, better, dailyResult, gordianOpen, saveDaily, saveSelection, saveSettings, saveStats, selection, setLevel, settings, stats, today, type Accent, type Theme } from './prefs';
-import { ANSWERS, CATS, DAILY, GORDIAN, LEVELS, LEVEL_IDS, askOf, available, buildRound, codeOf, isCustom, practiceAsk, practiceRound, rebuildRound, remember, seeded, levelOf, type Answers, type Ask, type Level, type Pool, type Question, type Selection, type Tempt } from './questions';
+import { ANSWERS, CATS, DAILY, GORDIAN, LEVELS, LEVEL_IDS, available, buildRound, codeOf, dailyRound, isCustom, levelAsk, practiceRound, rebuildRound, remember, levelOf, type Answers, type Ask, type Level, type Pool, type Question, type Selection, type Tempt } from './questions';
 import { zoomable, type Zoom } from './zoom';
 import { sound } from './sound';
 
@@ -122,13 +122,15 @@ const knotOf = (r: Result): Knot => (!r.ok ? 'miss' : r.tries > 1 ? 'loose' : 't
 const scoreOf = (rs: Result[]) => (rs.length ? rs.reduce((n, r) => n + ({ tight: 1, loose: 0.5, miss: 0 } as const)[knotOf(r)], 0) / rs.length : 0);
 
 /** A challenge link: the same questions (codes and subjects), asked the same way (typed or picked, and the same
- *  options: the seed draws them), and a score to beat. v1 links (before the answers could be chosen) ask the way
- *  every round did then: each question its own way, with tempting options. */
-interface Challenge { edition: string; seed: string; pct: number; secs: number; ask: Ask; items: { code: string; subject: string }[] }
+ *  options: the seed draws them), and a score to beat. How they are asked is one code for the whole round ("b2": Both,
+ *  tempting options) or, for the Daily, a letter per question for its level ("eemmhhii"). v1 links (before the
+ *  answers could be chosen) ask the way every round did then: each question its own way, with tempting options. */
+interface Challenge { edition: string; seed: string; pct: number; secs: number; asks: Ask[]; levels?: Level[]; items: { code: string; subject: string }[] }
 const CHALLENGE_MAX = 100; // questions; longer rounds are shared without a link
 const ANSWER_CODE: Record<Answers, string> = { choose: 'c', both: 'b', type: 't' };
+const LEVEL_CODE: Record<Level, string> = { easy: 'e', medium: 'm', hard: 'h', impossible: 'i' };
 function encodeChallenge(c: Challenge): string {
-  const how = `${ANSWER_CODE[c.ask.answers]}${c.ask.tempt}`;
+  const how = c.levels ? c.levels.map(l => LEVEL_CODE[l]).join('') : `${ANSWER_CODE[c.asks[0].answers]}${c.asks[0].tempt}`;
   return ['2', c.edition, c.seed, c.pct, c.secs, how, c.items.map(i => `${i.code}.${i.subject}`).join('~')].join('_');
 }
 function parseChallenge(hash: string): Challenge | null {
@@ -136,12 +138,17 @@ function parseChallenge(hash: string): Challenge | null {
   if (!m) return null;
   const parts = decodeURIComponent(m[1]).split('_');
   if (parts[0] === '1') parts.splice(5, 0, 'b2');
-  const [v, edition, seed, pct, secs, how, list] = parts;
-  const answers = (Object.keys(ANSWER_CODE) as Answers[]).find(a => ANSWER_CODE[a] === how?.[0]), tempt = Number(how?.slice(1));
-  if (!['1', '2'].includes(v) || !seed || !list || !answers || ![0, 1, 2].includes(tempt)) return null;
+  const [v, edition, seed, pct, secs, how = '', list] = parts;
+  if (!['1', '2'].includes(v) || !seed || !list) return null;
   // "C.NLD" or "R.NLD.amsterdam": the code is the part before the first dot (city ids hold a dot themselves)
   const items = list.split('~').map(x => { const k = x.indexOf('.'); return { code: x.slice(0, k), subject: x.slice(k + 1) }; }).filter(i => i.code && i.subject);
-  return items.length && items.length <= CHALLENGE_MAX ? { edition, seed, pct: Number(pct) || 0, secs: Number(secs) || 0, ask: { answers, tempt: tempt as Tempt }, items } : null;
+  if (!items.length || items.length > CHALLENGE_MAX) return null;
+  const answers = (Object.keys(ANSWER_CODE) as Answers[]).find(a => ANSWER_CODE[a] === how[0]), tempt = Number(how.slice(1));
+  const levels = how.length === items.length ? [...how].map(ch => LEVEL_IDS.find(l => LEVEL_CODE[l] === ch)) : [];
+  const base = { edition, seed, pct: Number(pct) || 0, secs: Number(secs) || 0, items };
+  if (how.length === 2 && answers && [0, 1, 2].includes(tempt)) return { ...base, asks: items.map(() => ({ answers, tempt: tempt as Tempt })) };
+  if (levels.length && levels.every(Boolean)) return { ...base, asks: (levels as Level[]).map(levelAsk), levels: levels as Level[] };
+  return null;
 }
 let challenge: Challenge | null = parseChallenge(location.hash);
 
@@ -152,7 +159,6 @@ const state = {
   gordian: false,                      // The Gordian Knot: every question in the game
   practice: null as Practice | null,   // a practice run: every question of one type in one region
   level: null as Level | null,         // the level of a round of the player's own (not the Daily, a challenge or All)
-  ask: { answers: 'both', tempt: 2 } as Ask,
   stopped: false,                      // Esc or Stop: the answers so far, without a score
   planned: 0,                          // questions in the round as it began (a stop cuts it short)
   seed: '',
@@ -327,14 +333,13 @@ async function start(sel: Selection, daily = false, ch: Challenge | null = null,
   state.gordian = !daily && !ch && !practice && sel.size === 0;
   if (state.gordian) state.sel = sel = GORDIAN; // every question in the game, whatever else was picked
   state.level = daily || ch || practice || state.gordian ? null : levelOf(sel);
-  state.ask = ch ? ch.ask : practice ? practiceAsk(practice.answers, practice.kind) : askOf(sel);
   state.stopped = false;
   // Every round has a seed, so it can be played again by someone else from a link. A practice's seed is its name:
   // the same order every time.
   state.seed = ch ? ch.seed : daily ? `daily-${today()}` : practice ? practiceSeed(practice) : Math.random().toString(36).slice(2, 10);
-  state.round = ch ? rebuildRound(kb, ch.items, ch.seed, ch.ask)
+  state.round = ch ? rebuildRound(kb, ch.items, ch.seed, ch.asks, ch.levels)
     : practice ? practiceRound(kb, practice.kind, practicePlaces(kb, practice.region), practice.answers, state.seed)
-      : buildRound(kb, sel, daily ? seeded(state.seed) : Math.random, daily, state.seed);
+      : daily ? dailyRound(kb, state.seed) : buildRound(kb, sel, Math.random, false, state.seed);
   if (!state.round.length) return;
   state.planned = state.round.length;
   if (state.gordian && !stats.gordianSeen) { stats.gordianSeen = true; saveStats(); }
@@ -348,7 +353,8 @@ async function start(sel: Selection, daily = false, ch: Challenge | null = null,
   state.streak = state.best = 0;
   state.timed = true; // every round, the Daily too
   state.started = performance.now();
-  ui.beads.innerHTML = state.round.map(() => '<i></i>').join('');
+  // The Daily's knots grow with its levels, so the climb shows before it starts.
+  ui.beads.innerHTML = state.round.map(q => (q.level ? `<i class="lv-${q.level}"></i>` : '<i></i>')).join('');
   ui.trail.innerHTML = '';
   ui.beads.classList.toggle('many', state.round.length > 20 && state.round.length <= 30);
   ui.beads.classList.toggle('lots', state.round.length > 30); // too many to show apart: one rope, coloured as it goes
@@ -753,7 +759,7 @@ function end(stopped = false) {
     state.last = null;
     ui.summary.textContent = `${total} of ${state.planned} answered · ${clock(ms)}`;
   } else {
-    if (state.daily && total === 10) saveDaily(share);
+    if (state.daily && total === state.round.length) saveDaily(share);
     const [, rank] = rankOf(pct);
     state.last = { pct, ms, rank, knots };
     ui.pct.textContent = `${pct}%`;
@@ -945,14 +951,18 @@ ui.review.addEventListener('close', () => (ui.answers.children[reviewAt] as HTML
 async function shareResult() {
   const r = state.last;
   if (!r) return;
-  const signs = r.knots.map(k => ({ tight: '●', loose: '○', miss: '·' })[k]).join('');
-  const what = state.daily ? `Daily ${new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}` : state.gordian ? 'The Gordian Knot'
+  // A Daily's signs come in steps, one per level: "●● ●○ ●· ··".
+  const levels = state.round.every(q => q.level) ? state.round.map(q => q.level!) : undefined;
+  const signs = r.knots.map((k, i) => (i && levels && levels[i] !== levels[i - 1] ? ' ' : '') + ({ tight: '●', loose: '○', miss: '·' })[k]).join('');
+  // The Daily's day is in its seed (also when it is played from a link, on another day).
+  const day = /^daily-(\d{4}-\d{2}-\d{2})$/.exec(state.seed)?.[1];
+  const what = day ? `Daily ${new Date(`${day}T12:00:00Z`).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', timeZone: 'UTC' })}` : state.gordian ? 'The Gordian Knot'
     : state.practice ? `Practice · ${practiceLabel(state.practice)}` : `${state.level ? `${LEVELS[state.level].label} · ` : ''}${r.knots.length} questions`;
   const text = `Globoknot · ${what}\n${r.rank} · ${r.pct}%\n${signs.length <= 50 ? signs : ''}`.trim();
   let link = location.origin + location.pathname;
   if (state.round.length <= CHALLENGE_MAX) {
-    const c: Challenge = { edition: kb.edition, seed: state.seed, pct: r.pct, secs: Math.round(r.ms / 1000), ask: state.ask,
-      items: state.round.map(q => ({ code: codeOf(q.kind), subject: q.subject })) };
+    const c: Challenge = { edition: kb.edition, seed: state.seed, pct: r.pct, secs: Math.round(r.ms / 1000), asks: state.round.map(q => q.ask),
+      levels, items: state.round.map(q => ({ code: codeOf(q.kind), subject: q.subject })) };
     link += `#c=${encodeChallenge(c)}`;
   }
   const full = `${text}\nCan you beat it? ${link}`;
@@ -1143,7 +1153,9 @@ ui.input.addEventListener('input', () => autoSubmit());
 ui.skip.addEventListener('click', () => (state.locked ? next() : giveUp()));
 ui.next.addEventListener('click', next);
 ui.quit.addEventListener('click', quit);
-ui.again.addEventListener('click', () => start(state.sel, state.daily, null, state.practice));
+// New round: the same kind of round again, with new questions. After the Daily (the same eight all day) that is a round of
+// the player's own.
+ui.again.addEventListener('click', () => (state.daily ? start(selection) : start(state.sel, false, null, state.practice)));
 // ⓘ buttons show the few words they control, and hide them again; a sheet closes with them hidden.
 document.addEventListener('click', e => {
   const b = (e.target as HTMLElement).closest<HTMLButtonElement>('button.info[aria-controls]');

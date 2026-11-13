@@ -9,11 +9,14 @@ Plan: [docs/PLAN.md](docs/PLAN.md) · Knowledge system: [docs/KNOWLEDGE-SYSTEM.m
 
 Astro, built to plain static files. One page. The home screen shows the levels, and under them one grey line with the
 rest of the configuration: the categories as icons (half lit when only some of their question types are picked), where
-and how many, and the answers when they aren't the level's own ("World · 10 questions · Type"). The line opens the
-configuration: level, answers, what (capitals, flags, languages, mountains, rivers...), where (whole world, continents or
-single countries) and how many questions (10, 20, 50 or any number). Then play, and see every answer at the end. Every
-question has 15 seconds, the same for everyone; a wrong typed answer is not revealed, so the player can try again until
-the time runs out. Next to Play: the Daily (the same 10 questions for everyone) and Practice (below).
+and how many, and the answers when they aren't the level's own ("World · 13 questions · Type"). The line opens the
+configuration: level, answers, what (capitals, flags, languages, mountains, rivers...), where (whole world, continents
+or single countries) and how many questions (8, 13, 21 or 34, or any number). Then play, and see every answer at the
+end. Every question has 15 seconds, the same for everyone; a wrong typed answer is not revealed, so the player can try
+again until the time runs out. Next to Play: the Daily (below) and Practice (below that).
+
+The counts are Fibonacci numbers, each the two before it added up (8 + 13 = 21), so each is about 1.6 times the last;
+13 to start with. Counts saved before them move to the closest one (10 to 13, 20 to 21, 50 to 34).
 
 Four levels. A level picks a set of question types and a way to answer, which the player can still change in the
 configuration, and decides how well known the places asked about are. Impossible shows itself after three rounds.
@@ -27,13 +30,20 @@ configuration, and decides how well known the places asked about are. Impossible
 
 Answers: Choose (four options), Type, or Both (each question its own way: a flag to name is typed, a flag to find is
 picked). Every question type has both forms. On Easy the wrong options are far apart and familiar; on Hard and
-Impossible they are the tempting ones (neighbours, nearby rivers, and flags that look alike: Chad's among Romania's and
-Andorra's). Which flags look alike is worked out once by `scripts/flags-alike.mjs`, which draws every flag small and
+Impossible they are the tempting ones (neighbours, nearby rivers, and flags that look alike: Chad's among Romania's
+and Andorra's), and on Easy no flag among the options looks like the right one (no Poland or Monaco next to
+Indonesia). Which flags look alike is worked out once by `scripts/flags-alike.mjs`, which draws every flag small and
 compares them colour by colour and by layout, also mirrored (`data/countries/flags-alike.json`).
 
 How well known: countries by `data/countries/tiers.csv` (37 famous, 37 well known, the rest); languages through the
 countries where most people speak them (not Irish or Romansh); rivers of 2,500 km and more plus a list of famous ones;
-peaks of 5,000 m and more. The Daily is Medium with every category, the same for everyone.
+peaks of 5,000 m and more.
+
+The Daily climbs: eight questions, the same for everyone on a day, two from each level, from Easy to Impossible, each
+asked the way its level asks (picked from four far-apart options at the start, typed at the end). Everyone gets a few
+right, and the best are still tested. Every category comes up at least once and none more than twice. Its knots grow
+with the levels on the way, and the shared result shows them in four steps ("●● ●○ ●· ··"); a link to it brings back
+the same eight, each asked its level's way (`eemmhhii` in the link). New round after it starts a round of one's own.
 
 Typing forgives: an exact name first, then the usual typo correction (one typo in names of 5 to 8 letters, two in
 longer ones, never between two real names such as Niger and Nigeria), and then a near miss for the right answer, with one

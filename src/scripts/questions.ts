@@ -33,6 +33,8 @@ export interface Question {
   choices?: Choice[];
   reveal?: string[];           // countries lit up on the map once answered
   countries: string[];         // countries the question is about: none of them comes up twice in a round
+  ask: Ask;                    // how it was asked (a challenge link carries it)
+  level?: Level;               // the Daily only: the level this question comes from
 }
 
 /** Typed, or picked from four options. */
@@ -43,11 +45,11 @@ export type Answers = 'type' | 'choose' | 'both';
 export type Tempt = 0 | 1 | 2;
 /** How well known a subject is: 2 famous (nearly everyone knows it), 1 well known, 0 the rest. */
 export type Fame = 0 | 1 | 2;
-/** How a round asks its questions; a challenge link carries it, so a friend gets the same options. */
+/** How a question is asked; a challenge link carries it, so a friend gets the same options. */
 export interface Ask { answers: Answers; tempt: Tempt }
 
 type Rng = () => number;
-type Made = Omit<Question, 'cat' | 'given' | 'asked' | 'subject'>;
+type Made = Omit<Question, 'cat' | 'given' | 'asked' | 'subject' | 'ask' | 'level'>;
 interface Template {
   id: string;
   code: string;                // one letter, for challenge links: never change it once links are out
@@ -59,7 +61,7 @@ interface Template {
   typable: boolean;            // "Which is the flag of X?" can't be typed: its answer is a picture
   subjects(kb: Knowledge, inPlace: (country: string) => boolean): string[];
   fame(kb: Knowledge, id: string): Fame;
-  // `cat`, `given`, `asked` and `subject` are filled in by buildRound. The answers never depend on what is selected
+  // `cat`, `given`, `asked`, `subject` and `ask` are filled in by makeQuestion. The answers never depend on what is selected
   // under Where: a question about France accepts every neighbour of France, also when only France is selected.
   make(kb: Knowledge, id: string, rng: Rng, form: { format: Format; tempt: Tempt }): Made | null;
 }
@@ -143,10 +145,13 @@ function wrongCountries(kb: Knowledge, c: string, n: number, rng: Rng, tempt: Te
   return weightedSample(new Map(kb.countries.filter(o => !skip.has(o.id)).map(o => [o.id, weight(o.id)])), n, rng);
 }
 /** Wrong options for a flag question. On Hard and Impossible two of them are flags that look like the right one (the
- *  closer, the likelier: scripts/flags-alike.mjs), the rest from nearby, so the eye has to look closely. */
+ *  closer, the likelier: scripts/flags-alike.mjs), the rest from nearby, so the eye has to look closely. On Easy none
+ *  of them does (no Poland or Monaco next to Indonesia): the options are easy to tell apart. */
 function wrongFlags(kb: Knowledge, c: string, n: number, rng: Rng, tempt: Tempt, w = NEAR[tempt]): string[] {
-  const alike = tempt < 2 ? [] : weightedSample(new Map(kb.flagsLike(c).filter(([, d]) => d < 0.7).map(([o, d]) => [o, (0.75 - d) ** 2])), Math.min(2, n), rng);
-  return [...alike, ...wrongCountries(kb, c, n - alike.length, rng, tempt, alike, w)];
+  const like = kb.flagsLike(c);
+  const alike = tempt < 2 ? [] : weightedSample(new Map(like.filter(([, d]) => d < 0.7).map(([o, d]) => [o, (0.75 - d) ** 2])), Math.min(2, n), rng);
+  const unlike = tempt === 0 ? like.filter(([, d]) => d < 0.45).map(([o]) => o) : [];
+  return [...alike, ...wrongCountries(kb, c, n - alike.length, rng, tempt, [...alike, ...unlike], w)];
 }
 /** The first n of `ids` with names unlike each other's and unlike those of `not` (two rivers can share a name). */
 function distinctNames(kb: Knowledge, ids: string[], n: number, not: string[]): string[] {
@@ -419,6 +424,8 @@ export const LEVEL_IDS = Object.keys(LEVELS) as Level[];
 export const ANSWERS: { id: Answers; label: string }[] = [{ id: 'choose', label: 'Choose' }, { id: 'both', label: 'Both' }, { id: 'type', label: 'Type' }];
 export const levelOf = (sel: Selection): Level => sel.level ?? 'hard';
 export const answersOf = (sel: Selection): Answers => sel.answers ?? LEVELS[levelOf(sel)].answers;
+/** How a level asks, as the level picks it. */
+export const levelAsk = (l: Level): Ask => ({ answers: LEVELS[l].answers, tempt: LEVELS[l].tempt });
 /** How a selection asks: The Gordian Knot (size 0) is always typed, with the tempting options of Impossible. */
 export const askOf = (sel: Selection): Ask => (sel.size <= 0 ? { answers: 'type', tempt: 2 } : { answers: answersOf(sel), tempt: LEVELS[levelOf(sel)].tempt });
 /** The form a question type takes: Both leaves each its own (a flag to name is typed, a flag to find is picked). */
@@ -431,9 +438,11 @@ export function isCustom(sel: Selection): boolean {
 }
 /** The Gordian Knot: All under Impossible. Every question in the game, typed, whatever else was picked. */
 export const GORDIAN: Selection = { kinds: ALL_KINDS, places: [], size: 0, level: 'impossible', answers: 'type' };
-/** The Daily: the same 10 questions for everyone on a day, about well-known places from every category, typed or
- *  picked. */
-export const DAILY: Selection = { kinds: ALL_KINDS, places: [], size: 10, level: 'medium', answers: 'both' };
+/** The Daily climbs: two questions from each level, Easy first and Impossible last, each asked the way its level
+ *  asks (picked from four far-apart options at the start, typed at the end). Everyone gets a few; the best are still
+ *  tested. Built by dailyRound; as a selection it is every category in the whole world. */
+export const DAILY_LEVELS: Level[] = ['easy', 'easy', 'medium', 'medium', 'hard', 'hard', 'impossible', 'impossible'];
+export const DAILY: Selection = { kinds: ALL_KINDS, places: [], size: DAILY_LEVELS.length };
 
 const placeTest = (sel: Selection) => {
   if (!sel.places.length) return () => true;
@@ -459,7 +468,7 @@ export function remember(keys: string[]) {
  *  seed), so a challenge link can carry just the subjects. */
 function makeQuestion(kb: Knowledge, t: Template, id: string, seed: string, ask: Ask): Question | null {
   const made = t.make(kb, id, seeded(`${seed}|${t.id}|${id}`), { format: formatFor(t, ask.answers), tempt: ask.tempt });
-  return made && { ...made, cat: t.cat, given: t.given, asked: t.asked, subject: id };
+  return made && { ...made, cat: t.cat, given: t.given, asked: t.asked, subject: id, ask };
 }
 
 /** What a question uses up for the rest of a round: its countries, and its subject within its category, so that a
@@ -469,8 +478,10 @@ const uses = (q: Question) => [...q.countries, `${q.cat}:${q.subject}`];
 /** A round of `size` questions (0: all of them). Categories take turns. Easy and Medium ask about famous or
  *  well-known subjects only, for as long as there are any; Hard and Impossible mix in lesser-known ones (Hard: about
  *  40%). No country and no river comes up twice (except when playing everything), and questions seen recently rest
- *  unless there aren't enough others (`fresh`: ignore that). `seed` fixes each question's options. */
-export function buildRound(kb: Knowledge, sel: Selection, rng: Rng = Math.random, fresh = false, seed = String(rng())): Question[] {
+ *  unless there aren't enough others (`fresh`: ignore that). `seed` fixes each question's options. `used`: what
+ *  earlier parts of the same round already asked about (the Daily is built a question at a time). */
+export function buildRound(kb: Knowledge, sel: Selection, rng: Rng = Math.random, fresh = false, seed = String(rng()),
+  used = new Set<string>()): Question[] {
   const all = sel.size <= 0;
   const size = all ? Infinity : sel.size;
   if (all) fresh = true;
@@ -500,7 +511,6 @@ export function buildRound(kb: Knowledge, sel: Selection, rng: Rng = Math.random
   const cats = shuffle([...new Set(templates.map(t => t.cat))], rng);
   const seen = new Set(fresh ? [] : recent());
   const round: Question[] = [];
-  const used = new Set<string>();
   const keys = new Set<string>();
   // Each pass first rests the questions seen recently, then fills up with them. Easy and Medium go through those two
   // with their famous or well-known subjects alone first (a famous question seen yesterday is better than an obscure
@@ -534,15 +544,45 @@ export function buildRound(kb: Knowledge, sel: Selection, rng: Rng = Math.random
   return round;
 }
 
-/** The same questions again, from their codes and subjects (a challenge link), asked the same way. Subjects the data
- *  no longer has are left out. */
-export function rebuildRound(kb: Knowledge, items: { code: string; subject: string }[], seed: string, ask: Ask): Question[] {
-  const out: Question[] = [];
-  for (const it of items) {
-    const t = TEMPLATES.find(x => x.code === it.code);
-    if (!t) continue;
-    try { const q = makeQuestion(kb, t, it.subject, seed, ask); if (q) out.push(q); } catch { /* gone from the data */ }
+/** The Daily of a day (its seed): the same eight questions for everyone, two from each level in DAILY_LEVELS. Every
+ *  category comes up at least once and none more than twice, and a category that comes back does so as another
+ *  question type where it can. Built without resting recent questions, so everyone gets the same. */
+export function dailyRound(kb: Knowledge, seed: string): Question[] {
+  const rng = seeded(seed);
+  const catsOf = (l: Level) => CATS.map(c => c.id).filter(c => TEMPLATES.some(t => t.cat === c && LEVELS[l].kinds.includes(t.id)));
+  // First which category each question is from: drawn again until every category is in and none comes three times.
+  let plan: Cat[] = [];
+  for (let n = 0; n < 1000; n++) {
+    plan = DAILY_LEVELS.map(l => pickOne(catsOf(l), rng));
+    const count = new Map<Cat, number>();
+    for (const c of plan) count.set(c, (count.get(c) ?? 0) + 1);
+    if (count.size === CATS.length && Math.max(...count.values()) <= 2) break;
   }
+  const used = new Set<string>(), kinds = new Set<string>();
+  const round: Question[] = [];
+  DAILY_LEVELS.forEach((level, i) => {
+    const own = LEVELS[level].kinds.filter(k => TEMPLATES.some(t => t.id === k && t.cat === plan[i]));
+    const other = own.filter(k => !kinds.has(k));
+    const [q] = buildRound(kb, { kinds: other.length ? other : own, places: [], size: 1, level }, rng, true, seed, used);
+    if (!q) return;
+    kinds.add(q.kind);
+    round.push({ ...q, level });
+  });
+  return round;
+}
+
+/** The same questions again, from their codes and subjects (a challenge link), each asked the same way (`asks`, one
+ *  per item; a Daily also gives each question its level). Subjects the data no longer has are left out. */
+export function rebuildRound(kb: Knowledge, items: { code: string; subject: string }[], seed: string, asks: Ask[], levels?: Level[]): Question[] {
+  const out: Question[] = [];
+  items.forEach((it, i) => {
+    const t = TEMPLATES.find(x => x.code === it.code);
+    if (!t) return;
+    try {
+      const q = makeQuestion(kb, t, it.subject, seed, asks[i] ?? asks[0]);
+      if (q) out.push(levels?.[i] ? { ...q, level: levels[i] } : q);
+    } catch { /* gone from the data */ }
+  });
   return out;
 }
 export const codeOf = (kind: string) => TEMPLATES.find(t => t.id === kind)?.code ?? '';
@@ -561,7 +601,7 @@ export function practiceRound(kb: Knowledge, kind: string, places: string[], ans
     .filter((q): q is Question => !!q);
 }
 
-/** A seeded random generator (mulberry32), for the Daily. */
+/** A seeded random generator (mulberry32), for the Daily, Practice and challenge links. */
 export function seeded(seed: string): Rng {
   let h = 1779033703 ^ seed.length;
   for (let i = 0; i < seed.length; i++) { h = Math.imul(h ^ seed.charCodeAt(i), 3432918353); h = (h << 13) | (h >>> 19); }

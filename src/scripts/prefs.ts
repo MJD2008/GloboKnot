@@ -13,9 +13,12 @@ function save(key: string, value: unknown) {
 }
 
 // ---------- the quiz selection
-export const SIZES = [10, 20, 50] as const; // presets; any other number can be typed in, and 0 means all
+/** Presets: Fibonacci numbers, each the two before it added up (8 + 13 = 21), about 1.6 times the last. Any other
+ *  number can be typed in, and 0 means all. */
+export const SIZES = [8, 13, 21, 34] as const;
+export const DEFAULT_SIZE = 13;
 export const MAX_SIZE = 9999;
-export const clampSize = (n: number) => (n === 0 ? 0 : Math.min(MAX_SIZE, Math.max(1, Math.round(n) || 10)));
+export const clampSize = (n: number) => (n === 0 ? 0 : Math.min(MAX_SIZE, Math.max(1, Math.round(n) || DEFAULT_SIZE)));
 const SEL_KEY = 'gk-selection';
 type Saved = Omit<Partial<Selection>, 'level'> & { v?: number; level?: string };
 const saved: Saved = load<Saved>(SEL_KEY, {});
@@ -31,21 +34,23 @@ let kinds = Array.isArray(saved.kinds) ? saved.kinds.filter(k => TEMPLATES.some(
 // Before v3, neighbours were a category of their own and off by default; now they belong to Locations.
 if (!v && kinds.includes('loc.map') && !kinds.includes('nb.name')) kinds.push('nb.name');
 if (v < 5 && saved.level === 'easy' && kinds.length === OLD_EASY.length && OLD_EASY.every(k => kinds.includes(k))) kinds = [...LEVELS.medium.kinds];
+// Until v6 the presets were 10, 20 and 50: each becomes the Fibonacci preset closest to it (a typed number stays).
+const OLD_SIZES: Record<number, number> = { 10: 13, 20: 21, 50: 34 };
 export const selection: Selection & { level: Level } = {
   kinds: kinds.length ? kinds : [...LEVELS[level].kinds],
   places: Array.isArray(saved.places) ? saved.places : [],
-  size: clampSize(saved.size ?? 10),
+  size: clampSize(v < 6 && saved.size && saved.size in OLD_SIZES ? OLD_SIZES[saved.size] : saved.size ?? DEFAULT_SIZE),
   level,
   ...(ANSWERS.some(a => a.id === saved.answers) ? { answers: saved.answers } : {}),
 };
-export const saveSelection = () => save(SEL_KEY, { ...selection, v: 5 });
+export const saveSelection = () => save(SEL_KEY, { ...selection, v: 6 });
 /** A level picks its own question types and answers (anything the player had changed is replaced). All (The Gordian
  *  Knot) only exists under Impossible. */
 export function setLevel(l: Level) {
   selection.level = l;
   selection.kinds = [...LEVELS[l].kinds];
   delete selection.answers;
-  if (l !== 'impossible' && selection.size === 0) selection.size = 10;
+  if (l !== 'impossible' && selection.size === 0) selection.size = DEFAULT_SIZE;
 }
 
 // ---------- settings

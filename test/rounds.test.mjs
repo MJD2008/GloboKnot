@@ -3,7 +3,7 @@
 // both typed. A level picks its own question types and answers; All (The Gordian Knot) asks everything, typed. Every
 // question type can be typed or picked. And what a round never does: ask about the same country or river twice. Practice
 // asks every question of one type in one region, in the same order every time. On Hard and Impossible the wrong
-// options of a flag question are flags that look alike.
+// options of a flag question are flags that look alike. The Daily climbs from Easy to Impossible.
 // Run: node --test (Node 22.18 or newer, which reads the TypeScript sources directly).
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -92,7 +92,7 @@ test('Easy shows four options, far apart and familiar', { skip }, async () => {
   assert.ok(obscure / options < 0.1, `${Math.round((obscure / options) * 100)}% of wrong options lesser known`);
 });
 
-test('Hard and Impossible offer flags that look alike as wrong options', { skip }, async () => {
+test('Hard and Impossible offer flags that look alike as wrong options; Easy never does', { skip }, async () => {
   const { kb, level, rounds } = await load();
   const alikeShare = sel => {
     let options = 0, alike = 0;
@@ -107,6 +107,10 @@ test('Hard and Impossible offer flags that look alike as wrong options', { skip 
   assert.ok(hard > 0.5, `Hard: ${Math.round(hard * 100)}% of wrong flags look alike`);
   assert.ok(medium < hard - 0.25, `Medium: ${Math.round(medium * 100)}% (only by chance, from nearby)`);
   assert.deepEqual(kb.flagsLike('TCD').slice(0, 2).map(([o]) => o), ['ROU', 'BEL'], "Chad's flag looks most like Romania's");
+  const easy = rounds(level('easy', flags), 30, 'flagseasy').flat();
+  const close = easy.flatMap(x => x.choices.filter(c => kb.flagsLike(x.subject).some(([o, d]) => o === c.id && d < 0.45)).map(c => `${x.subject}:${c.id}`));
+  assert.ok(easy.length >= 300, `${easy.length} Easy flag questions`);
+  assert.deepEqual(close, [], 'Easy: no flag among the options looks like the right one');
 });
 
 test('Medium keeps to well-known places, typed and picked', { skip }, async () => {
@@ -148,14 +152,46 @@ test('every question type can be typed or picked', { skip }, async () => {
   }
 });
 
-test('a level-less selection is Hard; the Daily is Medium, every category, typed or picked', { skip }, async () => {
-  const { ALL_KINDS, DAILY, askOf, buildRound, kb, seeded } = await load();
+test('a level-less selection is Hard', { skip }, async () => {
+  const { ALL_KINDS, buildRound, kb, seeded } = await load();
   store.clear();
   const keys = sel => buildRound(kb, sel, seeded('same'), true, 'same').map(x => `${x.key}:${x.format}`);
   assert.deepEqual(keys({ kinds: ALL_KINDS, places: [], size: 20 }), keys({ kinds: ALL_KINDS, places: [], size: 20, level: 'hard' }));
-  assert.equal(DAILY.level, 'medium');
-  assert.deepEqual(askOf(DAILY), { answers: 'both', tempt: 1 });
-  assert.equal(DAILY.kinds.length, ALL_KINDS.length);
+});
+
+test('the Daily climbs: two questions from each level, Easy to Impossible, every category, the same for everyone', { skip }, async () => {
+  const { CATS, DAILY, DAILY_LEVELS, LEVELS, byId, codeOf, dailyRound, fame, kb, rebuildRound, remember } = await load();
+  assert.deepEqual(DAILY_LEVELS, ['easy', 'easy', 'medium', 'medium', 'hard', 'hard', 'impossible', 'impossible']);
+  assert.equal(DAILY.size, 8);
+  const days = Array.from({ length: 90 }, (_, i) => new Date(Date.UTC(2026, 10, 1 + i)).toISOString().slice(0, 10));
+  const kinds = new Map();
+  for (const day of days) {
+    const seed = `daily-${day}`;
+    store.clear();
+    const round = dailyRound(kb, seed);
+    assert.equal(round.length, 8, `${day}: eight questions`);
+    assert.deepEqual(round.map(x => x.level), DAILY_LEVELS, `${day}: Easy first, Impossible last`);
+    for (const x of round) {
+      assert.ok(LEVELS[x.level].kinds.includes(x.kind), `${day}: ${x.key} is one of ${x.level}'s question types`);
+      assert.deepEqual(x.ask, { answers: LEVELS[x.level].answers, tempt: LEVELS[x.level].tempt }, `${day}: ${x.key} asked as ${x.level} asks`);
+      kinds.set(x.kind, (kinds.get(x.kind) ?? 0) + 1);
+    }
+    for (const x of round.slice(0, 2)) assert.ok(x.format === 'choice' && fame(x) === 2, `${day}: Easy picks from four, famous only (${x.key})`);
+    for (const x of round.slice(2, 4)) assert.ok(fame(x) >= 1, `${day}: Medium keeps to well-known places (${x.key})`);
+    for (const x of round.slice(4)) assert.equal(x.format, byId[x.kind].typable ? 'type' : 'choice', `${day}: Hard and Impossible are typed (${x.key})`);
+    assert.equal(new Set(round.map(x => x.cat)).size, CATS.length, `${day}: every category`);
+    const countries = round.flatMap(x => x.countries);
+    assert.equal(new Set(countries).size, countries.length, `${day}: no country twice`);
+    // the same for everyone: what one played before doesn't change it
+    remember(round.map(x => x.key));
+    assert.deepEqual(dailyRound(kb, seed).map(x => x.key), round.map(x => x.key), `${day}: the same again`);
+  }
+  assert.equal(kinds.size, 13, `every question type comes up in three months (${[...kinds].join(' ')})`);
+  assert.notDeepEqual(dailyRound(kb, 'daily-2026-11-13').map(x => x.key), dailyRound(kb, 'daily-2026-11-14').map(x => x.key));
+  // a link to a Daily brings back the same questions, each asked its level's way
+  const round = dailyRound(kb, 'daily-2026-11-13');
+  const items = round.map(x => ({ code: codeOf(x.kind), subject: x.subject }));
+  assert.deepEqual(rebuildRound(kb, items, 'daily-2026-11-13', round.map(x => x.ask), round.map(x => x.level)), round);
 });
 
 test('All (The Gordian Knot) asks everything, typed, whatever the level', { skip }, async () => {
@@ -176,7 +212,8 @@ test('a challenge link gets the same questions, asked the same way', { skip }, a
     store.clear();
     const sel = level(l, { kinds: ['loc.map', 'cap.name', 'flag.pick', 'lang.official', 'river.map'], size: 20 });
     const round = buildRound(kb, sel, seeded(l), true, `seed-${l}`);
-    const again = rebuildRound(kb, round.map(x => ({ code: codeOf(x.kind), subject: x.subject })), `seed-${l}`, askOf(sel));
+    assert.ok(round.every(x => x.ask.answers === askOf(sel).answers && x.ask.tempt === askOf(sel).tempt), `${l}: each question knows how it was asked`);
+    const again = rebuildRound(kb, round.map(x => ({ code: codeOf(x.kind), subject: x.subject })), `seed-${l}`, round.map(x => x.ask));
     assert.deepEqual(again, round, l);
   }
 });
