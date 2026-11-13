@@ -328,10 +328,14 @@ function makeQuestion(kb: Knowledge, t: Template, id: string, seed: string): Que
   return made && { ...made, cat: t.cat, given: t.given, asked: t.asked, subject: id };
 }
 
+/** What a question uses up for the rest of a round: its countries, and its subject within its category, so that a
+ *  river isn't asked about twice (once for its name, once for its countries: the first answer gives the second away). */
+const uses = (q: Question) => [...q.countries, `${q.cat}:${q.subject}`];
+
 /** A round of `size` questions (0: all of them). Categories take turns; within one, the level sets how many
- *  subjects are well-known ones (Medium: about 60%). No country comes up twice (except when playing everything), and
- *  questions seen recently rest unless there aren't enough others (`fresh`: ignore that). `seed` fixes each
- *  question's options. */
+ *  subjects are well-known ones (Medium: about 60%). No country and no river comes up twice (except when playing
+ *  everything), and questions seen recently rest unless there aren't enough others (`fresh`: ignore that). `seed`
+ *  fixes each question's options. */
 export function buildRound(kb: Knowledge, sel: Selection, rng: Rng = Math.random, fresh = false, seed = String(rng())): Question[] {
   const all = sel.size <= 0;
   const size = all ? Infinity : sel.size;
@@ -371,7 +375,7 @@ export function buildRound(kb: Knowledge, sel: Selection, rng: Rng = Math.random
           const id = queue[j];
           if (pass.only && !known.get(t)!.has(id)) break; // the well-known come first in an Easy queue
           const cand = makeQuestion(kb, t, id, seed);
-          if (!cand || keys.has(cand.key) || (!all && cand.countries.some(c => used.has(c))) || (pass.rest && seen.has(cand.key))) continue;
+          if (!cand || keys.has(cand.key) || (!all && uses(cand).some(c => used.has(c))) || (pass.rest && seen.has(cand.key))) continue;
           queue.splice(j, 1);
           q = cand;
         }
@@ -381,7 +385,7 @@ export function buildRound(kb: Knowledge, sel: Selection, rng: Rng = Math.random
       stuck = 0;
       round.push(q);
       keys.add(q.key);
-      q.countries.forEach(c => used.add(c));
+      uses(q).forEach(c => used.add(c));
     }
   }
   return round;

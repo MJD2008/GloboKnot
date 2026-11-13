@@ -27,6 +27,11 @@ const X = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 
     </section>
 
     <section id="quiz" class="screen quiz" hidden>
+      <!-- Wide screens only: the round so far, a rope of knots down the left side. -->
+      <aside class="rail left" aria-hidden="true"><ol id="trail" class="trail"></ol></aside>
+      <!-- The right side stays free for an advertisement later (160x600 or 300x600), away from the answer box and
+           the buttons. When there is one, it goes here:
+      <aside class="rail right" aria-label="Advertisement"></aside> -->
       <div class="bar">
         <button id="quit" class="icon-btn" type="button" aria-label="Stop and see the answers" title="Stop" set:html={X} />
         <div id="beads" class="beads" aria-hidden="true"></div>

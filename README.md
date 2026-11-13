@@ -26,6 +26,10 @@ asked about are.
 "Well-known" is each template's `core` test: the countries in `data/countries/tiers.csv`, rivers of 2,500 km and more
 plus a list of famous ones, peaks of 5,000 m and more. The Daily and The Gordian Knot have no level.
 
+On screens from 1240 px wide, the round so far hangs down the left side of the quiz as a rope, one knot per answer. The
+right side is left free: an advertisement can go there later (`.rail.right`, commented out in `index.astro`), away from
+the answer box and the buttons.
+
 Scoring is a rope of knots: right first time ties a tight knot (1 point), right after a retry a loose one (half a point),
 and a miss frays the rope. The score ring shows the rope, and the rank is a knot (Loose end to Endless knot). Share
 sends the score with a challenge link (`#c=...`: the question codes and subjects plus a seed, so a friend gets the same
@@ -93,7 +97,7 @@ public/data/countries.json compact output for the site (generated, approved fact
    places, two places sharing an accepted answer, and more.
 5. `npm run build:data` writes `public/data/countries.json` with approved facts only.
 
-`npm run data` runs steps 2 to 5 and copies the flags. `npm test` tests the answer matcher (silent typo correction), the names people type, and the levels (which needs Node 22.18 or newer; older versions skip it).
+`npm run data` runs steps 2 to 5 and copies the flags. `npm test` tests the answer matcher (silent typo correction), the names people type, and the round builder: the levels, and no country or river twice in a round (this one needs Node 22.18 or newer; older versions skip it).
 
 ## Adding a subject later
 

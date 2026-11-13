@@ -31,6 +31,7 @@ const ui = {
   choose: $<HTMLButtonElement>('#choose'),
   quit: $<HTMLButtonElement>('#quit'),
   beads: $('#beads'),
+  trail: $('#trail'),
   clock: $('#clock'),
   timer: $('#timer'),
   count: $('#count'),
@@ -302,6 +303,7 @@ async function start(sel: Selection, daily = false, ch: Challenge | null = null)
   state.timed = true; // every round, the Daily too
   state.started = performance.now();
   ui.beads.innerHTML = state.round.map(() => '<i></i>').join('');
+  ui.trail.innerHTML = '';
   ui.beads.classList.toggle('many', state.round.length > 20 && state.round.length <= 30);
   ui.beads.classList.toggle('lots', state.round.length > 30); // too many to show apart: one rope, coloured as it goes
   ui.clock.hidden = state.round.length <= 20; // long rounds also count: "12/50"
@@ -329,6 +331,7 @@ function ask() {
   ui.card.classList.remove('ok', 'bad');
   ui.verdict.hidden = true;
   [...ui.beads.children].forEach((el, j) => el.classList.toggle('now', j === state.i));
+  trailNow();
   ui.clock.textContent = `${state.i + 1}/${state.round.length}`;
   // What is given and what is asked, top left: MAP → COUNTRY.
   ui.tags.innerHTML = `<span class="tag">${esc(q.given)}</span>${ARROW}<span class="tag ask">${esc(q.asked)}</span>`;
@@ -546,6 +549,7 @@ function finish(q: Question, ok: boolean, typed: string, late = false, pick?: st
   state.best = Math.max(state.best, state.streak);
   const knot = knotOf(state.results[state.results.length - 1]);
   ui.beads.children[state.i].classList.add(knot);
+  trailAdd(state.results[state.results.length - 1], state.i);
   ui.card.classList.add(ok ? 'ok' : 'bad');
 
   // The verdict sits on the answer box: the right answer, after a wrong typed one struck through.
@@ -593,6 +597,72 @@ function nudge() {
   void ui.card.offsetWidth; // restart the animation
   ui.card.classList.add('shake');
 }
+
+// ---------------------------------------------------------------- answers as rows
+/** One answered question as a row: its number, what was asked (a flag, an outline or a few words) and the answer.
+ *  The answers list on the results is made of these, and so is the rope down the side of a wide screen. */
+function answerRow(r: Result, j: number): HTMLLIElement {
+  const li = document.createElement('li');
+  li.className = `${r.ok ? 'ok' : 'bad'} ${knotOf(r)}`;
+  const n = document.createElement('span');
+  n.className = 'n';
+  n.textContent = String(j + 1);
+  const clue = document.createElement('span');
+  clue.className = 'clue';
+  if (r.q.media.kind === 'flag') {
+    const img = document.createElement('img');
+    img.src = url(`flags/${kb.country(r.q.media.country)!.flag}.svg`);
+    img.alt = 'Flag';
+    clue.append(img);
+  } else if (r.q.media.kind === 'map' && r.q.media.country && (r.q.kind === 'loc.map' || r.q.kind === 'cap.map')) {
+    // The country's outline (and the capital's dot) instead of the word "Map".
+    const c = kb.country(r.q.media.country)!;
+    clue.innerHTML = world.thumb(c.num, r.q.media.dot);
+    if (r.q.kind === 'cap.map') clue.append(c.name);
+  } else clue.textContent = r.q.clue;
+  const a = document.createElement('span');
+  a.className = 'ans';
+  const flagOf = (id: string) => { const img = document.createElement('img'); img.src = url(`flags/${kb.country(id)!.flag}.svg`); img.alt = kb.name(id); return img; };
+  if (r.q.kind === 'flag.pick') {
+    // The flags themselves: the right one, and the one picked if that was another.
+    const b = document.createElement('strong');
+    b.append(flagOf(r.q.accept[0]));
+    a.append(b);
+    if (!r.ok && r.pick) { const s = document.createElement('s'); s.append(flagOf(r.pick)); a.append(s); }
+    if (r.late) { const s = document.createElement('small'); s.textContent = "Time's up"; a.append(s); }
+  } else {
+    if (!r.ok && r.typed) { const s = document.createElement('s'); s.textContent = r.typed; a.append(s, ' '); }
+    if (r.late) { const s = document.createElement('small'); s.textContent = "Time's up"; a.append(s, ' '); }
+    if (r.ok && r.tries > 1) { const s = document.createElement('small'); s.textContent = `${ordinal(r.tries)} try`; a.append(s, ' '); }
+    const b = document.createElement('strong');
+    b.textContent = r.ok && r.q.format === 'type' ? r.typed : r.q.answer;
+    a.append(b);
+  }
+  li.append(n, clue, a);
+  return li;
+}
+
+// ---- wide screens: the round so far as a rope down the left side, one knot per answer (the newest at the bottom)
+const TRAIL_MAX = 40; // rows kept: a very long round would pile up thousands
+const calm = window.matchMedia('(prefers-reduced-motion: reduce)');
+const trailEnd = () => ui.trail.scrollTo({ top: ui.trail.scrollHeight, behavior: calm.matches ? 'auto' : 'smooth' });
+/** The question being asked: an open knot at the end of the rope. */
+function trailNow() {
+  ui.trail.querySelector('.now')?.remove();
+  const li = document.createElement('li');
+  li.className = 'now';
+  li.innerHTML = '<span class="n"></span>';
+  ui.trail.append(li);
+  trailEnd();
+}
+/** The answer just given takes the open knot's place. */
+function trailAdd(r: Result, j: number) {
+  ui.trail.querySelector('.now')?.remove();
+  ui.trail.append(answerRow(r, j));
+  while (ui.trail.children.length > TRAIL_MAX) ui.trail.firstElementChild!.remove();
+  trailEnd();
+}
+ui.trail.addEventListener('scroll', () => ui.trail.classList.toggle('scrolled', ui.trail.scrollTop > 2), { passive: true });
 
 // ---------------------------------------------------------------- results
 /** Ranks are knots, from a loose end to the knot with no end. */
@@ -656,43 +726,7 @@ function end() {
 
   ui.answers.innerHTML = '';
   state.results.forEach((r, j) => {
-    const li = document.createElement('li');
-    li.className = r.ok ? 'ok' : 'bad';
-    const n = document.createElement('span');
-    n.className = 'n';
-    n.textContent = String(j + 1);
-    const clue = document.createElement('span');
-    clue.className = 'clue';
-    if (r.q.media.kind === 'flag') {
-      const img = document.createElement('img');
-      img.src = url(`flags/${kb.country(r.q.media.country)!.flag}.svg`);
-      img.alt = 'Flag';
-      clue.append(img);
-    } else if (r.q.media.kind === 'map' && r.q.media.country && (r.q.kind === 'loc.map' || r.q.kind === 'cap.map')) {
-      // The country's outline (and the capital's dot) instead of the word "Map".
-      const c = kb.country(r.q.media.country)!;
-      clue.innerHTML = world.thumb(c.num, r.q.media.dot);
-      if (r.q.kind === 'cap.map') clue.append(c.name);
-    } else clue.textContent = r.q.clue;
-    const a = document.createElement('span');
-    a.className = 'ans';
-    const flagOf = (id: string) => { const img = document.createElement('img'); img.src = url(`flags/${kb.country(id)!.flag}.svg`); img.alt = kb.name(id); return img; };
-    if (r.q.kind === 'flag.pick') {
-      // The flags themselves: the right one, and the one picked if that was another.
-      const b = document.createElement('strong');
-      b.append(flagOf(r.q.accept[0]));
-      a.append(b);
-      if (!r.ok && r.pick) { const s = document.createElement('s'); s.append(flagOf(r.pick)); a.append(s); }
-      if (r.late) { const s = document.createElement('small'); s.textContent = "Time's up"; a.append(s); }
-    } else {
-      if (!r.ok && r.typed) { const s = document.createElement('s'); s.textContent = r.typed; a.append(s, ' '); }
-      if (r.late) { const s = document.createElement('small'); s.textContent = "Time's up"; a.append(s, ' '); }
-      if (r.ok && r.tries > 1) { const s = document.createElement('small'); s.textContent = `${ordinal(r.tries)} try`; a.append(s, ' '); }
-      const b = document.createElement('strong');
-      b.textContent = r.ok && r.q.format === 'type' ? r.typed : r.q.answer;
-      a.append(b);
-    }
-    li.append(n, clue, a);
+    const li = answerRow(r, j);
     li.tabIndex = 0;
     li.setAttribute('role', 'button');
     li.setAttribute('aria-label', `Answer ${j + 1}: see it on the map`);

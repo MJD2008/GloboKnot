@@ -1,5 +1,6 @@
-// The three levels. Easy keeps to well-known places for as long as it can, Medium mixes, Hard goes for the
-// lesser-known; a level ticks its own question types; All (The Gordian Knot) and the Daily have no level.
+// The round builder. The three levels: Easy keeps to well-known places for as long as it can, Medium mixes, Hard
+// goes for the lesser-known; a level ticks its own question types; All (The Gordian Knot) and the Daily have no
+// level. And what a round never does: ask about the same country or the same river twice.
 // Run: node --test (Node 22.18 or newer, which reads the TypeScript sources directly).
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -101,4 +102,18 @@ test('All (The Gordian Knot) asks everything, whatever the level', { skip }, asy
   assert.equal(easy.length, available(kb, { kinds: ['cap.name', 'flag.pick'], places: europe, size: 0 }));
   assert.deepEqual(easy, keys('hard'));
   assert.deepEqual(easy, keys(undefined));
+});
+
+test('a round never asks about the same country or river twice', { skip }, async () => {
+  const { ALL_KINDS, LEVEL_IDS, rounds } = await load();
+  const twice = xs => xs.filter((x, i) => xs.indexOf(x) !== i);
+  for (const [name, kinds] of [['every type', ALL_KINDS], ['rivers', ['river.name', 'river.map']], ['capitals', ['cap.name', 'cap.map', 'cap.reverse']]]) {
+    for (const level of LEVEL_IDS) {
+      for (const round of rounds({ kinds, places: [], size: 50, level }, 12, `twice${name}${level}`)) {
+        assert.equal(round.length, 50, `${name}, ${level}: a full round`);
+        assert.deepEqual(twice(round.flatMap(x => x.countries)), [], `${name}, ${level}: a country twice`);
+        assert.deepEqual(twice(round.filter(x => x.cat === 'rivers').map(x => x.subject)), [], `${name}, ${level}: a river twice`);
+      }
+    }
+  }
 });
