@@ -18,39 +18,44 @@ again until the time runs out. Next to Play: the Daily (below) and Practice (bel
 The counts are Fibonacci numbers, each the two before it added up (8 + 13 = 21), so each is about 1.6 times the last;
 13 to start with. Counts saved before them move to the closest one (10 to 13, 20 to 21, 50 to 34).
 
-Four levels. A level picks a set of question types and a way to answer, which the player can still change in the
-configuration (except on Impossible, which is always typed), and decides how well known the places asked about are.
-Impossible shows itself after three rounds.
+Four levels, named after knots (James, 14 Nov): Loose, Tight and Complex on the home screen, and Atlas, the hidden
+fourth. Each has its colour wherever it shows (home, configuration, the knots of a round, the results, a challenge):
+green, gold, orange and crimson, with a knot drawn beside its name. A level picks a set of question types and a way
+to answer, which the player can still change in the configuration (except on Atlas, which is always typed), and
+decides how well known the places asked about are. Atlas is not on the home screen: it waits in the configuration
+behind a padlock until a Complex round of the level's own questions, 8 or more, scores 75% or more (whoever played
+three rounds before 14 Nov keeps it open). The ids stay `easy`, `medium`, `hard` and `impossible`: saved selections
+and links use them.
 
 | Level | Question types | Answers | Places |
 |---|---|---|---|
-| Easy (new visitors) | Capitals, flags | Choose: four options, far apart | Famous countries only, while there are enough |
-| Medium | Locations, capitals, flags, languages | Both | Well-known only, while there are enough |
-| Hard | Every category | Type | About 60% well-known |
-| Impossible | Every category, but no flag to pick | Always typed | About 20% well-known, never famous unless nothing else is left |
+| Loose (easy; new visitors) | Capitals, flags | Choose: four options, far apart | Famous countries only, while there are enough |
+| Tight (medium) | Locations, capitals, flags, languages | Both | Well-known only, while there are enough |
+| Complex (hard) | Every category | Type | About 60% well-known |
+| Atlas (impossible) | Every category, but no flag to pick | Always typed | About 20% well-known, never famous unless nothing else is left |
 
 Answers: Choose (four options), Type, or Both (each question its own way: a flag to name is typed, a flag to find is
 picked). Every question type has both forms, except the flag to find, which is always picked: its answer is a picture.
-Impossible has no options at all: Choose and Both can't be picked there, and it never asks for a flag to find (James,
-14 Nov: "Impossible should have no multiple choice"). On Easy the wrong options are far apart and familiar; on Hard
-they are the tempting ones (neighbours, nearby rivers, and flags that look alike: Chad's among Romania's and
-Andorra's), and on Easy no flag among the options looks like the right one (no Poland or Monaco next to Indonesia).
+Atlas has no options at all: Choose and Both can't be picked there, and it never asks for a flag to find (James,
+14 Nov: "Impossible should have no multiple choice"). On Loose the wrong options are far apart and familiar; on
+Complex they are the tempting ones (neighbours, nearby rivers, and flags that look alike: Chad's among Romania's and
+Andorra's), and on Loose no flag among the options looks like the right one (no Poland or Monaco next to Indonesia).
 Which flags look alike is worked out once by `scripts/flags-alike.mjs`, which draws every flag small and compares them
 colour by colour and by layout, also mirrored (`data/countries/flags-alike.json`).
 
 How well known: countries by `data/countries/tiers.csv` (37 famous, 37 well known, the rest); languages through the
 countries where most people speak them (not Irish or Romansh); rivers of 2,500 km and more plus a list of famous ones;
-peaks of 5,000 m and more. A river or a highest point on the map, asked for its country, is as well known as the
-best-known country that counts as right: a river through the United States asks about the United States, so
-Impossible leaves it out. That leaves Impossible about a dozen rivers to ask the country of (the Okavango, the
-Chindwin, the Helmand...), and every lesser-known river to name.
+peaks of 5,000 m and more. A highest point asked for its country is as well known as the best-known country that
+counts as right, and at least well known from 5,000 m.
 
-A river or a highest point on the map is named in its question ("Name a country the Okavango River flows through.",
-"Mount Kilimanjaro is the highest point of which country?"), unless the name gives the country away: the Congo,
-Gambia, Niger, Senegal and Uruguay rivers, and Mount Kenya, Mount Cameroon, Pico de São Tomé and Morne Seychellois
-are asked without it. Pico Bolívar keeps its name: it is Venezuela's, and Bolivia tempts.
+A river is asked by sight: the river on the map, which one is it? Which country a river flows through is no longer
+asked (James, 14 Nov: it "feels very similar to simply identifying a country on the map, just with an extra step").
+A highest point is asked by its name, without a map while it is asked ("Mount Kilimanjaro is the highest point of
+which country?"): the triangle would show the country. The answers afterwards show it on the map. Mount Kenya, Mount
+Cameroon, Pico de São Tomé and Morne Seychellois are not asked for their country: their names give it away. Pico
+Bolívar is: it is Venezuela's, and Bolivia tempts.
 
-The Daily climbs: eight questions, the same for everyone on a day, two from each level, from Easy to Impossible, each
+The Daily climbs: eight questions, the same for everyone on a day, two from each level, from Loose to Atlas, each
 asked the way its level asks (picked from four far-apart options at the start, typed at the end). Everyone gets a few
 right, and the best are still tested. Every category comes up at least once and none more than twice. Its knots grow
 with the levels on the way, and the shared result shows them in four steps ("●● ●○ ●· ··"); a link to it brings back
@@ -65,15 +70,18 @@ On screens from 1240 px wide, the round so far hangs down the left side of the q
 right side is left free: an advertisement can go there later (`.rail.right`, commented out in `index.astro`), away from
 the answer box and the buttons.
 
-Scoring is a rope of knots: right first time ties a tight knot (1 point), right after a retry a loose one (half a point),
-and a miss frays the rope. The score ring shows the rope, and the rank is a knot (Loose end to Endless knot). Under it,
-three numbers: the best run of right answers, the fastest right answer and the time. After 90% or more on a level's own
-questions, the next level is offered ("Too easy? Try Medium"). Share
-sends the score with a challenge link (`#c=...`: the question codes and subjects plus a seed, so a friend gets the same
-questions, asked the same way, and a score to beat); the share icon at the top shares the site. Stopping a round shows
-the answers so far, without a score.
+Scoring is a rope of knots: right the first time ties a solid knot (1 point), right after a retry an open one (half a
+point), and a miss frays the rope (the code still calls them tight and loose). The score ring shows the rope, and the
+rank is a knot (Loose end to Endless knot). Under it, three numbers: the best run of right answers, the fastest right
+answer and the time. After 90% or more on a level's own questions, the next level is offered, one tap away ("Too
+loose? Try Tight", "Too easy? Try Complex"); Complex offers Atlas once it is open. The round that opens Atlas says so,
+with a button to try it. A round's knots, its ring and its title on the results take the level's colour. Share
+sends the score with a challenge link (`#c=...`: the question codes and subjects plus a seed and the level, so a friend
+gets the same questions, asked the same way, at the same level, and a score to beat); the share icon at the top shares
+the site. Stopping a round shows the answers so far, without a score.
 
-Tapping an answer opens it again: the map of the country it was about with the countries around it named, and a card with
+Tapping an answer opens it again: the map of the country it was about with the countries around it named (for a highest
+point, the peak with its country), and a card with
 its flag, capital, languages, highest point, rivers and neighbours (a river, a language or a mountain gets its own card).
 Names on the map are sized for the width the map is shown at, and left out where they would cover each other.
 
@@ -83,13 +91,18 @@ there is, in the same order every time (the order and the options come from a se
 For learning a set until it sticks, and for speedruns.
 
 The logo is the world in a loop of rope whose ends cross below it, as in a knot; the globe on the home screen sits in the
-same loop. A few words are only shown when asked for, behind an ⓘ (what the levels mean, what Practice is, what
+same loop. Tapping the logo goes back to the home screen from anywhere (a round in progress is dropped, unscored). The
+home globe turns by itself or by dragging, and zooms up to six times: the + and − buttons beside it, a pinch, the
+scroll wheel or a double tap (the third button turns it back). Zoomed in, it stops turning by itself and draws the
+detailed borders (1:50m, `world.json`). A few words are only shown when asked for, behind an ⓘ (what the levels mean, what Practice is, what
 Auto-submit does). About opens with the numbers (194 countries, 1,417 checked facts...), counted from the facts as they
 load, then how a fact gets in, how to play, and the sources. Settings has three volumes (Volume, Effects, Music); the
 sounds and music go in named slots, listed in [docs/AUDIO.md](docs/AUDIO.md).
-After three rounds Impossible appears, and under it All: The Gordian Knot, every question in the game that can be typed
-(1,915 of 2,109: each flag is asked to be named, not to be found), in crimson, with one record (best score, then
-fastest).
+Under Atlas, once it is open, is All: The Gordian Knot, every question in the game that can be typed (1,828 of 2,022:
+each flag is asked to be named, not to be found), in crimson, with one record (best score, then fastest). Untying it,
+100% with every answer right the first time, earns a badge like no other: Better than Alexander ("He cut the Gordian
+Knot. You untied it."), a gold medal with a laurel wreath round a globe, the best time under All in the
+configuration, and the ropes round the home globe and the logo turn gold for good.
 
 ```
 npm install
@@ -105,10 +118,10 @@ src/scripts/app.ts        the quiz screens, keys and timing
 src/scripts/menu.ts       the configuration: level, answers, what, where, how many
 src/scripts/practice.ts   Practice: one question type in one region, in a fixed order, with a best run each
 src/scripts/prefs.ts      what the browser remembers: the selection, settings (auto-submit, theme, colour), the Daily, stats
-src/scripts/questions.ts  question templates (13 kinds, one clue each, given/asked tags), the levels and the round builder: approved facts in, questions out
+src/scripts/questions.ts  question templates (12 kinds, one clue each, given/asked tags), the levels and the round builder: approved facts in, questions out
 src/scripts/kb.ts         the knowledge base as the site reads it
 src/scripts/map.ts        the map: a globe turned and zoomed to the asked country, capital, peak or river
-src/scripts/globe.ts      the globe on the start screen: turns by itself, can be dragged, names the country under the pointer
+src/scripts/globe.ts      the globe on the start screen: turns by itself, can be dragged and zoomed, names the country under the pointer
 src/scripts/sky.ts        the night sky behind the start screen: stars that light up and tie together when touched
 src/scripts/sound.ts      sounds and music in named slots (docs/AUDIO.md): a file in public/audio per slot, else a
                           small synthesised placeholder; the three volumes in Settings

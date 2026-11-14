@@ -1,10 +1,11 @@
-// The round builder. The four levels: Easy asks about famous countries only and shows four options far apart,
-// Medium keeps to well-known places, typed or picked, Hard mixes in lesser-known ones, typed, and Impossible goes for
-// them, always typed, with famous places only when nothing else is left. A level picks its own question types and
-// answers; All (The Gordian Knot) asks everything, typed. Every question type can be typed or picked. And what a round
-// never does: ask about the same country or river twice. Practice asks every question of one type in one region, in
-// the same order every time. On Hard the wrong options of a flag question are flags that look alike. The Daily climbs
-// from Easy to Impossible. A river or a highest point on the map is named in its question, unless that gives it away.
+// The round builder. The four levels (named after knots since 14 Nov 2026; their ids stayed): Loose (easy) asks about
+// famous countries only and shows four options far apart, Tight (medium) keeps to well-known places, typed or picked,
+// Complex (hard) mixes in lesser-known ones, typed, and Atlas (impossible) goes for them, always typed, with famous
+// places only when nothing else is left. A level picks its own question types and answers; All (The Gordian Knot)
+// asks everything, typed. Every question type can be typed or picked. And what a round never does: ask about the same
+// country or river twice. Practice asks every question of one type in one region, in the same order every time. On
+// Complex the wrong options of a flag question are flags that look alike. The Daily climbs from Loose to Atlas. A
+// highest point is asked by its name, without a map; which country a river flows through is no question any more.
 // Run: node --test (Node 22.18 or newer, which reads the TypeScript sources directly).
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -42,6 +43,7 @@ async function load() {
 test('each level picks its own question types and answers', { skip }, async () => {
   const { LEVELS, LEVEL_IDS, TEMPLATES, isCustom } = await load();
   assert.deepEqual(LEVEL_IDS, ['easy', 'medium', 'hard', 'impossible']);
+  assert.deepEqual(LEVEL_IDS.map(l => LEVELS[l].label), ['Loose', 'Tight', 'Complex', 'Atlas'], 'knots, and Atlas');
   const cats = l => [...new Set(LEVELS[l].kinds.map(k => TEMPLATES.find(t => t.id === k).cat))].sort();
   assert.deepEqual(cats('easy'), ['capitals', 'flags']);
   assert.deepEqual(cats('medium'), ['capitals', 'flags', 'languages', 'locations']);
@@ -160,24 +162,30 @@ test('Impossible is always typed, and asks about famous places only when nothing
   assert.equal(available(kb, GORDIAN), available(kb, { kinds: LEVELS.hard.kinds, places: [], size: 0 }) - kb.countries.length);
 });
 
-test('a river or a highest point on the map is named in its question, unless the name gives the answer away', { skip }, async () => {
-  const { byId, kb, seeded } = await load();
+test('a highest point is asked by its name, without a map; which country a river flows through is not asked', { skip }, async () => {
+  const { TEMPLATES, byId, kb, seeded } = await load();
+  // James (14 Nov 2026): "which countries a river passes through feels very similar to identifying a country on the
+  // map, with an extra step". A river is named instead.
+  assert.equal(TEMPLATES.length, 12);
+  assert.equal(byId['river.map'], undefined);
+  assert.ok(byId['river.name'], 'a river on the map: which river is it?');
   const ask = (kind, id, format = 'type') => byId[kind].make(kb, id, seeded('n'), { format, tempt: 2 });
-  assert.equal(ask('river.map', 'mekong').prompt, 'Name a country the Mekong River flows through.');
-  assert.equal(ask('river.map', 'mekong', 'choice').prompt, 'Which country does the Mekong River flow through?');
-  assert.equal(ask('river.map', 'rio-grande').prompt, 'Name a country the Rio Grande flows through.');
-  assert.equal(ask('river.map', 'amu-darya').prompt, 'Name a country the Amu Darya flows through.');
   assert.equal(ask('peak.map', 'mount-kilimanjaro').prompt, 'Mount Kilimanjaro is the highest point of which country?');
   assert.equal(ask('peak.map', 'pico-bolivar').prompt, 'Pico Bolívar is the highest point of which country?', 'Bolivia tempts: no giveaway');
-  const unnamed = kind => byId[kind].subjects(kb, () => true).filter(id => !/ the | is the highest/.test(ask(kind, id).prompt)).sort();
-  assert.deepEqual(unnamed('river.map'), ['congo', 'gambia', 'niger', 'senegal', 'uruguay']);
-  assert.deepEqual(unnamed('peak.map'), ['morne-seychellois', 'mount-cameroon', 'mount-kenya', 'pico-de-sao-tome']);
-  assert.equal(ask('river.map', 'niger').prompt, 'Name a country this river flows through.');
-  assert.equal(ask('peak.map', 'mount-kenya').prompt, 'Which country has its highest point here?');
-  // On the map, a river through the United States asks about the United States: as well known as that.
-  assert.equal(byId['river.map'].fame(kb, 'columbia'), 2);
-  assert.equal(byId['river.name'].fame(kb, 'columbia'), 0, 'its name is still little known');
-  assert.equal(byId['river.map'].fame(kb, 'okavango'), 0);
+  // The name is the clue: no map while it is asked, or the triangle would show the country (it shows afterwards).
+  const subjects = byId['peak.map'].subjects(kb, () => true);
+  for (const id of subjects) {
+    const q = ask('peak.map', id);
+    assert.equal(q.media.kind, 'none', `${id}: no map`);
+    assert.match(q.prompt, / is the highest point of which country\?$/, id);
+    assert.deepEqual(q.accept, kb.peakCountries(id), `${id}: its own countries only`);
+  }
+  // A peak named after its country is no question: Mount Kenya, Mount Cameroon, Pico de São Tomé, Morne Seychellois.
+  for (const id of ['mount-kenya', 'mount-cameroon', 'pico-de-sao-tome', 'morne-seychellois']) assert.ok(!subjects.includes(id), id);
+  assert.equal(subjects.length, kb.peaks.length - 4);
+  // As well known as its country, or 5,000 m or more.
+  assert.equal(byId['peak.map'].fame(kb, 'mount-kilimanjaro'), 1);
+  assert.equal(byId['river.name'].fame(kb, 'columbia'), 0, 'a river is as well known as its name');
 });
 
 test('every question type can be typed or picked', { skip }, async () => {
@@ -237,7 +245,7 @@ test('the Daily climbs: two questions from each level, Easy to Impossible, every
     remember(round.map(x => x.key));
     assert.deepEqual(dailyRound(kb, seed).map(x => x.key), round.map(x => x.key), `${day}: the same again`);
   }
-  assert.equal(kinds.size, 13, `every question type comes up in three months (${[...kinds].join(' ')})`);
+  assert.equal(kinds.size, 12, `every question type comes up in three months (${[...kinds].join(' ')})`);
   assert.notDeepEqual(dailyRound(kb, 'daily-2026-11-13').map(x => x.key), dailyRound(kb, 'daily-2026-11-14').map(x => x.key));
   // a link to a Daily brings back the same questions, each asked its level's way
   const round = dailyRound(kb, 'daily-2026-11-13');
@@ -254,14 +262,14 @@ test('All (The Gordian Knot) asks everything, typed, whatever the level', { skip
   assert.deepEqual(easy, keys('impossible'));
   assert.deepEqual(easy, keys(undefined));
   assert.deepEqual(askOf({ ...GORDIAN, level: 'easy', answers: 'choose' }), { answers: 'type', tempt: 2 });
-  assert.ok(available(kb, GORDIAN) > 1900, 'every question in the game (but a flag to pick)');
+  assert.ok(available(kb, GORDIAN) > 1800, 'every question in the game (but a flag to pick)');
 });
 
 test('a challenge link gets the same questions, asked the same way', { skip }, async () => {
   const { askOf, buildRound, codeOf, kb, level, rebuildRound, seeded } = await load();
   for (const l of ['easy', 'medium', 'hard']) {
     store.clear();
-    const sel = level(l, { kinds: ['loc.map', 'cap.name', 'flag.pick', 'lang.official', 'river.map'], size: 20 });
+    const sel = level(l, { kinds: ['loc.map', 'cap.name', 'flag.pick', 'lang.official', 'river.name', 'peak.map'], size: 20 });
     const round = buildRound(kb, sel, seeded(l), true, `seed-${l}`);
     assert.ok(round.every(x => x.ask.answers === askOf(sel).answers && x.ask.tempt === askOf(sel).tempt), `${l}: each question knows how it was asked`);
     const again = rebuildRound(kb, round.map(x => ({ code: codeOf(x.kind), subject: x.subject })), `seed-${l}`, round.map(x => x.ask));
@@ -272,7 +280,7 @@ test('a challenge link gets the same questions, asked the same way', { skip }, a
 test('a round never asks about the same country or river twice', { skip }, async () => {
   const { ALL_KINDS, LEVEL_IDS, rounds } = await load();
   const twice = xs => xs.filter((x, i) => xs.indexOf(x) !== i);
-  for (const [name, kinds] of [['every type', ALL_KINDS], ['rivers', ['river.name', 'river.map']], ['capitals', ['cap.name', 'cap.map', 'cap.reverse']]]) {
+  for (const [name, kinds] of [['every type', ALL_KINDS], ['rivers', ['river.name']], ['mountains', ['peak.name', 'peak.map']], ['capitals', ['cap.name', 'cap.map', 'cap.reverse']]]) {
     for (const level of LEVEL_IDS) {
       for (const round of rounds({ kinds, places: [], size: 50, level }, 12, `twice${name}${level}`)) {
         assert.equal(round.length, 50, `${name}, ${level}: a full round`);

@@ -140,10 +140,15 @@ Changing numbers are stored as **snapshots**, never live values:
 - **Language clusters** (`data/languages/clusters.csv`): written forms that a reader cannot tell apart (Croatian,
   Bosnian, Serbian, Montenegrin; Malay and Indonesian; Persian and Dari...) all count for one another.
 - **One triangle, two countries:** when two countries' highest points are less than 25 km apart (Rysy and
-  Gerlachovsky stit, Khan Tengri and Jengish Chokusu), the map question accepts both countries.
+  Gerlachovsky stit, Khan Tengri and Jengish Chokusu), the question accepts both countries.
 - **The same name for two things** (Tonga the country and the language): when the typed name matches an accepted
   answer exactly, that one is meant.
-- **Named on the map, unless the name is the answer** (14 Nov): a river or a highest point shown on the map is named
-  in its country question, except when a word of its name is (or begins with the same five letters as) the name of
-  a country that counts as right: the Niger, Mount Kenya, Morne Seychellois. Only the countries' names and short
-  names count, not their long official ones (Pico Bolívar stays named: the "Bolivarian Republic" is no giveaway).
+- **Named, not shown** (14 Nov, James's second notes): a highest point is asked for its country by its name alone,
+  without a map while it is asked (the triangle would show the country); the answers afterwards show it on the map.
+  A peak whose name gives the country away is not asked for its country at all: a word of its name is (or begins with
+  the same five letters as) the name of a country that counts as right, as in Mount Kenya, Mount Cameroon, Pico de
+  São Tomé and Morne Seychellois. Only the countries' names and short names count, not their long official ones
+  (Pico Bolívar is asked: the "Bolivarian Republic" is no giveaway).
+- **A river is named, not placed** (14 Nov): which country a river flows through is no longer asked. James: it "feels
+  very similar to simply identifying a country on the map, just with an extra step". The river on the map is asked
+  for its name instead; `flows_through` facts still decide which rivers a region asks about, and fill the cards.

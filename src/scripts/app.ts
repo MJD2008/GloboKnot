@@ -9,9 +9,9 @@ import { Globe } from './globe';
 import { Sky } from './sky';
 import { Knowledge, type Country, type Entity, type KBData, type Language, type Peak, type River } from './kb';
 import { WorldMap, type MapLabel, type MapOptions } from './map';
-import { catOn, icon, initMenu, placesLabel } from './menu';
+import { catOn, clockOf, icon, initMenu, levelIcon, levelTag, placesLabel } from './menu';
 import { bestLabel, initPractice, practiceBest, practiceKey, practiceLabel, practicePlaces, practiceSeed, type Practice } from './practice';
-import { ACCENTS, TIME, UNLOCK_ROUNDS, applySettings, better, dailyResult, gordianOpen, saveDaily, saveSelection, saveSettings, saveStats, selection, setLevel, settings, stats, today, type Accent, type Theme } from './prefs';
+import { ACCENTS, ATLAS_AT, TIME, applySettings, atlasOpen, better, dailyResult, saveDaily, saveSelection, saveSettings, saveStats, selection, setLevel, settings, stats, today, type Accent, type Theme } from './prefs';
 import { ALL_KINDS, ANSWERS, CATS, DAILY, GORDIAN, LEVELS, LEVEL_IDS, available, buildRound, codeOf, dailyRound, isCustom, levelAsk, practiceRound, rebuildRound, remember, levelOf, type Answers, type Ask, type Level, type Pool, type Question, type Selection, type Tempt } from './questions';
 import { zoomable, type Zoom } from './zoom';
 import { sound } from './sound';
@@ -64,6 +64,10 @@ const ui = {
   statTime: $('#stat-time'),
   nextLevel: $('#next-level'),
   nextGo: $<HTMLButtonElement>('#next-go'),
+  nextWhy: $('#next-why'),
+  unlockGo: $<HTMLButtonElement>('#unlock-go'),
+  untied: $('#untied'),
+  untiedTime: $('#untied-time'),
   resultsTitle: $('#results-title'),
   versus: $('#versus'),
   best: $('#best'),
@@ -123,14 +127,15 @@ const scoreOf = (rs: Result[]) => (rs.length ? rs.reduce((n, r) => n + ({ tight:
 
 /** A challenge link: the same questions (codes and subjects), asked the same way (typed or picked, and the same
  *  options: the seed draws them), and a score to beat. How they are asked is one code for the whole round ("b2": Both,
- *  tempting options) or, for the Daily, a letter per question for its level ("eemmhhii"). v1 links (before the
- *  answers could be chosen) ask the way every round did then: each question its own way, with tempting options. */
-interface Challenge { edition: string; seed: string; pct: number; secs: number; asks: Ask[]; levels?: Level[]; items: { code: string; subject: string }[] }
+ *  tempting options), since 14 Nov 2026 with the level's letter after it ("t2h": Complex, shown in its colour), or,
+ *  for the Daily, a letter per question for its level ("eemmhhii"). v1 links (before the answers could be chosen) ask
+ *  the way every round did then: each question its own way, with tempting options. */
+interface Challenge { edition: string; seed: string; pct: number; secs: number; asks: Ask[]; level?: Level; levels?: Level[]; items: { code: string; subject: string }[] }
 const CHALLENGE_MAX = 100; // questions; longer rounds are shared without a link
 const ANSWER_CODE: Record<Answers, string> = { choose: 'c', both: 'b', type: 't' };
 const LEVEL_CODE: Record<Level, string> = { easy: 'e', medium: 'm', hard: 'h', impossible: 'i' };
 function encodeChallenge(c: Challenge): string {
-  const how = c.levels ? c.levels.map(l => LEVEL_CODE[l]).join('') : `${ANSWER_CODE[c.asks[0].answers]}${c.asks[0].tempt}`;
+  const how = c.levels ? c.levels.map(l => LEVEL_CODE[l]).join('') : `${ANSWER_CODE[c.asks[0].answers]}${c.asks[0].tempt}${c.level ? LEVEL_CODE[c.level] : ''}`;
   return ['2', c.edition, c.seed, c.pct, c.secs, how, c.items.map(i => `${i.code}.${i.subject}`).join('~')].join('_');
 }
 function parseChallenge(hash: string): Challenge | null {
@@ -143,10 +148,14 @@ function parseChallenge(hash: string): Challenge | null {
   // "C.NLD" or "R.NLD.amsterdam": the code is the part before the first dot (city ids hold a dot themselves)
   const items = list.split('~').map(x => { const k = x.indexOf('.'); return { code: x.slice(0, k), subject: x.slice(k + 1) }; }).filter(i => i.code && i.subject);
   if (!items.length || items.length > CHALLENGE_MAX) return null;
-  const answers = (Object.keys(ANSWER_CODE) as Answers[]).find(a => ANSWER_CODE[a] === how[0]), tempt = Number(how.slice(1));
+  const answers = (Object.keys(ANSWER_CODE) as Answers[]).find(a => ANSWER_CODE[a] === how[0]);
   const levels = how.length === items.length ? [...how].map(ch => LEVEL_IDS.find(l => LEVEL_CODE[l] === ch)) : [];
   const base = { edition, seed, pct: Number(pct) || 0, secs: Number(secs) || 0, items };
-  if (how.length === 2 && answers && [0, 1, 2].includes(tempt)) return { ...base, asks: items.map(() => ({ answers, tempt: tempt as Tempt })) };
+  const one = /^[cbt]([012])([emhi]?)$/.exec(how);
+  if (one && answers) {
+    const level = LEVEL_IDS.find(l => LEVEL_CODE[l] === one[2]);
+    return { ...base, asks: items.map(() => ({ answers, tempt: Number(one[1]) as Tempt })), ...(level ? { level } : {}) };
+  }
   if (levels.length && levels.every(Boolean)) return { ...base, asks: (levels as Level[]).map(levelAsk), levels: levels as Level[] };
   return null;
 }
@@ -188,6 +197,7 @@ async function load() {
     globe = new Globe(ui.globe, topo);
     globe.chainNear = chainNear;
     globe.countryAt = countryAt;
+    globe.detail = () => world?.detail ?? null;
     if (!screens.start.hidden) globe.play();
   }).catch(() => { ui.globe.parentElement!.hidden = true; });
 
@@ -260,20 +270,24 @@ function paintHome() {
   ui.play.disabled = !n;
   // A challenge link waits on the Play button until it is taken or put aside.
   ui.playLabel.textContent = challenge ? 'Take the challenge' : 'Play';
-  ui.playSub.textContent = challenge ? `Beat ${challenge.pct}% · ${challenge.items.length} questions` : selection.size === 0 ? 'The Gordian Knot' : '';
-  ui.playSub.hidden = !ui.playSub.textContent;
+  ui.playSub.innerHTML = challenge ? [`Beat ${challenge.pct}%`, challenge.level ? levelTag(challenge.level) : '', `${challenge.items.length} questions`].filter(Boolean).join(' · ')
+    : selection.size === 0 ? 'The Gordian Knot' : '';
+  ui.playSub.hidden = !ui.playSub.innerHTML;
   ui.notNow.hidden = !challenge;
   const done = dailyResult();
   ui.dailySub.textContent = done === null ? new Date().toLocaleDateString(undefined, { day: 'numeric', month: 'short' }) : `${Math.round(done * 100)}%`;
   ui.daily.classList.toggle('done', done !== null);
+  // The Gordian Knot untied (100%): the rope round the globe and the logo turn gold, for good.
+  document.body.classList.toggle('untied', !!stats.untied);
 }
 
-/** Easy, Medium and Hard; Impossible joins them once it is open (or when it is already the level). */
+/** Three knots, Loose, Tight and Complex, each in its own colour (James, 14 Nov 2026). Atlas, the fourth, is not on the
+ *  home screen: it opens after a great Complex round and waits in the configuration, so the home screen stays simple for
+ *  someone new. While Atlas is picked, none of the three is lit and the grey line starts with it. */
+const HOME_LEVELS: Level[] = ['easy', 'medium', 'hard'];
 function paintLevels() {
-  const shown = LEVEL_IDS.filter(l => l !== 'impossible' || gordianOpen() || selection.level === 'impossible');
-  if (ui.homeLevel.dataset.shown !== shown.join()) {
-    ui.homeLevel.dataset.shown = shown.join();
-    ui.homeLevel.innerHTML = shown.map(l => `<button type="button" data-level="${l}" class="${l}">${LEVELS[l].label}</button>`).join('');
+  if (!ui.homeLevel.childElementCount) {
+    ui.homeLevel.innerHTML = HOME_LEVELS.map(l => `<button type="button" data-level="${l}" class="lv lv-${l}">${levelIcon(l)}<span>${LEVELS[l].label}</span></button>`).join('');
   }
   for (const b of ui.homeLevel.querySelectorAll<HTMLButtonElement>('button')) b.setAttribute('aria-pressed', String(b.dataset.level === selection.level));
 }
@@ -286,8 +300,9 @@ function paintConfig() {
   ui.configWhat.innerHTML = cats.map(c => `<span class="${c.on}" title="${c.label}">${icon(c.id)}</span>`).join('');
   const where = all || !selection.places.length ? 'World' : kb ? placesLabel(kb) : '';
   const how = !all && selection.answers ? ANSWERS.find(a => a.id === selection.answers)?.label ?? '' : '';
-  ui.configRest.innerHTML = [esc(where), all ? 'All' : `${selection.size}<span class="wide"> questions</span>`, how].filter(Boolean).join(' · ');
-  ui.config.setAttribute('aria-label', `${[cats.map(c => c.label).join(', '), where, all ? 'every question' : `${selection.size} questions`, how].filter(Boolean).join(' · ')}. Change`);
+  const atlas = levelOf(view) === 'impossible';
+  ui.configRest.innerHTML = [atlas ? levelTag('impossible') : '', esc(where), all ? 'All' : `${selection.size}<span class="wide"> questions</span>`, how].filter(Boolean).join(' · ');
+  ui.config.setAttribute('aria-label', `${[atlas ? 'Atlas' : '', cats.map(c => c.label).join(', '), where, all ? 'every question' : `${selection.size} questions`, how].filter(Boolean).join(' · ')}. Change`);
 }
 
 // ---------------------------------------------------------------- screens and sheets
@@ -297,6 +312,9 @@ function show(name: keyof typeof screens) {
   document.body.classList.toggle('home', name === 'start');
   // The Gordian Knot is played in crimson, with a heartbeat.
   document.body.classList.toggle('gordian', name !== 'start' && state.gordian);
+  // A round takes its level's colour: the knots along the top and the ring at the end.
+  const lv = name === 'start' ? null : state.gordian ? 'impossible' : state.level ?? state.challenge?.level ?? null;
+  if (lv) document.body.dataset.lv = lv; else delete document.body.dataset.lv;
   themeColor();
   if (name === 'start') { globe?.play(); sky.play(); paintHome(); } else { globe?.pause(); sky.pause(); }
   sound.scene(name === 'quiz' ? 'music-quiz' : 'music-home');
@@ -727,13 +745,13 @@ const RANKS: [number, string][] = [
   [0, 'Loose end'],
 ];
 const rankOf = (pct: number) => RANKS.find(([min]) => pct >= min)!;
-/** After a great round (90% or more) of a level's own questions, the next level is offered. Hard leads to Impossible
- *  only once Impossible has been found. */
+/** After a great round (90% or more) of a level's own questions, the next level is offered ("Too loose? Try Tight").
+ *  Complex leads to Atlas only once Atlas is open. */
 const NEXT_AT = 90;
 function levelUp(): Level | null {
   if (!state.level || isCustom(state.sel) || state.results.length < 5) return null;
   const next = LEVEL_IDS[LEVEL_IDS.indexOf(state.level) + 1];
-  return next && (next !== 'impossible' || gordianOpen()) ? next : null;
+  return next && (next !== 'impossible' || atlasOpen()) ? next : null;
 }
 
 /** The end of a round. A stopped round (Esc or Stop) shows the answers so far and nothing else: no score, no knot,
@@ -751,9 +769,11 @@ function end(stopped = false) {
   if (!state.practice) remember(state.round.map(q => q.key));
   state.stopped = stopped;
   screens.results.classList.toggle('stopped', stopped);
-  ui.resultsTitle.hidden = !state.gordian && !state.practice && !stopped;
-  ui.resultsTitle.textContent = stopped ? 'Stopped' : state.practice ? 'Practice' : 'The Gordian Knot';
-  ui.versus.hidden = ui.best.hidden = ui.unlock.hidden = ui.nextLevel.hidden = true;
+  // Above the score: what was played. A level as its knot, in its colour; the Daily, Practice or The Gordian Knot.
+  const lv = state.level ?? state.challenge?.level;
+  ui.resultsTitle.innerHTML = stopped ? 'Stopped' : state.practice ? 'Practice' : state.gordian ? 'The Gordian Knot' : state.daily ? 'Daily' : lv ? levelTag(lv) : '';
+  ui.resultsTitle.hidden = !ui.resultsTitle.innerHTML;
+  ui.versus.hidden = ui.best.hidden = ui.unlock.hidden = ui.nextLevel.hidden = ui.untied.hidden = true;
   ui.shareNote.hidden = true;
   if (stopped) {
     state.last = null;
@@ -764,7 +784,7 @@ function end(stopped = false) {
     state.last = { pct, ms, rank, knots };
     ui.pct.textContent = `${pct}%`;
     ui.rank.textContent = rank;
-    ui.summary.textContent = `${right} of ${total}${loose ? ` · ${loose} loose` : ''}`;
+    ui.summary.textContent = `${right} of ${total}${loose ? ` · ${loose} on a retry` : ''}`;
     // The longest run of right answers, the fastest right answer and the time, as three small numbers.
     const fastest = Math.min(...state.results.filter(r => r.ok).map(r => r.ms));
     ui.statRun.textContent = String(state.best);
@@ -772,7 +792,13 @@ function end(stopped = false) {
     ui.statTime.textContent = clock(ms);
     drawRing(knots);
     const next = pct >= NEXT_AT ? levelUp() : null;
-    if (next) { ui.nextLevel.hidden = false; ui.nextGo.textContent = `Try ${LEVELS[next].label}`; ui.nextGo.dataset.level = next; }
+    if (next) {
+      ui.nextLevel.hidden = false;
+      ui.nextWhy.textContent = state.level === 'easy' ? 'Too loose?' : 'Too easy?';
+      ui.nextGo.textContent = `Try ${LEVELS[next].label}`;
+      ui.nextGo.dataset.level = next;
+      ui.nextGo.className = `link lv-${next}`;
+    }
 
     // Against a challenge: their score next to yours.
     if (state.challenge) {
@@ -790,7 +816,13 @@ function end(stopped = false) {
       const prev = stats.record, now = { pct, ms };
       if (better(now, prev)) stats.record = now;
       ui.best.hidden = false;
-      ui.best.textContent = better(now, prev) ? (prev ? 'New record!' : 'Your first Gordian Knot.') : `Record: ${prev!.pct}% in ${clock(prev!.ms)}`;
+      ui.best.textContent = better(now, prev) ? (prev ? 'New record!' : 'Your first Gordian Knot.') : `Record: ${prev!.pct}% in ${clockOf(prev!.ms)}`;
+      // Every question right the first time: untied. A badge of its own, Better than Alexander (he only cut it).
+      if (pct === 100 && knots.every(k => k === 'tight')) {
+        if (!stats.untied || ms < stats.untied.ms) stats.untied = { ms, day: today() };
+        ui.untied.hidden = false;
+        ui.untiedTime.textContent = `Untied in ${clockOf(ms)}`;
+      }
     }
     if (state.practice) {
       const prev = practiceBest(state.practice), now = { pct, ms };
@@ -799,10 +831,14 @@ function end(stopped = false) {
       ui.best.textContent = `${practiceLabel(state.practice)} · ${better(now, prev) ? (prev ? 'New best!' : 'First run') : `Best ${bestLabel(prev!)}`}`;
     }
 
-    // After a few rounds, Impossible and The Gordian Knot show themselves, once.
-    const wasOpen = gordianOpen();
+    // A great Complex round of the level's own questions opens Atlas, the hidden fourth level, with The Gordian Knot
+    // under it. Once.
     stats.rounds++;
-    ui.unlock.hidden = wasOpen || !gordianOpen();
+    if (!atlasOpen() && state.level === 'hard' && !isCustom(state.sel) && total >= 8 && pct >= ATLAS_AT) {
+      stats.atlas = true;
+      ui.unlock.hidden = false;
+      ui.nextLevel.hidden = true; // the opening says it, with its own button
+    }
     saveStats();
   }
 
@@ -836,6 +872,10 @@ function reviewOf(q: Question): { map?: MapOptions; reveal: string[]; text?: { t
   if (m.kind === 'map' && (m.river || m.peak)) {
     const reveal = q.reveal ?? (m.river ? kb.riverCountries(m.river) : []);
     return { map: { ...at(m.country), dot: m.dot, peak: m.peak, river: m.river, labels: labelled(reveal) }, reveal };
+  }
+  if (q.kind === 'peak.map') { // asked by its name, without a map: here it is, with its country lit up and named
+    const peak = kb.peaks.find(p => p.id === q.subject), reveal = q.reveal ?? [];
+    if (peak?.ll) return { map: { ...at(reveal[0]), peak: peak.ll, labels: labelled(reveal) }, reveal };
   }
   const id = q.countries[0];
   if (!id) return { reveal: [] };
@@ -922,7 +962,7 @@ function openReview(j: number) {
     ui.reviewSample.lang = v.text.lang;
   }
   // Lists cut short in the quiz ("Hungary, Romania +4") are given in full here.
-  const all = q.kind === 'nb.name' ? q.accept : q.kind === 'river.map' ? q.reveal ?? [] : [];
+  const all = q.kind === 'nb.name' ? q.accept : [];
   ui.reviewAnswer.textContent = all.length > 1 ? all.map(id => kb.name(id)).sort((a, b) => a.localeCompare(b)).join(', ') : q.answer;
   paintCard(q);
   ui.reviewPrev.disabled = j === 0;
@@ -957,12 +997,13 @@ async function shareResult() {
   // The Daily's day is in its seed (also when it is played from a link, on another day).
   const day = /^daily-(\d{4}-\d{2}-\d{2})$/.exec(state.seed)?.[1];
   const what = day ? `Daily ${new Date(`${day}T12:00:00Z`).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', timeZone: 'UTC' })}` : state.gordian ? 'The Gordian Knot'
-    : state.practice ? `Practice · ${practiceLabel(state.practice)}` : `${state.level ? `${LEVELS[state.level].label} · ` : ''}${r.knots.length} questions`;
+    : state.practice ? `Practice · ${practiceLabel(state.practice)}` : `${state.level ? `${LEVELS[state.level].label} knot · ` : ''}${r.knots.length} questions`;
   const text = `Globoknot · ${what}\n${r.rank} · ${r.pct}%\n${signs.length <= 50 ? signs : ''}`.trim();
   let link = location.origin + location.pathname;
   if (state.round.length <= CHALLENGE_MAX) {
+    const level = levels ? undefined : state.level ?? state.challenge?.level;
     const c: Challenge = { edition: kb.edition, seed: state.seed, pct: r.pct, secs: Math.round(r.ms / 1000), asks: state.round.map(q => q.ask),
-      levels, items: state.round.map(q => ({ code: codeOf(q.kind), subject: q.subject })) };
+      levels, level, items: state.round.map(q => ({ code: codeOf(q.kind), subject: q.subject })) };
     link += `#c=${encodeChallenge(c)}`;
   }
   const full = `${text}\nCan you beat it? ${link}`;
@@ -1167,9 +1208,14 @@ document.addEventListener('click', e => {
 for (const d of document.querySelectorAll('dialog')) d.addEventListener('close', () => {
   for (const b of d.querySelectorAll<HTMLButtonElement>('button.info[aria-expanded="true"]')) b.click();
 });
-// "Too easy? Try Medium": the next level, at once.
+// "Too easy? Try Complex": the next level, at once. So does "Try Atlas" when Atlas opens.
 ui.nextGo.addEventListener('click', () => {
   setLevel(ui.nextGo.dataset.level as Level);
+  saveSelection();
+  start(selection);
+});
+ui.unlockGo.addEventListener('click', () => {
+  setLevel('impossible');
   saveSelection();
   start(selection);
 });
@@ -1181,6 +1227,19 @@ window.addEventListener('hashchange', () => {
   if (screens.quiz.hidden) show('start');
 });
 ui.home.addEventListener('click', () => show('start'));
+// The logo goes home from anywhere. In the middle of a round, the round is left as it is: no score, no results.
+$('.brand').addEventListener('click', e => {
+  e.preventDefault();
+  for (const d of document.querySelectorAll('dialog[open]')) (d as HTMLDialogElement).close();
+  if (!screens.quiz.hidden) {
+    clearTimeout(state.advance);
+    clearTimeout(state.auto);
+    cancelAnimationFrame(state.low);
+    clearInterval(state.clock);
+    state.round = [];
+  }
+  if (screens.start.hidden) show('start');
+});
 ui.card.addEventListener('animationend', e => { if (e.target === ui.card) ui.card.classList.remove('shake'); });
 ui.card.addEventListener('click', e => {
   // During the verdict a tap anywhere on the card moves on (but not a tap that just answered).

@@ -2,7 +2,7 @@
 // Natural Earth 1:50m (public domain) via world-atlas; tiny countries get a ring so they can be found.
 import { geoArea, geoCentroid, geoCircle, geoContains, geoDistance, geoGraticule10, geoOrthographic, geoPath } from 'd3-geo';
 import type { GeoPermissibleObjects, GeoStream } from 'd3-geo';
-import { feature } from 'topojson-client';
+import { feature, mesh } from 'topojson-client';
 import type { Feature, FeatureCollection, MultiPolygon, Polygon, Position } from 'geojson';
 
 type Shape = Feature<Polygon | MultiPolygon, { n: string }>;
@@ -28,10 +28,13 @@ export class WorldMap {
   private readonly caps = new Map<Shape, { c: LonLat; r: number }>();
   /** Large single landmasses (Great Britain, New Guinea, Madagascar...) with the country they belong to. */
   private readonly landmarks: { owner: Shape; ring: Position[] }[] = [];
+  /** The countries as land and the borders between them, for the home globe zoomed in. */
+  readonly detail: { land: GeoPermissibleObjects; borders: GeoPermissibleObjects };
 
   constructor(topology: any) {
     const fc = feature(topology, topology.objects.countries) as unknown as FeatureCollection<Polygon | MultiPolygon, { n: string }>;
     this.shapes = fc.features as Shape[];
+    this.detail = { land: fc as GeoPermissibleObjects, borders: mesh(topology, topology.objects.countries, (a: unknown, b: unknown) => a !== b) as GeoPermissibleObjects };
     for (const s of this.shapes) {
       if (s.id != null) this.byNum.set(String(s.id), s);
       const c = geoCentroid(s) as LonLat;

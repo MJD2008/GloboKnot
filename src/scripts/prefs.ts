@@ -22,7 +22,8 @@ export const clampSize = (n: number) => (n === 0 ? 0 : Math.min(MAX_SIZE, Math.m
 const SEL_KEY = 'gk-selection';
 type Saved = Omit<Partial<Selection>, 'level'> & { v?: number; level?: string };
 const saved: Saved = load<Saved>(SEL_KEY, {});
-// A new visitor starts on Easy. Up to v4 there were three levels; each moved one up when the new Easy came in below
+// A new visitor starts on Loose (id easy: the levels kept their ids when they were named after knots on 14 Nov 2026).
+// Up to v4 there were three levels; each moved one up when the new Easy came in below
 // them (the old Easy is now Medium, with languages added to its own question types). A selection from before the
 // levels (v3) was played as the old Medium, now Hard.
 const OLD_EASY = ['loc.map', 'nb.name', 'cap.name', 'cap.map', 'cap.reverse', 'flag.name', 'flag.pick'];
@@ -36,7 +37,7 @@ if (!v && kinds.includes('loc.map') && !kinds.includes('nb.name')) kinds.push('n
 if (v < 5 && saved.level === 'easy' && kinds.length === OLD_EASY.length && OLD_EASY.every(k => kinds.includes(k))) kinds = [...LEVELS.medium.kinds];
 // Until v6 the presets were 10, 20 and 50: each becomes the Fibonacci preset closest to it (a typed number stays).
 const OLD_SIZES: Record<number, number> = { 10: 13, 20: 21, 50: 34 };
-// Impossible is always typed (since 14 Nov 2026): a flag to pick, or Choose or Both, saved with it before, goes.
+// Atlas (id impossible) is always typed (since 14 Nov 2026): a flag to pick, or Choose or Both, saved with it before, goes.
 kinds = kinds.filter(k => canAsk(level, k));
 export const selection: Selection & { level: Level } = {
   kinds: kinds.length ? kinds : [...LEVELS[level].kinds],
@@ -47,7 +48,7 @@ export const selection: Selection & { level: Level } = {
 };
 export const saveSelection = () => save(SEL_KEY, { ...selection, v: 6 });
 /** A level picks its own question types and answers (anything the player had changed is replaced). All (The Gordian
- *  Knot) only exists under Impossible. */
+ *  Knot) only exists under Atlas. */
 export function setLevel(l: Level) {
   selection.level = l;
   selection.kinds = [...LEVELS[l].kinds];
@@ -104,25 +105,37 @@ export function applySettings() {
   root.style.setProperty('--a-dark', a.dark);
 }
 
-// ---------- progress: rounds played, and the record in The Gordian Knot (every question in the game at once), which
-// shows itself after a few rounds.
-export const UNLOCK_ROUNDS = 3;
+// ---------- progress: rounds played, Atlas (the hidden fourth level, with The Gordian Knot under it) and the record
+// in The Gordian Knot (every question in the game at once).
+/** Atlas opens after a Complex round of the level's own questions (8 or more) scored this well: a Bowline or better. */
+export const ATLAS_AT = 75;
 export interface Best { pct: number; ms: number }
-/** `practice`: the best run per practice (question type, region and answers: see practice.ts). */
-export interface Stats { rounds: number; gordianSeen: boolean; record?: Best; practice?: Record<string, Best>; gordian?: Record<string, Best> }
+/** `practice`: the best run per practice (question type, region and answers: see practice.ts). `atlas`: Atlas is open.
+ *  `untied`: The Gordian Knot at 100%, every question right the first time (a badge of its own: Better than Alexander,
+ *  who only cut it). `v` 2 since Atlas opens by a score rather than after three rounds. */
+export interface Stats {
+  rounds: number; gordianSeen: boolean; record?: Best; practice?: Record<string, Best>; gordian?: Record<string, Best>;
+  atlas?: boolean; untied?: { ms: number; day: string }; v?: number;
+}
 const STATS_KEY = 'gk-stats';
 export const stats: Stats = load<Stats>(STATS_KEY, { rounds: 0, gordianSeen: false });
 export const saveStats = () => save(STATS_KEY, stats);
-export const gordianOpen = () => stats.rounds >= UNLOCK_ROUNDS;
+export const atlasOpen = () => !!stats.atlas;
+// Until 14 Nov 2026 the fourth level (then Impossible) opened after three rounds: whoever had it open keeps it.
+if (!stats.v) {
+  if (stats.rounds >= 3 || selection.level === 'impossible') stats.atlas = true;
+  stats.v = 2;
+  if (stats.rounds) saveStats();
+}
 // Until v5 The Gordian Knot kept a best per configuration; now it is one fixed challenge, and the best for everything
-// in the whole world is its record.
+// in the whole world is its record. Its key listed every question type of the time, River → country among them.
 if (stats.gordian) {
-  const all = stats.gordian[`${[...ALL_KINDS].sort().join(',')}|`];
+  const all = stats.gordian[`${[...ALL_KINDS, 'river.map'].sort().join(',')}|`];
   if (all && !stats.record) stats.record = all;
   delete stats.gordian;
   saveStats();
 }
-if (selection.size === 0 && (!gordianOpen() || selection.level !== 'impossible')) selection.size = 10;
+if (selection.size === 0 && (!atlasOpen() || selection.level !== 'impossible')) selection.size = DEFAULT_SIZE;
 /** Is `b` a better result than `a`: a higher score, or the same score faster? */
 export const better = (b: Best, a?: Best) => !a || b.pct > a.pct || (b.pct === a.pct && b.ms < a.ms);
 
