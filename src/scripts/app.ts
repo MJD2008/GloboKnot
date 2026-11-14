@@ -12,7 +12,7 @@ import { WorldMap, type MapLabel, type MapOptions } from './map';
 import { catOn, icon, initMenu, placesLabel } from './menu';
 import { bestLabel, initPractice, practiceBest, practiceKey, practiceLabel, practicePlaces, practiceSeed, type Practice } from './practice';
 import { ACCENTS, TIME, UNLOCK_ROUNDS, applySettings, better, dailyResult, gordianOpen, saveDaily, saveSelection, saveSettings, saveStats, selection, setLevel, settings, stats, today, type Accent, type Theme } from './prefs';
-import { ANSWERS, CATS, DAILY, GORDIAN, LEVELS, LEVEL_IDS, available, buildRound, codeOf, dailyRound, isCustom, levelAsk, practiceRound, rebuildRound, remember, levelOf, type Answers, type Ask, type Level, type Pool, type Question, type Selection, type Tempt } from './questions';
+import { ALL_KINDS, ANSWERS, CATS, DAILY, GORDIAN, LEVELS, LEVEL_IDS, available, buildRound, codeOf, dailyRound, isCustom, levelAsk, practiceRound, rebuildRound, remember, levelOf, type Answers, type Ask, type Level, type Pool, type Question, type Selection, type Tempt } from './questions';
 import { zoomable, type Zoom } from './zoom';
 import { sound } from './sound';
 
@@ -282,7 +282,7 @@ function paintLevels() {
  *  where, how many, and how to answer when that isn't the level's own way. */
 function paintConfig() {
   const all = selection.size === 0, view = all ? GORDIAN : selection;
-  const cats = CATS.map(c => ({ ...c, on: catOn(c.id, view.kinds) })).filter(c => c.on !== 'none');
+  const cats = CATS.map(c => ({ ...c, on: catOn(c.id, view.kinds, levelOf(view)) })).filter(c => c.on !== 'none');
   ui.configWhat.innerHTML = cats.map(c => `<span class="${c.on}" title="${c.label}">${icon(c.id)}</span>`).join('');
   const where = all || !selection.places.length ? 'World' : kb ? placesLabel(kb) : '';
   const how = !all && selection.answers ? ANSWERS.find(a => a.id === selection.answers)?.label ?? '' : '';
@@ -1082,7 +1082,7 @@ function paintNumbers(data: KBData) {
   put('languages', data.languages.length);
   put('peaks', data.peaks.length);
   put('rivers', data.rivers.length);
-  put('questions', available(kb, GORDIAN));
+  put('questions', available(kb, { kinds: ALL_KINDS, places: [], size: 0 })); // every question in the game, also the flags to pick
 }
 
 // ---------------------------------------------------------------- settings

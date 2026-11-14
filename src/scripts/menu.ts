@@ -2,10 +2,11 @@
 // question types and the answers, and decides how well known the places asked about are), how to answer (Choose,
 // Both or Type), what to be asked (categories and their question types), where (the whole world, continents or
 // single countries) and how many questions. Every change is kept at once; Play starts it. Something always stays
-// selected: the last ticked box can't be unticked until another one is ticked. All, under Impossible, is The Gordian
-// Knot: every question in the game, so the rest can't be changed while it is picked.
+// selected: the last ticked box can't be unticked until another one is ticked. Impossible is always typed: its answers
+// can't be changed and it has no flag to pick. All, under Impossible, is The Gordian Knot: every question in the game,
+// so the rest can't be changed while it is picked.
 import { CONTINENTS, type Knowledge } from './kb';
-import { ANSWERS, CATS, GORDIAN, LEVELS, LEVEL_IDS, TEMPLATES, answersOf, available, isCustom, type Answers, type Cat, type Level } from './questions';
+import { ANSWERS, CATS, GORDIAN, LEVELS, LEVEL_IDS, TEMPLATES, answersOf, available, canAsk, isCustom, levelOf, type Answers, type Cat, type Level } from './questions';
 import { MAX_SIZE, SIZES, clampSize, gordianOpen, saveSelection, saveStats, selection, setLevel, stats } from './prefs';
 
 export const ICONS: Record<Cat | 'world', string> = {
@@ -22,13 +23,15 @@ const CHEVRON = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6
 
 const esc = (s: string) => s.replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]!);
 
-export function catOn(cat: Cat, picked = selection.kinds): 'all' | 'some' | 'none' {
-  const kinds = TEMPLATES.filter(t => t.cat === cat).map(t => t.id);
+/** A category's question types that the level can ask (under Impossible, Flags is the flag to name only). */
+const kindsIn = (cat: Cat, level: Level) => TEMPLATES.filter(t => t.cat === cat && canAsk(level, t.id)).map(t => t.id);
+export function catOn(cat: Cat, picked = selection.kinds, level: Level = selection.level): 'all' | 'some' | 'none' {
+  const kinds = kindsIn(cat, level);
   const n = kinds.filter(k => picked.includes(k)).length;
   return n === 0 ? 'none' : n === kinds.length ? 'all' : 'some';
 }
 export function setCat(cat: Cat, on: boolean) {
-  const kinds = TEMPLATES.filter(t => t.cat === cat).map(t => t.id);
+  const kinds = kindsIn(cat, selection.level);
   selection.kinds = on ? [...new Set([...selection.kinds, ...kinds])] : selection.kinds.filter(k => !kinds.includes(k));
 }
 
@@ -55,7 +58,7 @@ export function initMenu(kb: Knowledge, root: HTMLElement, onChange: () => void)
   levels.innerHTML = LEVEL_IDS.map(l => `<button type="button" data-level="${l}" class="${l}">${LEVELS[l].label}</button>`).join('');
   const how = { choose: 'Pick from four', both: 'Typed or picked', type: 'Typed' } satisfies Record<Answers, string>;
   const levelAbout = root.querySelector<HTMLElement>('#level-about')!;
-  levelAbout.innerHTML = LEVEL_IDS.map(l => `<div class="${l}" data-row="${l}"><dt>${LEVELS[l].label}</dt><dd>${LEVELS[l].who} · ${LEVELS[l].what} · ${how[LEVELS[l].answers]}</dd></div>`).join('');
+  levelAbout.innerHTML = LEVEL_IDS.map(l => `<div class="${l}" data-row="${l}"><dt>${LEVELS[l].label}</dt><dd>${LEVELS[l].who} · ${LEVELS[l].what} · ${LEVELS[l].typedOnly ? 'Always typed' : how[LEVELS[l].answers]}</dd></div>`).join('');
 
   // ---- answers: picked from four (easier), typed, or each question its own way
   answers.innerHTML = ANSWERS.map(a => `<button type="button" data-answers="${a.id}">${a.label}${a.id === 'choose' ? ' <small>easier</small>' : ''}</button>`).join('');
@@ -118,7 +121,7 @@ export function initMenu(kb: Knowledge, root: HTMLElement, onChange: () => void)
       return;
     }
     const ans = t.closest<HTMLButtonElement>('[data-answers]');
-    if (ans) {
+    if (ans && !ans.disabled) {
       const a = ans.dataset.answers as Answers;
       if (a === LEVELS[selection.level].answers) delete selection.answers; else selection.answers = a;
       changed();
@@ -178,12 +181,17 @@ export function initMenu(kb: Knowledge, root: HTMLElement, onChange: () => void)
     // While All is picked, the rest shows what The Gordian Knot asks, and can't be changed.
     const all = selection.size === 0, view = all ? GORDIAN : selection;
     for (const f of fixed) { f.inert = all; f.classList.toggle('fixed', all); }
-    const how = answersOf(view);
-    for (const b of answers.querySelectorAll<HTMLButtonElement>('[data-answers]')) b.setAttribute('aria-pressed', String(b.dataset.answers === how));
+    const how = answersOf(view), level = levelOf(view), typedOnly = !!LEVELS[level].typedOnly;
+    // Impossible is always typed: Choose and Both can't be picked.
+    for (const b of answers.querySelectorAll<HTMLButtonElement>('[data-answers]')) {
+      b.setAttribute('aria-pressed', String(b.dataset.answers === how));
+      b.disabled = typedOnly && b.dataset.answers !== 'type';
+      b.title = b.disabled ? `${LEVELS[level].label} is always typed` : '';
+    }
     const kinds = new Set(view.kinds);
     for (const g of what.querySelectorAll<HTMLElement>('.group')) {
       const cat = g.dataset.cat as Cat;
-      const state = catOn(cat, view.kinds);
+      const state = catOn(cat, view.kinds, level);
       const box = g.querySelector<HTMLInputElement>('.cat-check')!;
       box.checked = state === 'all';
       box.indeterminate = state === 'some';
@@ -191,6 +199,7 @@ export function initMenu(kb: Knowledge, root: HTMLElement, onChange: () => void)
       lock(box, state === 'all' && view.kinds.every(k => TEMPLATES.find(t => t.id === k)?.cat === cat));
     }
     for (const b of what.querySelectorAll<HTMLInputElement>('[data-kind]')) {
+      b.closest<HTMLElement>('.check')!.hidden = !canAsk(level, b.dataset.kind!); // no flag to pick under Impossible
       b.checked = kinds.has(b.dataset.kind!);
       lock(b, b.checked && kinds.size === 1);
     }

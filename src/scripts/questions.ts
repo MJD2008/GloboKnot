@@ -105,6 +105,29 @@ const km = ([la1, lo1]: [number, number], [la2, lo2]: [number, number]) => {
   const r = Math.PI / 180, h = Math.sin(((la2 - la1) * r) / 2) ** 2 + Math.cos(la1 * r) * Math.cos(la2 * r) * Math.sin(((lo2 - lo1) * r) / 2) ** 2;
   return 12742 * Math.asin(Math.sqrt(h));
 };
+/** A name's words of four letters or more, without accents, to compare names ("Pico de São Tomé": pico, tome). */
+const words = (s: string) => s.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase().split(/[^a-z]+/).filter(w => w.length >= 4);
+/** Does a river's or a peak's name give away a country it belongs to? The Niger flows through Niger, Mount Kenya is
+ *  Kenya's highest point and Morne Seychellois that of the Seychelles: a word the same, or the same first five letters,
+ *  as in the country's name or a short name of it ("Congo"). Not its long official names: Pico Bolívar, Venezuela's
+ *  highest point, is no giveaway for most (Bolivia tempts), whatever the "Bolivarian Republic" says. */
+function namesake(kb: Knowledge, name: string, countries: string[]): boolean {
+  const own = words(name);
+  return countries.some(c => {
+    const e = country(kb, c);
+    return [e.name, ...(e.context ?? [])].flatMap(words)
+      .some(w => own.some(x => x === w || (x.length >= 5 && w.length >= 5 && x.slice(0, 5) === w.slice(0, 5))));
+  });
+}
+/** A river by name in a sentence: "the Mekong River", but "the Rio Grande" and "the Amu Darya" (river is in the name). */
+const theRiver = (kb: Knowledge, id: string) => { const n = kb.name(id); return `the ${n}${/^(Rio|Río) | (Darya|He)$/.test(n) ? '' : ' River'}`; };
+/** The countries a highest point counts for: its own, and a neighbour whose highest point is under 25 km away (Rysy and
+ *  Gerlachovský štít are 3 km apart: one triangle on the map can't tell them apart). */
+function peakAccept(kb: Knowledge, id: string): string[] {
+  const p = kb.get<Peak>(id)!;
+  const near = kb.peaks.filter(o => o.id !== id && km(o.ll, p.ll) < 25).flatMap(o => kb.peakCountries(o.id));
+  return [...new Set([...kb.peakCountries(id), ...near])];
+}
 
 // ---- how well known: countries by their tier (data/countries/tiers.csv), the rest through the countries they belong to
 const tierFame = (kb: Knowledge, id: string): Fame => { const t = kb.country(id)?.tier; return t === 'famous' ? 2 : t === 'core' ? 1 : 0; };
@@ -353,15 +376,15 @@ export const TEMPLATES: Template[] = [
   {
     id: 'peak.map', code: 'K', cat: 'mountains', label: 'Highest point → country', given: 'Mountain', asked: 'Country', natural: 'type', typable: true,
     subjects: (kb, inPlace) => kb.peaks.filter(p => kb.peakCountries(p.id).some(inPlace)).map(p => p.id),
-    fame: (kb, id) => Math.max(mostFamous(kb, kb.peakCountries(id)), (kb.get<Peak>(id)?.m ?? 0) >= 5000 ? 1 : 0) as Fame,
+    // As well known as the best-known country it counts for (a triangle in the United States asks about the United
+    // States), or a peak of 5,000 m or more.
+    fame: (kb, id) => Math.max(mostFamous(kb, peakAccept(kb, id)), (kb.get<Peak>(id)?.m ?? 0) >= 5000 ? 1 : 0) as Fame,
     make: (kb, id, rng, { format, tempt }) => {
-      const p = kb.get<Peak>(id)!, where = kb.peakCountries(id);
-      // Two countries' highest points can be a few km apart (Rysy and Gerlachovsky stit are 3 km apart): one
-      // triangle can't tell them apart, so the neighbour whose highest point is that close counts as right too.
-      const near = kb.peaks.filter(o => o.id !== id && km(o.ll, p.ll) < 25).flatMap(o => kb.peakCountries(o.id));
-      const accept = [...new Set([...where, ...near])];
+      const p = kb.get<Peak>(id)!, where = kb.peakCountries(id), accept = peakAccept(kb, id);
+      // The map shows where, the question names it: unless its name gives the country away (Mount Kenya).
+      const prompt = namesake(kb, p.name, accept) ? 'Which country has its highest point here?' : `${p.name} is the highest point of which country?`;
       return inForm(kb, rng,
-        { key: `peak-map:${id}`, kind: 'peak.map', format, prompt: 'Which country has its highest point here?', clue: `${p.name} is the highest point of`,
+        { key: `peak-map:${id}`, kind: 'peak.map', format, prompt, clue: `${p.name} is the highest point of`,
           media: { kind: 'map', peak: p.ll }, pools: ['country'], accept, reveal: where, countries: where },
         where.map(c => kb.name(c)).join(' / '), () => pickOne(where, rng), r => wrongCountries(kb, r, 3, rng, tempt, accept));
     },
@@ -381,12 +404,16 @@ export const TEMPLATES: Template[] = [
   {
     id: 'river.map', code: 'W', cat: 'rivers', label: 'River → country', given: 'River', asked: 'Country', natural: 'type', typable: true,
     subjects: (kb, inPlace) => kb.rivers.filter(r => kb.riverCountries(r.id).some(inPlace)).map(r => r.id),
-    fame: riverFame,
+    // As well known as the river, or as the best-known country it flows through: on a map, a river through the United
+    // States asks about the United States.
+    fame: (kb, id) => Math.max(riverFame(kb, id), mostFamous(kb, kb.riverCountries(id, true))) as Fame,
     make: (kb, id, rng, { format, tempt }) => {
       const shown = kb.riverCountries(id), accept = kb.riverCountries(id, true);
+      // The map shows it, the question names it: unless its name gives the country away (the Niger, the Gambia).
+      const river = namesake(kb, kb.name(id), accept) ? 'this river' : theRiver(kb, id);
       return inForm(kb, rng,
         { key: `river-map:${id}`, kind: 'river.map', format,
-          prompt: format === 'type' ? 'Name a country this river flows through.' : 'Which country does this river flow through?',
+          prompt: format === 'type' ? `Name a country ${river} flows through.` : `Which country does ${river} flow through?`,
           clue: `${kb.name(id)} flows through`, media: { kind: 'map', river: id }, pools: ['country'], accept, reveal: shown, countries: [] },
         list(shown.map(c => kb.name(c))), () => pickOne(shown, rng), r => wrongCountries(kb, r, 3, rng, tempt, accept));
     },
@@ -407,23 +434,31 @@ interface LevelDef {
   tempt: Tempt;
   strict?: Fame;               // only subjects at least this well known, for as long as there are any (Easy, Medium)
   share?: number;              // or: about this share of well-known subjects, the rest lesser known (Hard, Impossible)
+  famousLast?: boolean;        // famous subjects only when nothing else is left (Impossible)
+  typedOnly?: boolean;         // always typed, whatever the player picks: no options at all (Impossible)
   who: string;
   what: string;
 }
 /** Four levels. Easy asks about the famous countries only (data/countries/tiers.csv) and shows four options far
- *  apart; Medium asks about the well-known ones, typed or picked; Hard and Impossible ask everything, typed, with
- *  tempting options where there are options at all. */
+ *  apart; Medium asks about the well-known ones, typed or picked; Hard asks everything, typed, with tempting options
+ *  where there are options at all (a flag to pick). Impossible is always typed, so it never asks for a flag to pick,
+ *  and goes for lesser-known places: famous ones only when nothing else is left. */
+const TYPABLE = TEMPLATES.filter(t => t.typable).map(t => t.id);
 export const LEVELS: Record<Level, LevelDef> = {
   easy: { label: 'Easy', kinds: kindsIn('capitals', 'flags'), answers: 'choose', tempt: 0, strict: 2, who: 'Famous countries', what: 'Capitals and flags' },
   medium: { label: 'Medium', kinds: kindsIn('locations', 'capitals', 'flags', 'languages'), answers: 'both', tempt: 1, strict: 1,
     who: 'Well-known countries', what: 'No mountains or rivers' },
   hard: { label: 'Hard', kinds: ALL_KINDS, answers: 'type', tempt: 2, share: 0.6, who: 'Mostly well-known places', what: 'Every category' },
-  impossible: { label: 'Impossible', kinds: ALL_KINDS, answers: 'type', tempt: 2, share: 0.2, who: 'Mostly lesser-known places', what: 'Every category' },
+  impossible: { label: 'Impossible', kinds: TYPABLE, answers: 'type', typedOnly: true, tempt: 2, share: 0.2, famousLast: true,
+    who: 'Lesser-known places', what: 'Every category' },
 };
 export const LEVEL_IDS = Object.keys(LEVELS) as Level[];
 export const ANSWERS: { id: Answers; label: string }[] = [{ id: 'choose', label: 'Choose' }, { id: 'both', label: 'Both' }, { id: 'type', label: 'Type' }];
 export const levelOf = (sel: Selection): Level => sel.level ?? 'hard';
-export const answersOf = (sel: Selection): Answers => sel.answers ?? LEVELS[levelOf(sel)].answers;
+export const answersOf = (sel: Selection): Answers => (LEVELS[levelOf(sel)].typedOnly ? 'type' : sel.answers ?? LEVELS[levelOf(sel)].answers);
+/** Can a level ask this question type? Impossible is always typed, so not "Which is the flag of X?": its answer is a
+ *  picture, picked from four. */
+export const canAsk = (l: Level, kind: string) => !LEVELS[l].typedOnly || TYPABLE.includes(kind);
 /** How a level asks, as the level picks it. */
 export const levelAsk = (l: Level): Ask => ({ answers: LEVELS[l].answers, tempt: LEVELS[l].tempt });
 /** How a selection asks: The Gordian Knot (size 0) is always typed, with the tempting options of Impossible. */
@@ -433,11 +468,12 @@ export const formatFor = (t: Template, answers: Answers): Format =>
   answers === 'both' ? t.natural : answers === 'choose' || !t.typable ? 'choice' : 'type';
 /** Has the player changed the question types or the answers the level picked? */
 export function isCustom(sel: Selection): boolean {
-  const l = LEVELS[levelOf(sel)];
-  return sel.kinds.length !== l.kinds.length || !l.kinds.every(k => sel.kinds.includes(k)) || answersOf(sel) !== l.answers;
+  const l = LEVELS[levelOf(sel)], kinds = sel.kinds.filter(k => canAsk(levelOf(sel), k));
+  return kinds.length !== l.kinds.length || !l.kinds.every(k => kinds.includes(k)) || answersOf(sel) !== l.answers;
 }
-/** The Gordian Knot: All under Impossible. Every question in the game, typed, whatever else was picked. */
-export const GORDIAN: Selection = { kinds: ALL_KINDS, places: [], size: 0, level: 'impossible', answers: 'type' };
+/** The Gordian Knot: All under Impossible. Every question in the game, typed, whatever else was picked (so no flag to
+ *  pick: each flag is asked the other way round, to be named). */
+export const GORDIAN: Selection = { kinds: LEVELS.impossible.kinds, places: [], size: 0, level: 'impossible', answers: 'type' };
 /** The Daily climbs: two questions from each level, Easy first and Impossible last, each asked the way its level
  *  asks (picked from four far-apart options at the start, typed at the end). Everyone gets a few; the best are still
  *  tested. Built by dailyRound; as a selection it is every category in the whole world. */
@@ -453,7 +489,7 @@ const placeTest = (sel: Selection) => {
 /** How many different questions the selection can ask. */
 export function available(kb: Knowledge, sel: Selection): number {
   const inPlace = placeTest(sel);
-  return TEMPLATES.filter(t => sel.kinds.includes(t.id)).reduce((n, t) => n + t.subjects(kb, inPlace).length, 0);
+  return TEMPLATES.filter(t => sel.kinds.includes(t.id) && canAsk(levelOf(sel), t.id)).reduce((n, t) => n + t.subjects(kb, inPlace).length, 0);
 }
 
 const RECENT_KEY = 'gk-recent';
@@ -476,10 +512,11 @@ function makeQuestion(kb: Knowledge, t: Template, id: string, seed: string, ask:
 const uses = (q: Question) => [...q.countries, `${q.cat}:${q.subject}`];
 
 /** A round of `size` questions (0: all of them). Categories take turns. Easy and Medium ask about famous or
- *  well-known subjects only, for as long as there are any; Hard and Impossible mix in lesser-known ones (Hard: about
- *  40%). No country and no river comes up twice (except when playing everything), and questions seen recently rest
- *  unless there aren't enough others (`fresh`: ignore that). `seed` fixes each question's options. `used`: what
- *  earlier parts of the same round already asked about (the Daily is built a question at a time). */
+ *  well-known subjects only, for as long as there are any; Hard mixes in lesser-known ones (about 40%); Impossible asks
+ *  mostly about those (about 80%), and about famous ones only when nothing else is left. No country and no river comes
+ *  up twice (except when playing everything), and questions seen recently rest unless there aren't enough others
+ *  (`fresh`: ignore that). `seed` fixes each question's options. `used`: what earlier parts of the same round already
+ *  asked about (the Daily is built a question at a time). */
 export function buildRound(kb: Knowledge, sel: Selection, rng: Rng = Math.random, fresh = false, seed = String(rng()),
   used = new Set<string>()): Question[] {
   const all = sel.size <= 0;
@@ -488,9 +525,10 @@ export function buildRound(kb: Knowledge, sel: Selection, rng: Rng = Math.random
   const level = LEVELS[levelOf(sel)];
   const strict = all ? 0 : level.strict ?? 0;
   const share = all ? 0.6 : level.share ?? 1;
+  const famousLast = !all && !!level.famousLast;
   const ask = askOf(sel);
   const inPlace = placeTest(sel);
-  const templates = TEMPLATES.filter(t => sel.kinds.includes(t.id));
+  const templates = TEMPLATES.filter(t => sel.kinds.includes(t.id) && canAsk(levelOf(sel), t.id));
   const queues = new Map<Template, string[]>();
   const fame = new Map<Template, Map<string, number>>(); // as far as the level cares: min(fame, strict)
   for (const t of templates) {
@@ -500,11 +538,13 @@ export function buildRound(kb: Knowledge, sel: Selection, rng: Rng = Math.random
       for (const [id, x] of f) f.set(id, Math.min(x, strict));
       queues.set(t, subjects.sort((a, b) => f.get(b)! - f.get(a)!)); // stable: shuffled within each tier
     } else {
-      const known = subjects.filter(id => f.get(id)! >= 1), other = subjects.filter(id => f.get(id)! < 1);
+      // Impossible keeps its famous subjects apart, at the end of the queue (f 2 for them, 0 for the rest).
+      const last = new Set(famousLast ? subjects.filter(id => f.get(id) === 2) : []);
+      const known = subjects.filter(id => f.get(id)! >= 1 && !last.has(id)), other = subjects.filter(id => f.get(id)! < 1);
       const order: string[] = [];
       while (known.length || other.length) order.push(((known.length && (!other.length || rng() < share)) ? known : other).shift()!);
-      queues.set(t, order);
-      for (const id of subjects) f.set(id, 0);
+      queues.set(t, [...order, ...last]);
+      for (const id of subjects) f.set(id, last.has(id) ? 2 : 0);
     }
     fame.set(t, f);
   }
@@ -515,8 +555,10 @@ export function buildRound(kb: Knowledge, sel: Selection, rng: Rng = Math.random
   // Each pass first rests the questions seen recently, then fills up with them. Easy and Medium go through those two
   // with their famous or well-known subjects alone first (a famous question seen yesterday is better than an obscure
   // new one), and only ask about the others when a round can't be filled without them: a long round, a small region.
-  const passes: { rest: boolean; min: number }[] = [];
-  for (let min = strict; min >= 0; min--) passes.push({ rest: true, min }, { rest: false, min });
+  // Impossible does it the other way round: its famous subjects only come when nothing else is left.
+  const passes: { rest: boolean; min: number; max: number }[] = [];
+  for (let min = strict; min >= 0; min--) passes.push({ rest: true, min, max: 2 }, { rest: false, min, max: 2 });
+  if (famousLast) passes.unshift({ rest: true, min: 0, max: 1 }, { rest: false, min: 0, max: 1 });
   for (const pass of passes) {
     let stuck = 0;
     for (let i = 0; round.length < size && stuck < cats.length; i++) {
@@ -526,7 +568,8 @@ export function buildRound(kb: Knowledge, sel: Selection, rng: Rng = Math.random
         const queue = queues.get(t)!, f = fame.get(t)!;
         for (let j = 0; j < queue.length && !q; j++) {
           const id = queue[j];
-          if (f.get(id)! < pass.min) break; // the queue is sorted, most famous first
+          const x = f.get(id)!;
+          if (x < pass.min || x > pass.max) break; // the queue is sorted: most famous first, or (Impossible) last
           const cand = makeQuestion(kb, t, id, seed, ask);
           if (!cand || keys.has(cand.key) || (!all && uses(cand).some(c => used.has(c))) || (pass.rest && seen.has(cand.key))) continue;
           queue.splice(j, 1);

@@ -942,6 +942,8 @@ body.home .logo circle { fill: var(--glow, var(--accent)); }
   color: var(--muted);
 }
 .seg button[aria-pressed="true"] { background: var(--surface); color: var(--ink); box-shadow: var(--shadow-sm); }
+/* A way that can't be picked here (Choose and Both under Impossible, Type for a flag to pick): faded, tag and all. */
+.seg button:disabled { opacity: 0.35; cursor: not-allowed; }
 .seg.small button { min-width: 0; padding: 6px 10px; font-size: 0.9rem; }
 /* Four presets, a box for any other number and All under Impossible: a little tighter than other segments. */
 .sizes button { min-width: 44px; padding-inline: 11px; }

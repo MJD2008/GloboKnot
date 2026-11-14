@@ -19,25 +19,36 @@ The counts are Fibonacci numbers, each the two before it added up (8 + 13 = 21),
 13 to start with. Counts saved before them move to the closest one (10 to 13, 20 to 21, 50 to 34).
 
 Four levels. A level picks a set of question types and a way to answer, which the player can still change in the
-configuration, and decides how well known the places asked about are. Impossible shows itself after three rounds.
+configuration (except on Impossible, which is always typed), and decides how well known the places asked about are.
+Impossible shows itself after three rounds.
 
 | Level | Question types | Answers | Places |
 |---|---|---|---|
 | Easy (new visitors) | Capitals, flags | Choose: four options, far apart | Famous countries only, while there are enough |
 | Medium | Locations, capitals, flags, languages | Both | Well-known only, while there are enough |
 | Hard | Every category | Type | About 60% well-known |
-| Impossible | Every category | Type | About 20% well-known |
+| Impossible | Every category, but no flag to pick | Always typed | About 20% well-known, never famous unless nothing else is left |
 
 Answers: Choose (four options), Type, or Both (each question its own way: a flag to name is typed, a flag to find is
-picked). Every question type has both forms. On Easy the wrong options are far apart and familiar; on Hard and
-Impossible they are the tempting ones (neighbours, nearby rivers, and flags that look alike: Chad's among Romania's
-and Andorra's), and on Easy no flag among the options looks like the right one (no Poland or Monaco next to
-Indonesia). Which flags look alike is worked out once by `scripts/flags-alike.mjs`, which draws every flag small and
-compares them colour by colour and by layout, also mirrored (`data/countries/flags-alike.json`).
+picked). Every question type has both forms, except the flag to find, which is always picked: its answer is a picture.
+Impossible has no options at all: Choose and Both can't be picked there, and it never asks for a flag to find (James,
+14 Nov: "Impossible should have no multiple choice"). On Easy the wrong options are far apart and familiar; on Hard
+they are the tempting ones (neighbours, nearby rivers, and flags that look alike: Chad's among Romania's and
+Andorra's), and on Easy no flag among the options looks like the right one (no Poland or Monaco next to Indonesia).
+Which flags look alike is worked out once by `scripts/flags-alike.mjs`, which draws every flag small and compares them
+colour by colour and by layout, also mirrored (`data/countries/flags-alike.json`).
 
 How well known: countries by `data/countries/tiers.csv` (37 famous, 37 well known, the rest); languages through the
 countries where most people speak them (not Irish or Romansh); rivers of 2,500 km and more plus a list of famous ones;
-peaks of 5,000 m and more.
+peaks of 5,000 m and more. A river or a highest point on the map, asked for its country, is as well known as the
+best-known country that counts as right: a river through the United States asks about the United States, so
+Impossible leaves it out. That leaves Impossible about a dozen rivers to ask the country of (the Okavango, the
+Chindwin, the Helmand...), and every lesser-known river to name.
+
+A river or a highest point on the map is named in its question ("Name a country the Okavango River flows through.",
+"Mount Kilimanjaro is the highest point of which country?"), unless the name gives the country away: the Congo,
+Gambia, Niger, Senegal and Uruguay rivers, and Mount Kenya, Mount Cameroon, Pico de São Tomé and Morne Seychellois
+are asked without it. Pico Bolívar keeps its name: it is Venezuela's, and Bolivia tempts.
 
 The Daily climbs: eight questions, the same for everyone on a day, two from each level, from Easy to Impossible, each
 asked the way its level asks (picked from four far-apart options at the start, typed at the end). Everyone gets a few
@@ -76,8 +87,9 @@ same loop. A few words are only shown when asked for, behind an ⓘ (what the le
 Auto-submit does). About opens with the numbers (194 countries, 1,417 checked facts...), counted from the facts as they
 load, then how a fact gets in, how to play, and the sources. Settings has three volumes (Volume, Effects, Music); the
 sounds and music go in named slots, listed in [docs/AUDIO.md](docs/AUDIO.md).
-After three rounds Impossible appears, and under it All: The Gordian Knot, every question in the game (2,109), typed,
-in crimson, with one record (best score, then fastest).
+After three rounds Impossible appears, and under it All: The Gordian Knot, every question in the game that can be typed
+(1,915 of 2,109: each flag is asked to be named, not to be found), in crimson, with one record (best score, then
+fastest).
 
 ```
 npm install

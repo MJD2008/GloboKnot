@@ -143,3 +143,7 @@ Changing numbers are stored as **snapshots**, never live values:
   Gerlachovsky stit, Khan Tengri and Jengish Chokusu), the map question accepts both countries.
 - **The same name for two things** (Tonga the country and the language): when the typed name matches an accepted
   answer exactly, that one is meant.
+- **Named on the map, unless the name is the answer** (14 Nov): a river or a highest point shown on the map is named
+  in its country question, except when a word of its name is (or begins with the same five letters as) the name of
+  a country that counts as right: the Niger, Mount Kenya, Morne Seychellois. Only the countries' names and short
+  names count, not their long official ones (Pico Bolívar stays named: the "Bolivarian Republic" is no giveaway).

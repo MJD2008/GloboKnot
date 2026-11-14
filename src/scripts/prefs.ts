@@ -1,6 +1,6 @@
 // What the player chose, kept in this browser: the quiz selection and the settings. Everything works without
 // storage (private windows): the defaults are used and nothing is saved.
-import { ALL_KINDS, ANSWERS, LEVELS, TEMPLATES, type Level, type Selection } from './questions';
+import { ALL_KINDS, ANSWERS, LEVELS, TEMPLATES, canAsk, type Level, type Selection } from './questions';
 
 function load<T>(key: string, fallback: T): T {
   try {
@@ -36,12 +36,14 @@ if (!v && kinds.includes('loc.map') && !kinds.includes('nb.name')) kinds.push('n
 if (v < 5 && saved.level === 'easy' && kinds.length === OLD_EASY.length && OLD_EASY.every(k => kinds.includes(k))) kinds = [...LEVELS.medium.kinds];
 // Until v6 the presets were 10, 20 and 50: each becomes the Fibonacci preset closest to it (a typed number stays).
 const OLD_SIZES: Record<number, number> = { 10: 13, 20: 21, 50: 34 };
+// Impossible is always typed (since 14 Nov 2026): a flag to pick, or Choose or Both, saved with it before, goes.
+kinds = kinds.filter(k => canAsk(level, k));
 export const selection: Selection & { level: Level } = {
   kinds: kinds.length ? kinds : [...LEVELS[level].kinds],
   places: Array.isArray(saved.places) ? saved.places : [],
   size: clampSize(v < 6 && saved.size && saved.size in OLD_SIZES ? OLD_SIZES[saved.size] : saved.size ?? DEFAULT_SIZE),
   level,
-  ...(ANSWERS.some(a => a.id === saved.answers) ? { answers: saved.answers } : {}),
+  ...(!LEVELS[level].typedOnly && ANSWERS.some(a => a.id === saved.answers) ? { answers: saved.answers } : {}),
 };
 export const saveSelection = () => save(SEL_KEY, { ...selection, v: 6 });
 /** A level picks its own question types and answers (anything the player had changed is replaced). All (The Gordian

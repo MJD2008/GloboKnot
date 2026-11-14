@@ -1,9 +1,10 @@
 // The round builder. The four levels: Easy asks about famous countries only and shows four options far apart,
-// Medium keeps to well-known places, typed or picked, Hard mixes in lesser-known ones and Impossible goes for them,
-// both typed. A level picks its own question types and answers; All (The Gordian Knot) asks everything, typed. Every
-// question type can be typed or picked. And what a round never does: ask about the same country or river twice. Practice
-// asks every question of one type in one region, in the same order every time. On Hard and Impossible the wrong
-// options of a flag question are flags that look alike. The Daily climbs from Easy to Impossible.
+// Medium keeps to well-known places, typed or picked, Hard mixes in lesser-known ones, typed, and Impossible goes for
+// them, always typed, with famous places only when nothing else is left. A level picks its own question types and
+// answers; All (The Gordian Knot) asks everything, typed. Every question type can be typed or picked. And what a round
+// never does: ask about the same country or river twice. Practice asks every question of one type in one region, in
+// the same order every time. On Hard the wrong options of a flag question are flags that look alike. The Daily climbs
+// from Easy to Impossible. A river or a highest point on the map is named in its question, unless that gives it away.
 // Run: node --test (Node 22.18 or newer, which reads the TypeScript sources directly).
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -44,7 +45,8 @@ test('each level picks its own question types and answers', { skip }, async () =
   const cats = l => [...new Set(LEVELS[l].kinds.map(k => TEMPLATES.find(t => t.id === k).cat))].sort();
   assert.deepEqual(cats('easy'), ['capitals', 'flags']);
   assert.deepEqual(cats('medium'), ['capitals', 'flags', 'languages', 'locations']);
-  for (const l of ['hard', 'impossible']) assert.equal(LEVELS[l].kinds.length, TEMPLATES.length);
+  assert.equal(LEVELS.hard.kinds.length, TEMPLATES.length);
+  assert.deepEqual(LEVELS.impossible.kinds, TEMPLATES.filter(t => t.id !== 'flag.pick').map(t => t.id), 'Impossible: everything but a flag to pick');
   assert.deepEqual(LEVEL_IDS.map(l => LEVELS[l].answers), ['choose', 'both', 'type', 'type']);
   for (const l of LEVEL_IDS) {
     const kinds = LEVELS[l].kinds;
@@ -52,8 +54,10 @@ test('each level picks its own question types and answers', { skip }, async () =
     assert.equal(isCustom({ kinds: [...kinds].reverse(), places: ['FRA'], size: 20, level: l }), false, `${l}: order, places and size don't matter`);
     assert.equal(isCustom({ kinds, places: [], size: 10, level: l, answers: LEVELS[l].answers }), false, `${l}: its own answers are not custom`);
     assert.equal(isCustom({ kinds: kinds.slice(1), places: [], size: 10, level: l }), true, `${l}: a type less is custom`);
-    assert.equal(isCustom({ kinds, places: [], size: 10, level: l, answers: l === 'easy' ? 'type' : 'choose' }), true, `${l}: other answers are custom`);
+    assert.equal(isCustom({ kinds, places: [], size: 10, level: l, answers: l === 'easy' ? 'type' : 'choose' }), l !== 'impossible',
+      `${l}: other answers are custom (Impossible is always typed: they don't count)`);
   }
+  assert.equal(isCustom({ kinds: [...LEVELS.impossible.kinds, 'flag.pick'], places: [], size: 10, level: 'impossible' }), false, 'Impossible: a flag to pick doesn\'t count');
   assert.equal(isCustom({ kinds: [...LEVELS.easy.kinds, 'river.name'], places: [], size: 10, level: 'easy' }), true, 'a type more is custom');
 });
 
@@ -92,7 +96,7 @@ test('Easy shows four options, far apart and familiar', { skip }, async () => {
   assert.ok(obscure / options < 0.1, `${Math.round((obscure / options) * 100)}% of wrong options lesser known`);
 });
 
-test('Hard and Impossible offer flags that look alike as wrong options; Easy never does', { skip }, async () => {
+test('Hard offers flags that look alike as wrong options; Easy never does', { skip }, async () => {
   const { kb, level, rounds } = await load();
   const alikeShare = sel => {
     let options = 0, alike = 0;
@@ -121,13 +125,59 @@ test('Medium keeps to well-known places, typed and picked', { skip }, async () =
   assert.ok(picked > 0.1 && picked < 0.4, `${Math.round(picked * 100)}% picked`);
 });
 
-test('Hard is mostly well-known, Impossible mostly not, both typed', { skip }, async () => {
-  const { level, rounds, share } = await load();
+test('Hard is mostly well-known, Impossible mostly not and never famous, both typed', { skip }, async () => {
+  const { fame, level, rounds, share } = await load();
   const of = l => rounds(level(l, { size: 20 }), 60, l);
   const hard = of('hard'), impossible = of('impossible');
   assert.ok(share(hard) > 0.5 && share(hard) < 0.7, `Hard: ${Math.round(share(hard) * 100)}% well-known`);
   assert.ok(share(impossible) > 0.1 && share(impossible) < 0.3, `Impossible: ${Math.round(share(impossible) * 100)}% well-known`);
-  for (const x of [...hard, ...impossible].flat()) assert.equal(x.format, x.kind === 'flag.pick' ? 'choice' : 'type', x.key);
+  assert.ok(hard.flat().filter(x => fame(x) === 2).length > 100, 'Hard asks about famous places too');
+  assert.deepEqual(impossible.flat().filter(x => fame(x) === 2).map(x => x.key), [], 'Impossible: nothing famous, not even after 60 rounds');
+  assert.ok(impossible.every(r => r.length === 20), 'Impossible: full rounds');
+  for (const x of hard.flat()) assert.equal(x.format, x.kind === 'flag.pick' ? 'choice' : 'type', x.key);
+  for (const x of impossible.flat()) assert.ok(x.format === 'type' && !x.choices, `Impossible: typed (${x.key})`);
+});
+
+test('Impossible is always typed, and asks about famous places only when nothing else is left', { skip }, async () => {
+  const { GORDIAN, LEVELS, answersOf, available, buildRound, fame, kb, level, rounds, seeded } = await load();
+  for (const answers of ['choose', 'both', 'type']) {
+    assert.equal(answersOf({ kinds: [], places: [], size: 10, level: 'impossible', answers }), 'type', `${answers} counts as Type`);
+    store.clear();
+    const round = buildRound(kb, { kinds: ['flag.pick', 'flag.name', 'lang.official'], places: [], size: 30, level: 'impossible', answers }, seeded(answers), true, 'x');
+    assert.equal(round.length, 30, answers);
+    assert.ok(round.every(x => x.format === 'type' && x.kind !== 'flag.pick'), `${answers}: typed, and no flag to pick`);
+  }
+  assert.equal(available(kb, { kinds: ['flag.pick'], places: [], size: 10, level: 'impossible' }), 0, 'no flag to pick at all');
+  // A region with nothing but famous places still makes full rounds: then they come.
+  const famous = kb.countries.filter(c => c.tier === 'famous' && kb.continent(c.id) === 'Europe').map(c => c.id);
+  const sel = level('impossible', { kinds: ['loc.map', 'cap.name', 'flag.name'], places: famous, size: 13 });
+  for (const r of rounds(sel, 5, 'famousonly')) assert.ok(r.length === 13 && r.every(x => fame(x) === 2), 'famous places, when nothing else is left');
+  // ...and when there is something else, it comes first, also when it was seen recently.
+  const mixed = level('impossible', { kinds: ['cap.name'], places: [...famous, 'LUX', 'AND', 'MDA'], size: 3 });
+  for (const r of rounds(mixed, 4, 'mixed')) assert.deepEqual(r.map(x => fame(x) < 2), [true, true, true], `the three others first: ${r.map(x => x.key)}`);
+  // The Gordian Knot: every question in the game, typed, so every flag is asked to be named, none to be picked.
+  assert.deepEqual(GORDIAN.kinds, LEVELS.impossible.kinds);
+  assert.equal(available(kb, GORDIAN), available(kb, { kinds: LEVELS.hard.kinds, places: [], size: 0 }) - kb.countries.length);
+});
+
+test('a river or a highest point on the map is named in its question, unless the name gives the answer away', { skip }, async () => {
+  const { byId, kb, seeded } = await load();
+  const ask = (kind, id, format = 'type') => byId[kind].make(kb, id, seeded('n'), { format, tempt: 2 });
+  assert.equal(ask('river.map', 'mekong').prompt, 'Name a country the Mekong River flows through.');
+  assert.equal(ask('river.map', 'mekong', 'choice').prompt, 'Which country does the Mekong River flow through?');
+  assert.equal(ask('river.map', 'rio-grande').prompt, 'Name a country the Rio Grande flows through.');
+  assert.equal(ask('river.map', 'amu-darya').prompt, 'Name a country the Amu Darya flows through.');
+  assert.equal(ask('peak.map', 'mount-kilimanjaro').prompt, 'Mount Kilimanjaro is the highest point of which country?');
+  assert.equal(ask('peak.map', 'pico-bolivar').prompt, 'Pico Bolívar is the highest point of which country?', 'Bolivia tempts: no giveaway');
+  const unnamed = kind => byId[kind].subjects(kb, () => true).filter(id => !/ the | is the highest/.test(ask(kind, id).prompt)).sort();
+  assert.deepEqual(unnamed('river.map'), ['congo', 'gambia', 'niger', 'senegal', 'uruguay']);
+  assert.deepEqual(unnamed('peak.map'), ['morne-seychellois', 'mount-cameroon', 'mount-kenya', 'pico-de-sao-tome']);
+  assert.equal(ask('river.map', 'niger').prompt, 'Name a country this river flows through.');
+  assert.equal(ask('peak.map', 'mount-kenya').prompt, 'Which country has its highest point here?');
+  // On the map, a river through the United States asks about the United States: as well known as that.
+  assert.equal(byId['river.map'].fame(kb, 'columbia'), 2);
+  assert.equal(byId['river.name'].fame(kb, 'columbia'), 0, 'its name is still little known');
+  assert.equal(byId['river.map'].fame(kb, 'okavango'), 0);
 });
 
 test('every question type can be typed or picked', { skip }, async () => {
@@ -179,6 +229,7 @@ test('the Daily climbs: two questions from each level, Easy to Impossible, every
     for (const x of round.slice(0, 2)) assert.ok(x.format === 'choice' && fame(x) === 2, `${day}: Easy picks from four, famous only (${x.key})`);
     for (const x of round.slice(2, 4)) assert.ok(fame(x) >= 1, `${day}: Medium keeps to well-known places (${x.key})`);
     for (const x of round.slice(4)) assert.equal(x.format, byId[x.kind].typable ? 'type' : 'choice', `${day}: Hard and Impossible are typed (${x.key})`);
+    for (const x of round.slice(6)) assert.ok(x.format === 'type' && fame(x) < 2, `${day}: Impossible is always typed, never famous (${x.key})`);
     assert.equal(new Set(round.map(x => x.cat)).size, CATS.length, `${day}: every category`);
     const countries = round.flatMap(x => x.countries);
     assert.equal(new Set(countries).size, countries.length, `${day}: no country twice`);
@@ -197,13 +248,13 @@ test('the Daily climbs: two questions from each level, Easy to Impossible, every
 test('All (The Gordian Knot) asks everything, typed, whatever the level', { skip }, async () => {
   const { GORDIAN, askOf, available, buildRound, kb, seeded } = await load();
   const europe = kb.countries.filter(c => kb.continent(c.id) === 'Europe').map(c => c.id);
-  const keys = level => buildRound(kb, { kinds: ['cap.name', 'flag.pick'], places: europe, size: 0, level }, seeded('all'), false, 'all').map(x => x.key);
+  const keys = level => buildRound(kb, { kinds: ['cap.name', 'flag.name'], places: europe, size: 0, level }, seeded('all'), false, 'all').map(x => x.key);
   const easy = keys('easy');
-  assert.equal(easy.length, available(kb, { kinds: ['cap.name', 'flag.pick'], places: europe, size: 0 }));
+  assert.equal(easy.length, available(kb, { kinds: ['cap.name', 'flag.name'], places: europe, size: 0 }));
   assert.deepEqual(easy, keys('impossible'));
   assert.deepEqual(easy, keys(undefined));
   assert.deepEqual(askOf({ ...GORDIAN, level: 'easy', answers: 'choose' }), { answers: 'type', tempt: 2 });
-  assert.ok(available(kb, GORDIAN) > 2000, 'every question in the game');
+  assert.ok(available(kb, GORDIAN) > 1900, 'every question in the game (but a flag to pick)');
 });
 
 test('a challenge link gets the same questions, asked the same way', { skip }, async () => {
