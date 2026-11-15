@@ -2,16 +2,22 @@
 // the same kind of links the quiz is built on. Drag it to turn it (a throw keeps it spinning for a moment, then it
 // eases back into its own pace); point at a country, or tap it, to see its name. The wheel, a pinch or the + and -
 // beside it zoom in (James, 14 Nov 2026): the rope loop stays where it is, like a lens, the globe stops turning by
-// itself and the countries get their borders, so it can be explored. Canvas, Natural Earth 1:110m land (public
-// domain); zoomed in, and for the names, the quiz's 1:50m map.
+// itself and the countries get their borders, so it can be explored. The countries the player has tied (answered
+// right the first time: the experiment Tie the world) light up in gold, brighter once right in three categories; the
+// ones tied in the round just played pulse when the home screen comes back, and the globe turns to face them.
+// Canvas, Natural Earth 1:110m (public domain); zoomed in, and for the names, the quiz's 1:50m map.
 import { geoDistance, geoGraticule10, geoInterpolate, geoOrthographic, geoPath } from 'd3-geo';
-import type { GeoPermissibleObjects } from 'd3-geo';
+import type { ExtendedFeature, ExtendedFeatureCollection, GeoPermissibleObjects } from 'd3-geo';
 import { feature } from 'topojson-client';
 
 type LonLat = [number, number];
 interface Chain { points: LonLat[]; born: number }
 /** The quiz's own map, for a closer look: the countries (filled as land) and the borders between them. */
 export interface Detail { land: GeoPermissibleObjects; borders: GeoPermissibleObjects }
+/** A country tied: its numeric code (ISO 3166), its position [lat, lng] (a dot where the 1:110m map has no shape for
+ *  it), gold once right in three categories, fresh when it was tied in the round just played. */
+export interface Tied { num: string; ll: [number, number]; gold: boolean; fresh: boolean }
+type Shapes = ExtendedFeatureCollection;
 
 const SPIN = 4.5;     // degrees per second
 const TILT = -22;     // looks a little from the north, where most land is
@@ -21,6 +27,9 @@ const FADE = 900;
 const EVERY = 2600;   // ms between new chains
 const RAD = Math.PI / 180;
 const ZOOM_MAX = 6;
+const TIE = '#f2c14e'; // the gold of a tied country (and of the rope, once The Gordian Knot is untied)
+const PULSE = 3600;    // ms the countries tied in the last round pulse
+const FACE = 1400;     // ms to turn and face them
 const DETAIL_AT = 1.3; // zoomed in this far, the 1:50m countries and their borders are drawn instead of the land
 const ICONS = {
   in: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 6v12M6 12h12"/></svg>',
@@ -33,6 +42,12 @@ export interface Hit { name: string; shape: GeoPermissibleObjects }
 export class Globe {
   private readonly ctx: CanvasRenderingContext2D;
   private readonly land: GeoPermissibleObjects;
+  /** The countries at 1:110m by numeric code, to light up the tied ones. */
+  private readonly shapes = new Map<string, GeoPermissibleObjects>();
+  private tied: Tied[] = [];
+  private tiedShapes: { detail: boolean; lit: Shapes; gold: Shapes; fresh: Shapes; dots: Tied[] } | null = null;
+  private pulseFrom = -Infinity;
+  private face: { t0: number; l0: number; p0: number; l1: number; p1: number } | null = null;
   private readonly grat = geoGraticule10();
   private readonly projection = geoOrthographic().clipAngle(90).precision(0.7);
   private readonly path;
@@ -68,10 +83,17 @@ export class Globe {
   countryAt: ((p: LonLat) => Hit | null) | null = null;
   /** The quiz's map, once it has loaded: drawn when zoomed in. */
   detail: (() => Detail | null) | null = null;
+  /** A country's shape on the quiz's map (1:50m), for the tied ones when zoomed in. */
+  shapeOf: ((num: string) => GeoPermissibleObjects | null) | null = null;
 
   constructor(private readonly canvas: HTMLCanvasElement, topology: any) {
     this.ctx = canvas.getContext('2d')!;
     this.land = feature(topology, topology.objects.land) as unknown as GeoPermissibleObjects;
+    if (topology.objects.countries) {
+      for (const f of (feature(topology, topology.objects.countries) as unknown as { features: (GeoPermissibleObjects & { id?: string })[] }).features) {
+        if (f.id != null) this.shapes.set(String(f.id), f);
+      }
+    }
     this.path = geoPath(this.projection, this.ctx);
     this.label = document.createElement('div');
     this.label.className = 'globe-label';
@@ -105,6 +127,50 @@ export class Globe {
 
   private redraw() {
     if (!this.running) this.draw(performance.now());
+  }
+
+  /** The countries tied so far. The fresh ones (tied in the round just played) pulse for a moment, and the globe turns
+   *  to face the first of them. */
+  setTied(list: Tied[]) {
+    this.tied = list;
+    this.tiedShapes = null;
+    const fresh = list.find(c => c.fresh);
+    if (fresh) {
+      this.pulseFrom = performance.now();
+      this.faceTo(fresh.ll);
+    }
+    this.canvas.dataset.tied = String(list.length);
+    this.dirty = true;
+    this.redraw();
+  }
+
+  /** Turns the globe to face a place [lat, lng], the shortest way round; back to the whole globe first. */
+  private faceTo([lat, lon]: [number, number]) {
+    if (this.zoomTo > 1) this.zoomBy(0);
+    const l1 = this.lambda + ((((-lon - this.lambda) % 360) + 540) % 360) - 180, p1 = clamp(-lat, -60, 60);
+    if (this.still || !this.running) { this.lambda = l1; this.phi = p1; this.released = performance.now(); return; }
+    this.face = { t0: performance.now(), l0: this.lambda, p0: this.phi, l1, p1 };
+    this.spinV = SPIN;
+  }
+
+  /** The tied countries as three groups to fill (lit, gold, fresh) and the ones too small for a shape, as dots. Zoomed
+   *  in, from the quiz's 1:50m map, so they match its coasts. */
+  private tiedGroups(detail: boolean) {
+    if (this.tiedShapes?.detail === detail) return this.tiedShapes;
+    const lit: GeoPermissibleObjects[] = [], gold: GeoPermissibleObjects[] = [], fresh: GeoPermissibleObjects[] = [], dots: Tied[] = [];
+    let complete = true;
+    for (const c of this.tied) {
+      const big = detail ? this.shapeOf?.(c.num) ?? null : null;
+      if (detail && !big && this.shapes.has(c.num)) complete = false; // the quiz's map is still loading
+      const shape = big ?? this.shapes.get(c.num);
+      if (!shape) { dots.push(c); continue; }
+      (c.gold ? gold : lit).push(shape);
+      if (c.fresh) fresh.push(shape);
+    }
+    const fc = (features: GeoPermissibleObjects[]): Shapes => ({ type: 'FeatureCollection', features: features as ExtendedFeature[] });
+    const groups = { detail, lit: fc(lit), gold: fc(gold), fresh: fc(fresh), dots };
+    if (complete) this.tiedShapes = groups;
+    return groups;
   }
 
   // ---- dragging, hovering and tapping
@@ -259,7 +325,18 @@ export class Globe {
       moving = true;
     }
     const zoomed = this.zoomTo > 1;
-    if (!this.drag && !this.pinch) {
+    if (this.face) {
+      if (this.drag || this.pinch) this.face = null; // a finger takes over
+      else {
+        const p = Math.min(1, (t - this.face.t0) / FACE), e = easeInOut(p);
+        this.lambda = this.face.l0 + (this.face.l1 - this.face.l0) * e;
+        this.phi = this.face.p0 + (this.face.p1 - this.face.p0) * e;
+        moving = true;
+        if (p >= 1) { this.face = null; this.released = t + 2200; } // it holds the view a moment before tilting back
+      }
+    }
+    if (t - this.pulseFrom < PULSE + 100) moving = true;
+    if (!this.drag && !this.pinch && !this.face) {
       // A throw slows down into the normal spin; pointing at a country slows the globe so the name can be read.
       // Zoomed in, a throw slows down to a stop.
       const target = zoomed ? 0 : this.pointer ? SPIN * 0.25 : SPIN;
@@ -322,6 +399,31 @@ export class Globe {
     const detail = this.zoom >= DETAIL_AT ? this.detail?.() : null;
     ctx.beginPath(); this.path(detail ? detail.land : this.land); ctx.fillStyle = c.land; ctx.fill();
     ctx.strokeStyle = c.coast; ctx.lineWidth = 0.8 * this.dpr; ctx.stroke();
+    const center: LonLat = [-this.lambda, -this.phi];
+    if (this.tied.length) {
+      // Tied: a gold tint; right in three categories: gold. The ones tied in the round just played pulse three times.
+      const g = this.tiedGroups(!!detail);
+      ctx.fillStyle = TIE;
+      ctx.globalAlpha = 0.34; ctx.beginPath(); this.path(g.lit); ctx.fill();
+      ctx.globalAlpha = 0.86; ctx.beginPath(); this.path(g.gold); ctx.fill();
+      const age = t - this.pulseFrom;
+      if (age < PULSE && g.fresh.features.length) {
+        const k = this.still ? 1 : 0.5 - 0.5 * Math.cos((age / PULSE) * 6 * Math.PI);
+        ctx.globalAlpha = 0.65 * k; ctx.fillStyle = '#fff3c9'; ctx.beginPath(); this.path(g.fresh); ctx.fill();
+        ctx.globalAlpha = k; ctx.strokeStyle = TIE; ctx.lineWidth = 1.6 * this.dpr; ctx.stroke();
+      }
+      ctx.fillStyle = TIE;
+      for (const d of g.dots) {
+        const pt: LonLat = [d.ll[1], d.ll[0]];
+        if (geoDistance(pt, center) > 89 * RAD) continue;
+        const xy = this.projection(pt);
+        if (!xy) continue;
+        const fresh = d.fresh && age < PULSE;
+        ctx.globalAlpha = d.gold || fresh ? 0.95 : 0.6;
+        ctx.beginPath(); ctx.arc(xy[0], xy[1], (d.gold ? 2.6 : 2.1) * this.dpr * Math.sqrt(this.zoom) * (fresh ? 1.4 : 1), 0, 2 * Math.PI); ctx.fill();
+      }
+      ctx.globalAlpha = 1;
+    }
     if (detail) { ctx.beginPath(); this.path(detail.borders); ctx.strokeStyle = c.coast; ctx.lineWidth = 0.7 * this.dpr; ctx.stroke(); }
     if (this.hover) {
       ctx.beginPath(); this.path(this.hover.shape);
@@ -330,7 +432,6 @@ export class Globe {
     }
 
     // the chains
-    const center: LonLat = [-this.lambda, -this.phi];
     ctx.lineCap = 'round';
     for (const ch of this.chains) {
       const age = t - ch.born;
@@ -371,3 +472,4 @@ export class Globe {
 }
 
 const ease = (x: number) => 1 - Math.pow(1 - x, 3);
+const easeInOut = (x: number) => (x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2);

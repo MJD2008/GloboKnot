@@ -1,11 +1,12 @@
-// The round builder. The four levels (named after knots since 14 Nov 2026; their ids stayed): Loose (easy) asks about
-// famous countries only and shows four options far apart, Tight (medium) keeps to well-known places, typed or picked,
-// Complex (hard) mixes in lesser-known ones, typed, and Atlas (impossible) goes for them, always typed, with famous
-// places only when nothing else is left. A level picks its own question types and answers; All (The Gordian Knot)
-// asks everything, typed. Every question type can be typed or picked. And what a round never does: ask about the same
-// country or river twice. Practice asks every question of one type in one region, in the same order every time. On
-// Complex the wrong options of a flag question are flags that look alike. The Daily climbs from Loose to Atlas. A
-// highest point is asked by its name, without a map; which country a river flows through is no question any more.
+// The round builder. The four levels (named after real knots since 14 Nov 2026; their ids stayed): Overhand (easy)
+// asks about famous countries only and shows four options far apart, Bowline (medium) keeps to well-known places,
+// typed or picked, Monkey's fist (hard) mixes in lesser-known ones, typed, and Atlas (impossible) goes for them, always
+// typed, with famous places only when nothing else is left. A level picks its own question types and answers; All
+// (The Gordian Knot) asks everything, typed. Every question type can be typed or picked. And what a round never does:
+// ask about the same country or river twice. Practice asks every question of one type in one region, in the same
+// order every time. On Monkey's fist the wrong options of a flag question are flags that look alike. The Daily climbs
+// from Overhand to Atlas. A highest point is asked by its name, without a map; which country a river flows through is
+// no question any more.
 // Run: node --test (Node 22.18 or newer, which reads the TypeScript sources directly).
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -43,7 +44,7 @@ async function load() {
 test('each level picks its own question types and answers', { skip }, async () => {
   const { LEVELS, LEVEL_IDS, TEMPLATES, isCustom } = await load();
   assert.deepEqual(LEVEL_IDS, ['easy', 'medium', 'hard', 'impossible']);
-  assert.deepEqual(LEVEL_IDS.map(l => LEVELS[l].label), ['Loose', 'Tight', 'Complex', 'Atlas'], 'knots, and Atlas');
+  assert.deepEqual(LEVEL_IDS.map(l => LEVELS[l].label), ['Overhand', 'Bowline', "Monkey's fist", 'Atlas'], 'three real knots, and Atlas');
   const cats = l => [...new Set(LEVELS[l].kinds.map(k => TEMPLATES.find(t => t.id === k).cat))].sort();
   assert.deepEqual(cats('easy'), ['capitals', 'flags']);
   assert.deepEqual(cats('medium'), ['capitals', 'flags', 'languages', 'locations']);

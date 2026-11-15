@@ -5,14 +5,16 @@
 import { geoDistance } from 'd3-geo';
 import { resolveFor } from '../../scripts/lib/match.mjs';
 import { norm } from '../../scripts/lib/text.mjs';
+import { EXPERIMENTS } from './experiments';
 import { Globe } from './globe';
 import { Sky } from './sky';
 import { Knowledge, type Country, type Entity, type KBData, type Language, type Peak, type River } from './kb';
 import { WorldMap, type MapLabel, type MapOptions } from './map';
 import { catOn, clockOf, icon, initMenu, levelIcon, levelTag, placesLabel } from './menu';
 import { bestLabel, initPractice, practiceBest, practiceKey, practiceLabel, practicePlaces, practiceSeed, type Practice } from './practice';
-import { ACCENTS, ATLAS_AT, TIME, applySettings, atlasOpen, better, dailyResult, saveDaily, saveSelection, saveSettings, saveStats, selection, setLevel, settings, stats, today, type Accent, type Theme } from './prefs';
+import { ACCENTS, ATLAS_AT, GOLD_AT, TIME, applySettings, atlasOpen, better, dailyResult, dailyRope, endTrial, nextDailyIn, saveDaily, saveSelection, saveSettings, saveStats, saveTied, selection, setLevel, settings, stats, tie, tied, today, type Accent, type Theme } from './prefs';
 import { ALL_KINDS, ANSWERS, CATS, DAILY, GORDIAN, LEVELS, LEVEL_IDS, available, buildRound, codeOf, dailyRound, isCustom, levelAsk, practiceRound, rebuildRound, remember, levelOf, type Answers, type Ask, type Level, type Pool, type Question, type Selection, type Tempt } from './questions';
+import { flash } from './press';
 import { zoomable, type Zoom } from './zoom';
 import { sound } from './sound';
 
@@ -33,6 +35,9 @@ const ui = {
   notNow: $<HTMLButtonElement>('#not-now'),
   daily: $<HTMLButtonElement>('#daily'),
   dailySub: $('#daily-sub'),
+  dailyRope: $('#daily-rope'),
+  tiedBadge: $<HTMLButtonElement>('#tied'),
+  resultsNote: $('#results-note'),
   practice: $<HTMLButtonElement>('#practice'),
   quit: $<HTMLButtonElement>('#quit'),
   beads: $('#beads'),
@@ -127,7 +132,7 @@ const scoreOf = (rs: Result[]) => (rs.length ? rs.reduce((n, r) => n + ({ tight:
 
 /** A challenge link: the same questions (codes and subjects), asked the same way (typed or picked, and the same
  *  options: the seed draws them), and a score to beat. How they are asked is one code for the whole round ("b2": Both,
- *  tempting options), since 14 Nov 2026 with the level's letter after it ("t2h": Complex, shown in its colour), or,
+ *  tempting options), since 14 Nov 2026 with the level's letter after it ("t2h": Monkey's fist, shown in its colour), or,
  *  for the Daily, a letter per question for its level ("eemmhhii"). v1 links (before the answers could be chosen) ask
  *  the way every round did then: each question its own way, with tempting options. */
 interface Challenge { edition: string; seed: string; pct: number; secs: number; asks: Ask[]; level?: Level; levels?: Level[]; items: { code: string; subject: string }[] }
@@ -188,6 +193,7 @@ const state = {
   lastWrong: '',  // the last of them
   auto: 0,        // auto-submit, waiting for a pause in typing
   last: null as { pct: number; ms: number; rank: string; knots: Knot[] } | null,
+  freshTies: [] as string[], // countries tied in the round just played: they pulse on the home globe, once
 };
 
 // ---------------------------------------------------------------- loading
@@ -198,6 +204,8 @@ async function load() {
     globe.chainNear = chainNear;
     globe.countryAt = countryAt;
     globe.detail = () => world?.detail ?? null;
+    globe.shapeOf = num => world?.shape(num) ?? null;
+    paintTied();
     if (!screens.start.hidden) globe.play();
   }).catch(() => { ui.globe.parentElement!.hidden = true; });
 
@@ -274,15 +282,58 @@ function paintHome() {
     : selection.size === 0 ? 'The Gordian Knot' : '';
   ui.playSub.hidden = !ui.playSub.innerHTML;
   ui.notNow.hidden = !challenge;
-  const done = dailyResult();
-  ui.dailySub.textContent = done === null ? new Date().toLocaleDateString(undefined, { day: 'numeric', month: 'short' }) : `${Math.round(done * 100)}%`;
-  ui.daily.classList.toggle('done', done !== null);
+  paintDaily();
+  paintTied();
   // The Gordian Knot untied (100%): the rope round the globe and the logo turn gold, for good.
   document.body.classList.toggle('untied', !!stats.untied);
 }
 
-/** Three knots, Loose, Tight and Complex, each in its own colour (James, 14 Nov 2026). Atlas, the fourth, is not on the
- *  home screen: it opens after a great Complex round and waits in the configuration, so the home screen stays simple for
+/** The Daily: today's date until it is played. With the Daily rope (experiment), the days played in a row ride on
+ *  the button as a knot and a number, dim while today's is still to play, and once it is done the button says when
+ *  the next one comes. */
+function paintDaily() {
+  const done = dailyResult();
+  const rope = EXPERIMENTS.dailyRope ? dailyRope() : null;
+  ui.dailySub.textContent = done === null ? new Date().toLocaleDateString(undefined, { day: 'numeric', month: 'short' })
+    : rope ? `in ${untilNextDaily()}` : `${Math.round(done * 100)}%`;
+  ui.daily.classList.toggle('done', done !== null);
+  ui.dailyRope.hidden = !rope?.days;
+  if (rope?.days) {
+    ui.dailyRope.innerHTML = `${levelIcon('easy')}<b>${rope.days}</b>`;
+    ui.dailyRope.classList.toggle('waiting', done === null);
+  }
+  ui.daily.setAttribute('aria-label', ['Daily', done === null ? '' : `done, the next one in ${untilNextDaily()}`,
+    rope?.days ? `${rope.days} ${rope.days === 1 ? 'day' : 'days'} in a row` : ''].filter(Boolean).join(', '));
+}
+/** "5 h", or "40 min" in the last hour, until the next Daily (midnight UTC, when the day's eight change). */
+function untilNextDaily() {
+  const ms = nextDailyIn();
+  return ms >= 3600e3 ? `${Math.round(ms / 3600e3)} h` : `${Math.max(1, Math.ceil(ms / 60e3))} min`;
+}
+// The countdown on the Daily button stays right while the home screen is open, and a new day brings a new Daily.
+setInterval(() => { if (kb && !screens.start.hidden) paintDaily(); }, 30_000);
+
+/** Tie the world (experiment): the countries tied so far light up on the home globe, gold once right in three
+ *  categories, and the count shows beside it. The ones tied in the round just played pulse once, when the home screen
+ *  comes back. */
+function paintTied() {
+  if (!EXPERIMENTS.tieTheWorld || !kb) return;
+  const ids = Object.keys(tied).filter(id => kb!.country(id));
+  const all = kb.countries.length;
+  ui.tiedBadge.hidden = !ids.length;
+  ui.tiedBadge.innerHTML = `<b>${ids.length}</b><span>/${all}</span>`;
+  ui.tiedBadge.setAttribute('aria-label', `${ids.length} of ${all} countries tied. What is this?`);
+  if (!globe) return;
+  const fresh = new Set(screens.start.hidden ? [] : state.freshTies);
+  globe.setTied(ids.map(id => {
+    const c = kb!.country(id)!;
+    return { num: c.num, ll: c.ll, gold: tied[id].length >= GOLD_AT, fresh: fresh.has(id) };
+  }));
+  if (fresh.size) state.freshTies = [];
+}
+
+/** Three real knots, Overhand, Bowline and Monkey's fist, each in its own colour (James, 14 Nov 2026). Atlas, the fourth, is not on the
+ *  home screen: it opens after a great Monkey's fist round and waits in the configuration, so the home screen stays simple for
  *  someone new. While Atlas is picked, none of the three is lit and the grey line starts with it. */
 const HOME_LEVELS: Level[] = ['easy', 'medium', 'hard'];
 function paintLevels() {
@@ -495,8 +546,9 @@ function preload(q?: Question) {
 }
 
 // ---- the time limit, under the answer box (a phone's keyboard covers the bottom of the screen). The bar runs from
-// green to red; the last five seconds are counted, with a heartbeat. Drawn frame by frame: it is information, so it
-// runs even when the player asked for reduced motion (which only stops the heartbeat).
+// green to red; the last five seconds are counted in tenths (4.9, 4.8...: James, 14 Nov 2026), with a heartbeat on
+// each second. Drawn frame by frame: it is information, so it runs even when the player asked for reduced motion
+// (which only stops the heartbeat).
 function startTimer() {
   const total = TIME * 1000;
   state.deadline = performance.now() + total;
@@ -509,9 +561,12 @@ function startTimer() {
     const ms = Math.max(0, state.deadline - performance.now());
     ui.timer.style.setProperty('--left', (ms / total).toFixed(4));
     const s = Math.ceil(ms / 1000);
+    if (ms > 0 && s <= 5) {
+      const tenths = (Math.ceil(ms / 100) / 10).toFixed(1);
+      if (ui.count.textContent !== tenths) ui.count.textContent = tenths;
+    }
     if (ms > 0 && s <= 5 && s !== state.secs) {
       state.secs = s;
-      ui.count.textContent = String(s);
       ui.timer.classList.add('low');
       ui.timer.classList.remove('beat');
       void ui.timer.offsetWidth; // restart the heartbeat on every second
@@ -739,15 +794,26 @@ ui.trail.addEventListener('scroll', () => ui.trail.classList.toggle('scrolled', 
 const RANKS: [number, string][] = [
   [100, 'Endless knot'],
   [90, 'Figure-eight'],
-  [75, 'Bowline'],
+  [75, 'Clove hitch'],
   [50, 'Reef knot'],
   [25, 'Granny knot'],
   [0, 'Loose end'],
 ];
 const rankOf = (pct: number) => RANKS.find(([min]) => pct >= min)!;
-/** After a great round (90% or more) of a level's own questions, the next level is offered ("Too loose? Try Tight").
- *  Complex leads to Atlas only once Atlas is open. */
+/** After a great round (90% or more) of a level's own questions, the next level is offered ("Too easy? Try Bowline").
+ *  Monkey's fist leads to Atlas only once Atlas is open. */
 const NEXT_AT = 90;
+/** Two rounds in a row under 40% on a level's own questions offer the level below (experiment, A first round that
+ *  lands): a way down before frustration. Atlas, who carries the world, gets a pun of its own. */
+const DOWN_AT = 40;
+const DOWN_WHY: Partial<Record<Level, string>> = { medium: 'Too hard?', hard: 'Too hard?', impossible: 'Too heavy?' };
+function levelDown(pct: number): Level | null {
+  if (!EXPERIMENTS.firstRound || !state.level || isCustom(state.sel) || state.results.length < 5) return null;
+  if (pct >= DOWN_AT) { delete stats.low; return null; }
+  const n = stats.low?.level === state.level ? stats.low.n + 1 : 1;
+  stats.low = { level: state.level, n };
+  return n >= 2 ? LEVEL_IDS[LEVEL_IDS.indexOf(state.level) - 1] ?? null : null;
+}
 function levelUp(): Level | null {
   if (!state.level || isCustom(state.sel) || state.results.length < 5) return null;
   const next = LEVEL_IDS[LEVEL_IDS.indexOf(state.level) + 1];
@@ -773,7 +839,7 @@ function end(stopped = false) {
   const lv = state.level ?? state.challenge?.level;
   ui.resultsTitle.innerHTML = stopped ? 'Stopped' : state.practice ? 'Practice' : state.gordian ? 'The Gordian Knot' : state.daily ? 'Daily' : lv ? levelTag(lv) : '';
   ui.resultsTitle.hidden = !ui.resultsTitle.innerHTML;
-  ui.versus.hidden = ui.best.hidden = ui.unlock.hidden = ui.nextLevel.hidden = ui.untied.hidden = true;
+  ui.versus.hidden = ui.best.hidden = ui.unlock.hidden = ui.nextLevel.hidden = ui.untied.hidden = ui.resultsNote.hidden = true;
   ui.shareNote.hidden = true;
   if (stopped) {
     state.last = null;
@@ -791,14 +857,41 @@ function end(stopped = false) {
     ui.statFast.textContent = Number.isFinite(fastest) ? `${(Math.max(0.1, fastest / 1000)).toFixed(1)} s` : '–';
     ui.statTime.textContent = clock(ms);
     drawRing(knots);
-    const next = pct >= NEXT_AT ? levelUp() : null;
+    const up = pct >= NEXT_AT ? levelUp() : null, down = levelDown(pct), next = up ?? down;
     if (next) {
       ui.nextLevel.hidden = false;
-      ui.nextWhy.textContent = state.level === 'easy' ? 'Too loose?' : 'Too easy?';
+      ui.nextWhy.textContent = up ? 'Too easy?' : DOWN_WHY[state.level!] ?? 'Too hard?';
       ui.nextGo.textContent = `Try ${LEVELS[next].label}`;
       ui.nextGo.dataset.level = next;
       ui.nextGo.className = `link lv-${next}`;
     }
+
+    // A line under the numbers: the countries this round tied (Tie the world), and on the Daily, its rope and when
+    // the next one comes (the Daily rope).
+    const notes: string[] = [];
+    if (EXPERIMENTS.tieTheWorld && kb) {
+      let fresh = 0, gilded = 0;
+      state.results.forEach((r, j) => {
+        if (knots[j] !== 'tight') return;
+        for (const c of r.q.countries) {
+          const t = tie(c, r.q.cat);
+          if (t) state.freshTies.push(c);
+          if (t === 'new') fresh++;
+          if (t === 'gold') gilded++;
+        }
+      });
+      saveTied();
+      if (fresh || gilded) {
+        notes.push([fresh ? `<b>+${fresh}</b> tied` : '', gilded ? `<b>${gilded}</b> turned gold` : '',
+          `${Object.keys(tied).filter(id => kb!.country(id)).length} of ${kb.countries.length}`].filter(Boolean).join(' · '));
+      }
+    }
+    if (EXPERIMENTS.dailyRope && state.daily) {
+      const days = dailyRope().days;
+      notes.push(`${days > 1 ? `<b>${days}</b> days in a row · ` : ''}Next Daily in ${untilNextDaily()}`);
+    }
+    ui.resultsNote.innerHTML = notes.map(n => `<span>${n}</span>`).join('');
+    ui.resultsNote.hidden = !notes.length;
 
     // Against a challenge: their score next to yours.
     if (state.challenge) {
@@ -831,9 +924,10 @@ function end(stopped = false) {
       ui.best.textContent = `${practiceLabel(state.practice)} · ${better(now, prev) ? (prev ? 'New best!' : 'First run') : `Best ${bestLabel(prev!)}`}`;
     }
 
-    // A great Complex round of the level's own questions opens Atlas, the hidden fourth level, with The Gordian Knot
+    // A great Monkey's fist round of the level's own questions opens Atlas, the hidden fourth level, with The Gordian Knot
     // under it. Once.
     stats.rounds++;
+    endTrial(); // a new player's first round was 8 questions; from now on, 13
     if (!atlasOpen() && state.level === 'hard' && !isCustom(state.sel) && total >= 8 && pct >= ATLAS_AT) {
       stats.atlas = true;
       ui.unlock.hidden = false;
@@ -997,7 +1091,7 @@ async function shareResult() {
   // The Daily's day is in its seed (also when it is played from a link, on another day).
   const day = /^daily-(\d{4}-\d{2}-\d{2})$/.exec(state.seed)?.[1];
   const what = day ? `Daily ${new Date(`${day}T12:00:00Z`).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', timeZone: 'UTC' })}` : state.gordian ? 'The Gordian Knot'
-    : state.practice ? `Practice · ${practiceLabel(state.practice)}` : `${state.level ? `${LEVELS[state.level].label} knot · ` : ''}${r.knots.length} questions`;
+    : state.practice ? `Practice · ${practiceLabel(state.practice)}` : `${state.level ? `${LEVELS[state.level].label} · ` : ''}${r.knots.length} questions`;
   const text = `Globoknot · ${what}\n${r.rank} · ${r.pct}%\n${signs.length <= 50 ? signs : ''}`.trim();
   let link = location.origin + location.pathname;
   if (state.round.length <= CHALLENGE_MAX) {
@@ -1034,16 +1128,17 @@ async function shareSite() {
   try { await navigator.clipboard.writeText(link); toast('Link copied'); } catch { toast(link); }
 }
 
-/** A word or two at the bottom of the screen for a moment ("Copied"). */
+/** A word or two at the bottom of the screen for a moment ("Copied"); a sentence stays longer. */
 let toastTimer = 0;
-function toast(text: string) {
+function toast(text: string, ms = 1900) {
   clearTimeout(toastTimer);
   ui.toast.textContent = text;
   ui.toast.hidden = false;
   ui.toast.classList.remove('show');
+  ui.toast.style.animationDuration = `${ms}ms`;
   void ui.toast.offsetWidth; // restart the animation
   ui.toast.classList.add('show');
-  toastTimer = window.setTimeout(() => (ui.toast.hidden = true), 1900);
+  toastTimer = window.setTimeout(() => (ui.toast.hidden = true), ms);
 }
 
 const ordinal = (n: number) => `${n}${n % 10 === 2 && n % 100 !== 12 ? 'nd' : n % 10 === 3 && n % 100 !== 13 ? 'rd' : 'th'}`;
@@ -1178,6 +1273,7 @@ ui.homeLevel.addEventListener('click', e => {
   paintHome();
 });
 ui.config.addEventListener('click', () => open(ui.menu));
+ui.tiedBadge.addEventListener('click', () => toast('Countries you got right the first time. Gold: right in three categories.', 4200));
 ui.practice.addEventListener('click', () => open(ui.practiceSheet));
 $('#share-site').addEventListener('click', () => void shareSite());
 ui.play.addEventListener('click', () => (challenge ? start(selection, false, challenge) : start(selection)));
@@ -1189,7 +1285,7 @@ ui.daily.addEventListener('click', () => start(DAILY, true));
 $('#open-settings').addEventListener('click', () => open(ui.settings));
 $('#open-about').addEventListener('click', () => open(ui.about));
 $('#menu-play').addEventListener('click', () => start(selection));
-ui.form.addEventListener('submit', e => { e.preventDefault(); if (state.locked) next(); else answer(ui.input.value); });
+ui.form.addEventListener('submit', e => { e.preventDefault(); flash(ui.form.querySelector('.go')); if (state.locked) next(); else answer(ui.input.value); });
 ui.input.addEventListener('input', () => autoSubmit());
 ui.skip.addEventListener('click', () => (state.locked ? next() : giveUp()));
 ui.next.addEventListener('click', next);
@@ -1208,7 +1304,7 @@ document.addEventListener('click', e => {
 for (const d of document.querySelectorAll('dialog')) d.addEventListener('close', () => {
   for (const b of d.querySelectorAll<HTMLButtonElement>('button.info[aria-expanded="true"]')) b.click();
 });
-// "Too easy? Try Complex": the next level, at once. So does "Try Atlas" when Atlas opens.
+// "Too easy? Try Monkey's fist": the next level, at once. So does "Try Atlas" when Atlas opens.
 ui.nextGo.addEventListener('click', () => {
   setLevel(ui.nextGo.dataset.level as Level);
   saveSelection();
@@ -1261,7 +1357,9 @@ document.addEventListener('keydown', e => {
   if (state.locked && e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey && /\S/.test(e.key)) { next(); return; }
   const q = state.round[state.i];
   if (q?.format === 'choice' && !state.locked && /^[1-4]$/.test(e.key)) {
-    ui.choices.querySelectorAll<HTMLButtonElement>('.choice')[Number(e.key) - 1]?.click();
+    const b = ui.choices.querySelectorAll<HTMLButtonElement>('.choice')[Number(e.key) - 1];
+    flash(b);
+    b?.click();
   }
 });
 

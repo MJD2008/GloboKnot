@@ -1,14 +1,14 @@
-// The configuration (the grey line under the level on the home screen opens it): the level (the knots Loose, Tight and
-// Complex, each in its own colour, and Atlas: each picks a set of question types and the answers, and decides how well
+// The configuration (the grey line under the level on the home screen opens it): the level (the knots Overhand, Bowline
+// and Monkey's fist, each in its own colour, and Atlas: each picks a set of question types and the answers, and decides how well
 // known the places asked about are), how to answer (Choose, Both or Type), what to be asked (categories and their
 // question types), where (the whole world, continents or single countries) and how many questions. Every change is
 // kept at once; Play starts it. Something always stays selected: the last ticked box can't be unticked until another
-// one is ticked. Atlas, the hidden fourth level, is only here (not on the home screen), locked until a Complex round
+// one is ticked. Atlas, the hidden fourth level, is only here (not on the home screen), locked until a Monkey's fist round
 // of 75% or more; it is always typed: its answers can't be changed and it has no flag to pick. All, under Atlas, is
 // The Gordian Knot: every question in the game, so the rest can't be changed while it is picked.
 import { CONTINENTS, type Knowledge } from './kb';
 import { ANSWERS, CATS, GORDIAN, LEVELS, LEVEL_IDS, TEMPLATES, answersOf, available, canAsk, isCustom, levelOf, type Answers, type Cat, type Level } from './questions';
-import { ATLAS_AT, MAX_SIZE, SIZES, atlasOpen, clampSize, saveSelection, saveStats, selection, setLevel, stats } from './prefs';
+import { ATLAS_AT, MAX_SIZE, SIZES, atlasOpen, clampSize, endTrial, saveSelection, saveStats, selection, setLevel, stats } from './prefs';
 
 export const ICONS: Record<Cat | 'world', string> = {
   locations: '<path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2zM9 4v14M15 6v14"/>',
@@ -20,20 +20,21 @@ export const ICONS: Record<Cat | 'world', string> = {
   world: '<circle cx="12" cy="12" r="9"/><path d="M12 3c-3 3-3 15 0 18M12 3c3 3 3 15 0 18M3.5 9h17M3.5 15h17"/>',
 };
 export const icon = (k: keyof typeof ICONS) => `<svg viewBox="0 0 24 24" aria-hidden="true">${ICONS[k]}</svg>`;
-/** The levels as knots, from an open loop to a double one, and Atlas as a globe on its stand; a padlock while Atlas is
- *  still closed. Drawn in the level's own colour (CSS .lv-easy and so on). */
+/** The levels as their knots: an overhand loop, a bowline's fixed loop with the standing part above it, and a monkey's
+ *  fist, a ball of wraps with its rope; Atlas as a globe on its stand, and a padlock while Atlas is still closed. Drawn
+ *  in the level's own colour (CSS .lv-easy and so on). */
 const LEVEL_ICONS: Record<Level | 'locked', string> = {
   easy: '<path d="M2 17c4 0 6-2 7.4-5.6C10.6 8.3 12.4 5 15.6 5c2.8 0 4.4 2.2 3.8 4.4-.7 2.6-4.4 3.6-7.4 2.6-1.4-.5-2.5-1.3-3.2-2.2"/><path d="M11.8 14.6c1.6 1.6 3.8 2.4 10.2 2.4"/>',
-  medium: '<path d="M2 13.5h7.2M14.8 13.5H22"/><path d="M9.2 13.5c0-2.6 1.3-4.6 3.2-4.6 1.7 0 2.6 1.4 2.4 2.7-.3 1.6-2.1 2.4-3.8 2.2"/><path d="M14.8 13.5c-.6 1.7-1.8 2.7-3.2 2.4-1.2-.3-1.9-1.4-1.7-2.6"/>',
-  hard: '<path d="M2 18c2 0 3-.8 4-2.2"/><circle cx="9" cy="10" r="4.2"/><circle cx="15" cy="14" r="4.2"/><path d="M18 9.5c1.2-1.2 2.4-1.5 4-1.5"/>',
+  medium: '<path d="M12 2v5.4"/><path d="M12 7.4c-1.8 0-3 1.1-3 2.4s1.3 2.3 3 2.3 3-1 3-2.3"/><path d="M15 9.8c0-1.3-1.2-2.4-3-2.4"/><path d="M10 11.8c-3.3 1.3-5.2 3.6-4.6 6 .6 2.3 3.4 3.6 6.6 3.6s6-1.3 6.6-3.6c.6-2.4-1.3-4.7-4.6-6"/><path d="M14.6 10.6 18 8.2"/>',
+  hard: '<circle cx="12" cy="10" r="6.6"/><path d="M6 7.4c3.8 1 8.2 1 12 0M5.4 10c4.2 1.2 9 1.2 13.2 0M6 12.6c3.8 1 8.2 1 12 0"/><path d="M12 16.6c-.6 2.4-2.4 4-5 5"/>',
   impossible: '<circle cx="12" cy="11" r="7"/><path d="M12 4c-2.4 2.2-2.4 11.8 0 14M12 4c2.4 2.2 2.4 11.8 0 14M5 11h14"/><path d="M6 20.5c4-1.6 8-1.6 12 0"/>',
   locked: '<rect x="5" y="11" width="14" height="9.5" rx="2.2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>',
 };
 export const levelIcon = (l: Level | 'locked') => `<svg class="lv-icon" viewBox="0 0 24 24" aria-hidden="true">${LEVEL_ICONS[l]}</svg>`;
 /** A level's name with its knot, in its colour: on the results, a challenge and the configuration line. */
 export const levelTag = (l: Level) => `<span class="lv-tag lv-${l}">${levelIcon(l)}${LEVELS[l].label}</span>`;
-/** Atlas stays shut until a Complex round of the level's own questions scores this well; then it is in the configuration. */
-export const ATLAS_LOCKED = `Score ${ATLAS_AT}% or more in a Complex round to open Atlas.`;
+/** Atlas stays shut until a Monkey's fist round of the level's own questions scores this well; then it is in the configuration. */
+export const ATLAS_LOCKED = `Score ${ATLAS_AT}% or more in a ${LEVELS.hard.label} round to open Atlas.`;
 const CHEVRON = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg>';
 
 const esc = (s: string) => s.replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]!);
@@ -123,7 +124,7 @@ export function initMenu(kb: Knowledge, root: HTMLElement, onChange: () => void)
   custom.addEventListener('input', () => {
     custom.value = custom.value.replace(/\D/g, '');
     const n = parseInt(custom.value, 10);
-    if (n > 0) { selection.size = clampSize(n); saveSelection(); paintSizes(true); paintLevel(); onChange(); }
+    if (n > 0) { endTrial(true); selection.size = clampSize(n); saveSelection(); paintSizes(true); paintLevel(); onChange(); }
   });
   custom.addEventListener('blur', () => paintSizes());
   custom.addEventListener('keydown', e => { if (e.key === 'Enter') custom.blur(); });
@@ -159,6 +160,7 @@ export function initMenu(kb: Knowledge, root: HTMLElement, onChange: () => void)
     }
     const size = t.closest<HTMLButtonElement>('[data-size]');
     if (size) {
+      endTrial(true); // a count picked is the player's own, 8 too
       selection.size = Number(size.dataset.size);
       if (selection.size === 0 && !stats.gordianSeen) { stats.gordianSeen = true; saveStats(); }
       changed();
@@ -195,7 +197,7 @@ export function initMenu(kb: Knowledge, root: HTMLElement, onChange: () => void)
 
   function paintLevel() {
     for (const b of levels.querySelectorAll<HTMLButtonElement>('button')) b.setAttribute('aria-pressed', String(b.dataset.level === selection.level));
-    // Atlas is shut until a great Complex round: a padlock, and a tap says how to open it.
+    // Atlas is shut until a great Monkey's fist round: a padlock, and a tap says how to open it.
     const shut = !atlasOpen() && selection.level !== 'impossible';
     if (atlas.classList.contains('locked') !== shut) {
       atlas.classList.toggle('locked', shut);

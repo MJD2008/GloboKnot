@@ -47,6 +47,9 @@ export class WorldMap {
     }
   }
 
+  /** A country's shape at 1:50m by its numeric code (ISO 3166), for the home globe zoomed in. */
+  shape(num: string): GeoPermissibleObjects | null { return (this.byNum.get(num) as GeoPermissibleObjects | undefined) ?? null; }
+
   /** The country at a point on the globe ([lon, lat]): its numeric code (ISO 3166) and its shape. */
   countryAt(p: LonLat): { num: string; shape: GeoPermissibleObjects } | null {
     for (const s of this.shapes) {

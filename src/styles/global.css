@@ -28,6 +28,8 @@
   --shadow-sm: 0 1px 2px rgba(20, 22, 30, 0.05);
   --shadow: 0 1px 2px rgba(20, 22, 30, 0.05), 0 10px 30px rgba(20, 22, 30, 0.07);
   --radius: 16px;
+  --spring: cubic-bezier(0.3, 1.8, 0.5, 1); /* a press springs back up, a little past where it was */
+  --tie: #a87500; /* the gold of a tied country (Tie the world), deeper on a light page */
   --icon: #8a9099;
   --river: #2f7fd1;
   --chip-on: #15191e;
@@ -70,6 +72,7 @@ body.home > .top {
   --chip-on: #eef1f4;
   --crimson: #ff4565;
   --crimson-deep: #e0284a;
+  --tie: #f2c14e;
   color-scheme: dark;
 }
 
@@ -253,12 +256,34 @@ body.home .logo circle { fill: var(--glow, var(--accent)); }
 }
 .hero em { font-style: normal; color: var(--glow, var(--accent)); transition: color 0.2s; }
 .globe.dragging { cursor: grabbing; }
-.globe-zoom { position: absolute; z-index: 2; right: calc(-10.5% - 38px); bottom: 2%; display: flex; flex-direction: column; gap: 6px; }
+/* Zoom right of the globe, outside the rope; on a narrow phone, as far out as the screen allows. */
+.globe-zoom { position: absolute; z-index: 2; right: max(calc(-10.5% - 38px), calc((var(--gw) - 100vw) / 2 + 4px)); bottom: 2%; display: flex; flex-direction: column; gap: 6px; }
 .globe-zoom button { display: grid; place-items: center; width: 32px; height: 32px; padding: 0; border: 0; border-radius: 50%; background: rgba(8, 12, 22, 0.62);
   box-shadow: 0 0 0 1px rgba(160, 190, 240, 0.24); color: #dfe7f5; cursor: pointer; transition: background 0.15s, opacity 0.15s; }
 .globe-zoom button:hover:not(:disabled) { background: rgba(40, 56, 90, 0.85); }
 .globe-zoom button:disabled { opacity: 0.3; cursor: default; }
 .globe-zoom svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+/* Tie the world (experiment): how many countries are tied, out of 194, left of the globe as the zoom is right of it.
+   A tap says what it means. */
+.globe-tied {
+  position: absolute;
+  z-index: 2;
+  left: max(calc(-10.5% - 38px), calc((var(--gw) - 100vw) / 2 + 4px));
+  bottom: 2%;
+  display: grid;
+  justify-items: center;
+  width: 34px;
+  padding: 5px 0 4px;
+  border: 0;
+  border-radius: 11px;
+  background: rgba(8, 12, 22, 0.62);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--tie) 45%, transparent);
+  color: var(--tie);
+  font: inherit;
+  cursor: pointer;
+}
+.globe-tied b { font-size: 0.98rem; font-weight: 800; line-height: 1.15; font-variant-numeric: tabular-nums; letter-spacing: -0.02em; }
+.globe-tied span { font-size: 0.6rem; font-weight: 650; line-height: 1.2; white-space: nowrap; color: color-mix(in srgb, var(--tie) 70%, #8d97a3); }
 /* The name of the country under the pointer (or the finger, for a moment). */
 .globe-label {
   position: fixed;
@@ -327,20 +352,18 @@ body.home .logo circle { fill: var(--glow, var(--accent)); }
   background: var(--accent);
   color: var(--accent-ink);
   cursor: pointer;
-  box-shadow: 0 10px 24px -10px var(--accent);
-  transition: background 0.15s, transform 0.12s;
 }
 .btn-play span { font-size: 1.45rem; font-weight: 800; letter-spacing: -0.02em; line-height: 1.1; }
 /* Under Play only when it is something else: a challenge to take, or The Gordian Knot. */
 .btn-play small { font-size: 0.88rem; font-weight: 600; opacity: 0.8; text-wrap: balance; }
-.btn-play:hover:not(:disabled) { background: var(--accent-deep); transform: translateY(-1px); }
-.btn-play:active:not(:disabled) { transform: scale(0.99); }
+.btn-play:hover:not(:disabled) { background: var(--accent-deep); }
 .btn-play:disabled { opacity: 0.55; cursor: default; box-shadow: none; }
 /* Under "Take the challenge": put the link aside and play your own round. */
-.not-now { display: block; margin: 6px auto -4px; padding: 6px 12px; border: 0; background: none; color: var(--muted); font-weight: 650; font-size: 0.9rem; cursor: pointer; }
+.not-now { display: block; margin: 10px auto -4px; padding: 6px 12px; border: 0; background: none; color: var(--muted); font-weight: 650; font-size: 0.9rem; cursor: pointer; }
 .not-now:hover { color: var(--ink); }
-.start-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; max-width: 560px; margin: 10px auto 0; }
+.start-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; max-width: 560px; margin: 16px auto 0; }
 .btn-soft {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -350,18 +373,35 @@ body.home .logo circle { fill: var(--glow, var(--accent)); }
   border-radius: 16px;
   border: 1px solid var(--line);
   background: var(--surface);
-  box-shadow: var(--shadow-sm);
   font-weight: 700;
   cursor: pointer;
-  transition: border-color 0.15s, transform 0.1s;
 }
 .btn-soft svg { width: 20px; height: 20px; fill: none; stroke: var(--icon); stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 .btn-soft small { color: var(--muted); font-weight: 600; white-space: nowrap; }
 @media (max-width: 360px) { .btn-soft { gap: 6px; padding-inline: 10px; } .btn-soft svg { display: none; } }
 .btn-soft.done small { color: var(--ok); }
 .btn-soft:hover:not(:disabled) { border-color: var(--line-strong); }
-.btn-soft:active:not(:disabled) { transform: scale(0.98); }
 .btn-soft:disabled { opacity: 0.55; }
+/* The Daily rope (experiment): the days played in a row, a knot and a number on the Daily button's corner. Only an
+   outline while today's is still to play: the rope is waiting for today's knot. */
+.daily-rope {
+  position: absolute;
+  top: -10px;
+  right: -6px;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 2px 8px 2px 5px;
+  border-radius: 99px;
+  background: var(--tie);
+  color: #2b1d00;
+  font-size: 0.8rem;
+  line-height: 1.35;
+  box-shadow: 0 0 0 2px #060912;
+}
+.daily-rope b { font-weight: 800; font-variant-numeric: tabular-nums; }
+.daily-rope .lv-icon { width: 15px; height: 15px; stroke-width: 2.4; }
+.daily-rope.waiting { background: #060912; color: var(--tie); box-shadow: 0 0 0 2px #060912, inset 0 0 0 1.5px var(--tie); }
 
 /* ---------- quiz */
 .bar { display: flex; align-items: center; gap: 10px; margin: 0 0 10px; min-height: 42px; }
@@ -379,7 +419,7 @@ body.home .logo circle { fill: var(--glow, var(--accent)); }
   transition: background 0.2s, border-color 0.2s, transform 0.2s;
 }
 .beads.many i { width: 8px; height: 8px; border-width: 1.5px; }
-/* The Daily climbs from Loose to Atlas: its knots grow with each level, and take its colour. */
+/* The Daily climbs from Overhand to Atlas: its knots grow with each level, and take its colour. */
 .beads i.lv-easy { width: 9px; height: 9px; border-width: 1.5px; }
 .beads i.lv-medium { width: 11px; height: 11px; }
 .beads i.lv-impossible { width: 17px; height: 17px; border-width: 2.5px; }
@@ -465,7 +505,7 @@ body[data-lv] .beads, body[data-lv] .ring, .beads i[class*="lv-"] { --accent: va
   position: absolute;
   right: -2px;
   top: 50%;
-  min-width: 30px;
+  min-width: 40px; /* "4.9": the last five seconds in tenths */
   height: 24px;
   padding: 0 7px;
   margin-top: -12px;
@@ -666,10 +706,8 @@ body[data-lv] .beads, body[data-lv] .ring, .beads i[class*="lv-"] { --accent: va
   font-size: 1.05rem;
   line-height: 1.2;
   text-align: left;
-  transition: border-color 0.15s, background 0.15s, opacity 0.2s, transform 0.1s;
 }
 .choice:hover:not(:disabled) { border-color: var(--ink); }
-.choice:active:not(:disabled) { transform: scale(0.98); }
 .choice:disabled { cursor: default; }
 .choice.right { border-color: var(--ok); background: var(--ok-soft); }
 .choice.wrong { border-color: var(--bad); background: var(--bad-soft); }
@@ -722,6 +760,10 @@ body[data-lv] .beads, body[data-lv] .ring, .beads i[class*="lv-"] { --accent: va
 .stats dd { margin: 0; font-size: 1.35rem; font-weight: 800; letter-spacing: -0.02em; line-height: 1.1; font-variant-numeric: tabular-nums; }
 .stats dt { color: var(--muted); font-size: 0.78rem; font-weight: 650; text-transform: uppercase; letter-spacing: 0.06em; }
 /* After a great round: the next level, one tap away. */
+/* Under the numbers (experiments): the countries this round tied, and after the Daily its rope and when the next one
+   comes. */
+.results-note { display: grid; gap: 4px; margin: -6px auto 18px; color: var(--muted); font-weight: 650; font-size: 0.95rem; animation: rise 0.4s ease-out 0.9s both; }
+.results-note b { color: var(--tie); font-weight: 800; }
 .next-level { margin: -6px auto 18px; font-weight: 650; color: var(--muted); animation: rise 0.4s ease-out 1s both; }
 .next-level .link { border: 0; background: none; color: var(--accent); box-shadow: inset 0 0 0 1.5px var(--accent); font: inherit; font-weight: 750; padding: 6px 14px; margin-left: 6px; border-radius: 99px; cursor: pointer; }
 .next-level .link::after { content: ' →'; }
@@ -1068,7 +1110,6 @@ h3 .info { margin-top: -6px; margin-bottom: -6px; }
 .swatches { display: flex; gap: 8px; }
 .swatches button { width: 32px; height: 32px; border-radius: 50%; border: 0; background: var(--sw); cursor: pointer; box-shadow: 0 0 0 2px var(--surface), 0 0 0 3px transparent; transition: box-shadow 0.15s, transform 0.1s; }
 .swatches button[aria-pressed="true"] { box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--ink); }
-.swatches button:active { transform: scale(0.92); }
 
 .about .lead { font-size: 1.05rem; font-weight: 650; margin: 14px 0 12px; }
 /* About opens with the numbers: the checked facts big, then what they are about. */
@@ -1117,11 +1158,9 @@ h3 .info { margin-top: -6px; margin-bottom: -6px; }
   font-weight: 600;
   font-size: 0.88rem;
   cursor: pointer;
-  transition: border-color 0.15s, background 0.15s, transform 0.1s;
 }
 .pill small { color: var(--muted); font-weight: 600; margin-left: 2px; }
 .pill:hover:not(:disabled) { border-color: var(--line-strong); }
-.pill:active:not(:disabled) { transform: scale(0.97); }
 .pill[aria-pressed="true"] { background: var(--accent); border-color: transparent; color: var(--accent-ink); }
 .pill[aria-pressed="true"] small { color: inherit; opacity: 0.85; }
 .pill:disabled { opacity: 0.4; cursor: default; }
@@ -1220,6 +1259,44 @@ body.gordian::before {
 /* A heartbeat: lub-dub, then rest. */
 @keyframes beat { 0% { transform: scaleY(1); } 8% { transform: scaleY(1.7); } 18% { transform: scaleY(1); } 28% { transform: scaleY(1.4); } 42%, 100% { transform: scaleY(1); } }
 @keyframes beat-num { 0% { transform: scale(1); } 8% { transform: scale(1.3); } 18% { transform: scale(1); } 28% { transform: scale(1.15); } 42%, 100% { transform: scale(1); } }
+/* ---------- a press you can feel (James, 14 Nov 2026: "so you really feel like it's clicked"). The bigger buttons sit on
+   an edge, like keys, and go down onto it; the small ones shrink. Either way they go in at once and spring back up, a
+   little past where they were, when let go. press.ts holds the press a moment, so even the quickest tap shows. */
+.btn-play, .btn, .btn-soft, .choice {
+  --edge: 3px;
+  --edge-c: var(--line-strong);
+  box-shadow: 0 var(--edge) 0 var(--edge-c);
+  transition: transform 0.36s var(--spring), box-shadow 0.36s var(--spring), background-color 0.15s, border-color 0.15s, color 0.15s, opacity 0.2s;
+}
+.btn-play {
+  --edge: 6px;
+  --edge-c: color-mix(in srgb, var(--accent) 50%, #000);
+  box-shadow: 0 var(--edge) 0 var(--edge-c), 0 calc(var(--edge) + 8px) 24px -12px var(--accent);
+}
+.btn.primary { --edge: 4px; --edge-c: color-mix(in srgb, var(--accent) 50%, #000); }
+.choice { --edge-c: var(--line); }
+.choice.right { --edge-c: var(--ok); }
+.choice.wrong { --edge-c: var(--bad); }
+:is(.btn-play, .btn, .btn-soft, .choice):is(:active:not(:disabled), .pressed) {
+  transform: translateY(calc(var(--edge) - 1px));
+  box-shadow: 0 1px 0 var(--edge-c);
+  transition-duration: 0.05s;
+  transition-timing-function: ease-out;
+}
+.btn-play:is(:active:not(:disabled), .pressed) { box-shadow: 0 1px 0 var(--edge-c), 0 4px 14px -10px var(--accent); }
+.icon-btn, .seg button, .globe-zoom button, .globe-tied, .zoom button, .go, .link, .ghost, .next, .not-now, .info, .expand, .pill, .swatches button, .switch, .config-line {
+  transition: transform 0.32s var(--spring), background-color 0.15s, border-color 0.15s, color 0.15s, box-shadow 0.15s, opacity 0.15s;
+}
+.seg button { --press: 0.93; }
+.config-line { --press: 0.97; }
+:is(.icon-btn, .seg button, .globe-zoom button, .globe-tied, .zoom button, .go, .link, .ghost, .next, .not-now, .info, .expand, .pill, .swatches button, .switch, .config-line):is(:active:not(:disabled), .pressed) {
+  transform: scale(var(--press, 0.88));
+  transition-duration: 0.05s;
+  transition-timing-function: ease-out;
+}
+.check input { transition: background 0.12s, border-color 0.12s, transform 0.32s var(--spring); }
+.check.pressed input { transform: scale(0.8); transition-duration: 0.05s; }
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.01ms !important; animation-delay: 0s !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
 }

@@ -41,7 +41,7 @@ export interface Question {
 export type Format = 'type' | 'choice';
 /** How a round is answered: typed (Type), picked from four options (Choose), or each question its own way (Both). */
 export type Answers = 'type' | 'choose' | 'both';
-/** How tempting the wrong options are: 0 far apart and familiar (Loose), 1 some near and some far, 2 next door. */
+/** How tempting the wrong options are: 0 far apart and familiar (Overhand), 1 some near and some far, 2 next door. */
 export type Tempt = 0 | 1 | 2;
 /** How well known a subject is: 2 famous (nearly everyone knows it), 1 well known, 0 the rest. */
 export type Fame = 0 | 1 | 2;
@@ -136,14 +136,14 @@ const riverFame = (kb: Knowledge, id: string): Fame =>
   TOP_RIVERS.has(id) ? 2 : (kb.get<River>(id)?.km ?? 0) >= 2500 || KNOWN_RIVERS.has(id) ? 1 : 0;
 
 // ---- wrong options
-/** How much a wrong option tempts, by where it is: [next door, same continent, elsewhere]. Complex asks for near ones,
- *  Loose for far ones. */
+/** How much a wrong option tempts, by where it is: [next door, same continent, elsewhere]. Monkey's fist asks for near ones,
+ *  Overhand for far ones. */
 const NEAR: Record<Tempt, [number, number, number]> = { 0: [0.02, 0.15, 1], 1: [2, 1, 0.5], 2: [6, 2, 0.1] };
 function nearWeights(kb: Knowledge, c: string, [next, sameContinent, far]: [number, number, number]) {
   const n = new Set(kb.neighbours(c)), continent = kb.continent(c);
   return (other: string) => (n.has(other) ? next : kb.continent(other) === continent ? sameContinent : far);
 }
-/** On Loose the options are names everyone knows: lesser-known countries hardly ever come up as wrong options. */
+/** On Overhand the options are names everyone knows: lesser-known countries hardly ever come up as wrong options. */
 const familiar = (kb: Knowledge, id: string, tempt: Tempt) => (tempt > 0 ? 1 : [0.03, 0.5, 1][tierFame(kb, id)]);
 /** n wrong countries for a question about country c; never one of `not` (the right answers). `close` ones count as
  *  next door too (the neighbours' neighbours, when the question is which country borders c). */
@@ -153,8 +153,8 @@ function wrongCountries(kb: Knowledge, c: string, n: number, rng: Rng, tempt: Te
   const weight = (o: string) => (close?.has(o) ? w[0] : near(o)) * familiar(kb, o, tempt);
   return weightedSample(new Map(kb.countries.filter(o => !skip.has(o.id)).map(o => [o.id, weight(o.id)])), n, rng);
 }
-/** Wrong options for a flag question. On Complex and Atlas two of them are flags that look like the right one (the
- *  closer, the likelier: scripts/flags-alike.mjs), the rest from nearby, so the eye has to look closely. On Loose none
+/** Wrong options for a flag question. On Monkey's fist and Atlas two of them are flags that look like the right one (the
+ *  closer, the likelier: scripts/flags-alike.mjs), the rest from nearby, so the eye has to look closely. On Overhand none
  *  of them does (no Poland or Monaco next to Indonesia): the options are easy to tell apart. */
 function wrongFlags(kb: Knowledge, c: string, n: number, rng: Rng, tempt: Tempt, w = NEAR[tempt]): string[] {
   const like = kb.flagsLike(c);
@@ -333,7 +333,7 @@ export const TEMPLATES: Template[] = [
       // count when typed, but are never an option (see wrongLanguages).
       const official = kb.languagesOf(id);
       const shown = official.some(l => spoken(kb, l)) ? official.filter(l => spoken(kb, l)) : official;
-      // Picked: below Complex, the right option is a language most people there speak (German for Switzerland, not Romansh).
+      // Picked: below Monkey's fist, the right option is a language most people there speak (German for Switzerland, not Romansh).
       const main = shown.filter(l => mainLanguages(kb, id).includes(l));
       const rightOnes = tempt < 2 && main.length ? main : shown;
       return inForm(kb, rng,
@@ -400,25 +400,25 @@ interface LevelDef {
   kinds: string[];             // the question types it ticks; the player can still change them ("Your own mix")
   answers: Answers;
   tempt: Tempt;
-  strict?: Fame;               // only subjects at least this well known, for as long as there are any (Loose, Tight)
-  share?: number;              // or: about this share of well-known subjects, the rest lesser known (Complex, Atlas)
+  strict?: Fame;               // only subjects at least this well known, for as long as there are any (Overhand, Bowline)
+  share?: number;              // or: about this share of well-known subjects, the rest lesser known (Monkey's fist, Atlas)
   famousLast?: boolean;        // famous subjects only when nothing else is left (Atlas)
   typedOnly?: boolean;         // always typed, whatever the player picks: no options at all (Atlas)
   who: string;
   what: string;
 }
-/** Four levels, named after knots (James, 14 Nov 2026): Loose (easy) asks about the famous countries only
- *  (data/countries/tiers.csv) and shows four options far apart; Tight asks about the well-known ones, typed or picked;
- *  Complex asks everything, typed, with tempting options where there are options at all (a flag to pick). Atlas, the
- *  hidden fourth (it opens after a great Complex round, and lives in the configuration, not on the home screen), is
+/** Four levels, named after real knots (James, 14 Nov 2026): Overhand (easy) asks about the famous countries only
+ *  (data/countries/tiers.csv) and shows four options far apart; Bowline asks about the well-known ones, typed or picked;
+ *  Monkey's fist asks everything, typed, with tempting options where there are options at all (a flag to pick). Atlas, the
+ *  hidden fourth (it opens after a great Monkey's fist round, and lives in the configuration, not on the home screen), is
  *  always typed, so it never asks for a flag to pick, and goes for lesser-known places: famous ones only when nothing
  *  else is left. The ids stay easy, medium, hard and impossible: saved selections and Daily links use them. */
 const TYPABLE = TEMPLATES.filter(t => t.typable).map(t => t.id);
 export const LEVELS: Record<Level, LevelDef> = {
-  easy: { label: 'Loose', kinds: kindsIn('capitals', 'flags'), answers: 'choose', tempt: 0, strict: 2, who: 'Famous countries', what: 'Capitals and flags' },
-  medium: { label: 'Tight', kinds: kindsIn('locations', 'capitals', 'flags', 'languages'), answers: 'both', tempt: 1, strict: 1,
+  easy: { label: 'Overhand', kinds: kindsIn('capitals', 'flags'), answers: 'choose', tempt: 0, strict: 2, who: 'Famous countries', what: 'Capitals and flags' },
+  medium: { label: 'Bowline', kinds: kindsIn('locations', 'capitals', 'flags', 'languages'), answers: 'both', tempt: 1, strict: 1,
     who: 'Well-known countries', what: 'No mountains or rivers' },
-  hard: { label: 'Complex', kinds: ALL_KINDS, answers: 'type', tempt: 2, share: 0.6, who: 'Mostly well-known places', what: 'Every category' },
+  hard: { label: "Monkey's fist", kinds: ALL_KINDS, answers: 'type', tempt: 2, share: 0.6, who: 'Mostly well-known places', what: 'Every category' },
   impossible: { label: 'Atlas', kinds: TYPABLE, answers: 'type', typedOnly: true, tempt: 2, share: 0.2, famousLast: true,
     who: 'Lesser-known places', what: 'Every category' },
 };
@@ -444,7 +444,7 @@ export function isCustom(sel: Selection): boolean {
 /** The Gordian Knot: All under Atlas. Every question in the game, typed, whatever else was picked (so no flag to
  *  pick: each flag is asked the other way round, to be named). */
 export const GORDIAN: Selection = { kinds: LEVELS.impossible.kinds, places: [], size: 0, level: 'impossible', answers: 'type' };
-/** The Daily climbs: two questions from each level, Loose first and Atlas last, each asked the way its level
+/** The Daily climbs: two questions from each level, Overhand first and Atlas last, each asked the way its level
  *  asks (picked from four far-apart options at the start, typed at the end). Everyone gets a few; the best are still
  *  tested. Built by dailyRound; as a selection it is every category in the whole world. */
 export const DAILY_LEVELS: Level[] = ['easy', 'easy', 'medium', 'medium', 'hard', 'hard', 'impossible', 'impossible'];
@@ -481,8 +481,8 @@ function makeQuestion(kb: Knowledge, t: Template, id: string, seed: string, ask:
  *  language without a country of its own comes up once). */
 const uses = (q: Question) => [...q.countries, `${q.cat}:${q.subject}`];
 
-/** A round of `size` questions (0: all of them). Categories take turns. Loose and Tight ask about famous or
- *  well-known subjects only, for as long as there are any; Complex mixes in lesser-known ones (about 40%); Atlas asks
+/** A round of `size` questions (0: all of them). Categories take turns. Overhand and Bowline ask about famous or
+ *  well-known subjects only, for as long as there are any; Monkey's fist mixes in lesser-known ones (about 40%); Atlas asks
  *  mostly about those (about 80%), and about famous ones only when nothing else is left. No country and no river comes
  *  up twice (except when playing everything), and questions seen recently rest unless there aren't enough others
  *  (`fresh`: ignore that). `seed` fixes each question's options. `used`: what earlier parts of the same round already
@@ -522,7 +522,7 @@ export function buildRound(kb: Knowledge, sel: Selection, rng: Rng = Math.random
   const seen = new Set(fresh ? [] : recent());
   const round: Question[] = [];
   const keys = new Set<string>();
-  // Each pass first rests the questions seen recently, then fills up with them. Loose and Tight go through those two
+  // Each pass first rests the questions seen recently, then fills up with them. Overhand and Bowline go through those two
   // with their famous or well-known subjects alone first (a famous question seen yesterday is better than an obscure
   // new one), and only ask about the others when a round can't be filled without them: a long round, a small region.
   // Atlas does it the other way round: its famous subjects only come when nothing else is left.
@@ -600,7 +600,7 @@ export function rebuildRound(kb: Knowledge, items: { code: string; subject: stri
 }
 export const codeOf = (kind: string) => TEMPLATES.find(t => t.id === kind)?.code ?? '';
 
-/** How Practice asks: typed or picked, as the player chose, with some near and some far options (as on Tight). */
+/** How Practice asks: typed or picked, as the player chose, with some near and some far options (as on Bowline). */
 export const practiceAsk = (answers: Answers, kind: string): Ask =>
   ({ answers: answers === 'type' && TEMPLATES.find(t => t.id === kind)?.typable ? 'type' : 'choose', tempt: 1 });
 /** Practice: every question of one type about the places given (none: the whole world), in the same order every

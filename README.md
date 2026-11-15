@@ -12,34 +12,36 @@ rest of the configuration: the categories as icons (half lit when only some of t
 and how many, and the answers when they aren't the level's own ("World · 13 questions · Type"). The line opens the
 configuration: level, answers, what (capitals, flags, languages, mountains, rivers...), where (whole world, continents
 or single countries) and how many questions (8, 13, 21 or 34, or any number). Then play, and see every answer at the
-end. Every question has 15 seconds, the same for everyone; a wrong typed answer is not revealed, so the player can try
-again until the time runs out. Next to Play: the Daily (below) and Practice (below that).
+end. Every question has 20 seconds (15 until 14 Nov), the same for everyone, and the last five count down in tenths
+(4.9, 4.8...); a wrong typed answer is not revealed, so the player can try again until the time runs out. Next to Play:
+the Daily (below) and Practice (below that).
 
 The counts are Fibonacci numbers, each the two before it added up (8 + 13 = 21), so each is about 1.6 times the last;
-13 to start with. Counts saved before them move to the closest one (10 to 13, 20 to 21, 50 to 34).
+13 to start with (8 for a new player's first round: see Experiments). Counts saved before them move to the closest one (10 to 13, 20 to 21, 50 to 34).
 
-Four levels, named after knots (James, 14 Nov): Loose, Tight and Complex on the home screen, and Atlas, the hidden
-fourth. Each has its colour wherever it shows (home, configuration, the knots of a round, the results, a challenge):
+Four levels, named after real knots (James, 14 Nov): Overhand, Bowline and Monkey's fist on the home screen, and Atlas,
+the hidden fourth. Each has its colour wherever it shows (home, configuration, the knots of a round, the results, a challenge):
 green, gold, orange and crimson, with a knot drawn beside its name. A level picks a set of question types and a way
 to answer, which the player can still change in the configuration (except on Atlas, which is always typed), and
 decides how well known the places asked about are. Atlas is not on the home screen: it waits in the configuration
-behind a padlock until a Complex round of the level's own questions, 8 or more, scores 75% or more (whoever played
+behind a padlock until a Monkey's fist round of the level's own questions, 8 or more, scores 75% or more (whoever played
 three rounds before 14 Nov keeps it open). The ids stay `easy`, `medium`, `hard` and `impossible`: saved selections
 and links use them.
 
 | Level | Question types | Answers | Places |
 |---|---|---|---|
-| Loose (easy; new visitors) | Capitals, flags | Choose: four options, far apart | Famous countries only, while there are enough |
-| Tight (medium) | Locations, capitals, flags, languages | Both | Well-known only, while there are enough |
-| Complex (hard) | Every category | Type | About 60% well-known |
+| Overhand (easy; new visitors) | Capitals, flags | Choose: four options, far apart | Famous countries only, while there are enough |
+| Bowline (medium) | Locations, capitals, flags, languages | Both | Well-known only, while there are enough |
+| Monkey's fist (hard) | Every category | Type | About 60% well-known |
 | Atlas (impossible) | Every category, but no flag to pick | Always typed | About 20% well-known, never famous unless nothing else is left |
 
 Answers: Choose (four options), Type, or Both (each question its own way: a flag to name is typed, a flag to find is
 picked). Every question type has both forms, except the flag to find, which is always picked: its answer is a picture.
 Atlas has no options at all: Choose and Both can't be picked there, and it never asks for a flag to find (James,
-14 Nov: "Impossible should have no multiple choice"). On Loose the wrong options are far apart and familiar; on
-Complex they are the tempting ones (neighbours, nearby rivers, and flags that look alike: Chad's among Romania's and
-Andorra's), and on Loose no flag among the options looks like the right one (no Poland or Monaco next to Indonesia).
+14 Nov: "Impossible should have no multiple choice"). On Overhand the wrong options are far apart and familiar; on
+Monkey's fist they are the tempting ones (neighbours, nearby rivers, and flags that look alike: Chad's among Romania's
+and Andorra's), and on Overhand no flag among the options looks like the right one (no Poland or Monaco next to
+Indonesia).
 Which flags look alike is worked out once by `scripts/flags-alike.mjs`, which draws every flag small and compares them
 colour by colour and by layout, also mirrored (`data/countries/flags-alike.json`).
 
@@ -55,7 +57,7 @@ which country?"): the triangle would show the country. The answers afterwards sh
 Cameroon, Pico de São Tomé and Morne Seychellois are not asked for their country: their names give it away. Pico
 Bolívar is: it is Venezuela's, and Bolivia tempts.
 
-The Daily climbs: eight questions, the same for everyone on a day, two from each level, from Loose to Atlas, each
+The Daily climbs: eight questions, the same for everyone on a day, two from each level, from Overhand to Atlas, each
 asked the way its level asks (picked from four far-apart options at the start, typed at the end). Everyone gets a few
 right, and the best are still tested. Every category comes up at least once and none more than twice. Its knots grow
 with the levels on the way, and the shared result shows them in four steps ("●● ●○ ●· ··"); a link to it brings back
@@ -74,7 +76,8 @@ Scoring is a rope of knots: right the first time ties a solid knot (1 point), ri
 point), and a miss frays the rope (the code still calls them tight and loose). The score ring shows the rope, and the
 rank is a knot (Loose end to Endless knot). Under it, three numbers: the best run of right answers, the fastest right
 answer and the time. After 90% or more on a level's own questions, the next level is offered, one tap away ("Too
-loose? Try Tight", "Too easy? Try Complex"); Complex offers Atlas once it is open. The round that opens Atlas says so,
+easy? Try Bowline"); Monkey's fist offers Atlas once it is open. Two rounds under 40% in a row offer the level below
+("Too hard? Try Overhand"; on Atlas, "Too heavy?"). The round that opens Atlas says so,
 with a button to try it. A round's knots, its ring and its title on the results take the level's colour. Share
 sends the score with a challenge link (`#c=...`: the question codes and subjects plus a seed and the level, so a friend
 gets the same questions, asked the same way, at the same level, and a score to beat); the share icon at the top shares
@@ -104,6 +107,32 @@ each flag is asked to be named, not to be found), in crimson, with one record (b
 Knot. You untied it."), a gold medal with a laurel wreath round a globe, the best time under All in the
 configuration, and the ropes round the home globe and the logo turn gold for good.
 
+Every button gives way when pressed (James, 14 Nov: "so you really feel like it's clicked"): Play, the answers and the
+other big buttons sit on an edge, like keys, and go down onto it; the small ones shrink. They go in at once and spring
+back up, a little past where they were; the press holds a moment at least, so the quickest tap shows it, and the keys
+that answer (1 to 4, Enter) press their buttons too. On a phone that can, a click also gives the lightest buzz (10 ms),
+unless Effects is off (`press.ts`, and "a press you can feel" in `global.css`).
+
+### Experiments for the second playtest
+
+Three experiments from the plan "Globoknot: a reason to come back" (14 Nov), each answering one question. Each can be
+switched off in `src/scripts/experiments.ts`, and the game is then as it was.
+
+- **Tie the world** (do ordinary rounds feel like they count?): a country answered right the first time is tied, in
+  the category it was asked in (`gk-tied`: a letter per category). Tied countries light up on the home globe, gold once
+  right in three categories; the count sits left of the globe ("23 /194", a tap says what it means), and the results
+  say what the round tied ("+5 tied · 1 turned gold · 23 of 194"). The countries tied in the round just played pulse
+  when the home screen comes back, and the globe turns to face them. A question ties the country it is about; a river
+  or a language text ties none. The globe lights countries from `globe.json` (Natural Earth 1:110m countries); the 29
+  too small for it get a dot, and zoomed in they take the detailed shapes.
+- **The Daily rope** (does a streak bring people back the next day?): the days the Daily was played in a row ride on
+  the Daily button as a knot and a number, only an outline while today's is still to play. One missed day between
+  two played ones is forgiven, once a week; two in a row cut it (`rope.ts`). Once today's is played, the button says
+  when the next one comes ("in 5 h", midnight UTC), and so do the results.
+- **A first round that lands** (does a quick win lead to a second round?): a new player's first round is 8 questions
+  instead of 13 (through reloads, until a round is played); a count they pick is kept. Two rounds in a row under 40%
+  on a level's own questions offer the level below.
+
 ```
 npm install
 npm run dev       # http://localhost:4321, reloads as you edit
@@ -117,15 +146,18 @@ src/styles/global.css     all styles; colours are tokens with light and dark val
 src/scripts/app.ts        the quiz screens, keys and timing
 src/scripts/menu.ts       the configuration: level, answers, what, where, how many
 src/scripts/practice.ts   Practice: one question type in one region, in a fixed order, with a best run each
-src/scripts/prefs.ts      what the browser remembers: the selection, settings (auto-submit, theme, colour), the Daily, stats
+src/scripts/prefs.ts      what the browser remembers: the selection, settings (auto-submit, theme, colour), the Daily, stats, the countries tied
+src/scripts/experiments.ts  the three experiments for the second playtest, each on or off
+src/scripts/rope.ts       the Daily rope: days in a row, one missed day a week forgiven, and the time to the next Daily
+src/scripts/press.ts      a press you can feel: the press on every button, held a moment, and a tiny buzz
 src/scripts/questions.ts  question templates (12 kinds, one clue each, given/asked tags), the levels and the round builder: approved facts in, questions out
 src/scripts/kb.ts         the knowledge base as the site reads it
 src/scripts/map.ts        the map: a globe turned and zoomed to the asked country, capital, peak or river
-src/scripts/globe.ts      the globe on the start screen: turns by itself, can be dragged and zoomed, names the country under the pointer
+src/scripts/globe.ts      the globe on the start screen: turns by itself, can be dragged and zoomed, names the country under the pointer, lights the countries tied
 src/scripts/sky.ts        the night sky behind the start screen: stars that light up and tie together when touched
 src/scripts/sound.ts      sounds and music in named slots (docs/AUDIO.md): a file in public/audio per slot, else a
                           small synthesised placeholder; the three volumes in Settings
-public/data/              countries.json (npm run build:data), rivers.json (npm run import), world.json and globe.json (npm run build:map)
+public/data/              countries.json (npm run build:data), rivers.json (npm run import), world.json (1:50m) and globe.json (1:110m countries; npm run build:map)
 public/flags/             flags from flag-icons (npm run build:flags)
 ```
 

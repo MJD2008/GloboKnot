@@ -86,6 +86,7 @@ const INFO = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12
       <div class="globe-box">
         <canvas id="globe" class="globe" aria-label="A globe: drag to turn it, pinch or scroll to zoom, point at a country to see its name"></canvas>
         <Fragment set:html={GLOBE_ROPE} />
+        <button id="tied" class="globe-tied" type="button" hidden></button>
       </div>
       <h1 class="hero">Our world <em>in a knot.</em></h1>
       <!-- The level, and under it what, where and how many in one grey line that opens the configuration. -->
@@ -104,6 +105,7 @@ const INFO = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12
         <button id="daily" class="btn-soft" type="button" disabled>
           <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5" width="16" height="15" rx="3" /><path d="M4 10h16M9 3v4M15 3v4" /></svg>
           <span>Daily</span><small id="daily-sub"></small>
+          <span id="daily-rope" class="daily-rope" hidden></span>
         </button>
         <button id="practice" class="btn-soft" type="button" disabled>
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.6-5.9" /><path d="M20 4.5v4h-4" /><circle cx="12" cy="12" r="2.2" /></svg>
@@ -168,10 +170,11 @@ const INFO = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12
         <div><dt>Fastest</dt><dd id="stat-fast">–</dd></div>
         <div><dt>Time</dt><dd id="stat-time">0:00</dd></div>
       </dl>
+      <p id="results-note" class="results-note" hidden></p>
       <p id="versus" class="versus" hidden></p>
       <p id="best" class="best" hidden></p>
       <p id="next-level" class="next-level" hidden><span id="next-why">Too easy?</span> <button id="next-go" class="link" type="button"></button></p>
-      <!-- A great Complex round opens Atlas, the hidden fourth level: it waits in the configuration, not on the home screen. -->
+      <!-- A great Monkey's fist round opens Atlas, the hidden fourth level: it waits in the configuration, not on the home screen. -->
       <div id="unlock" class="unlock" hidden>
         <b>Atlas is open.</b>
         <span>The hidden level: lesser-known places, always typed. It waits in the configuration, with The Gordian Knot under it.</span>
@@ -344,9 +347,9 @@ const INFO = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12
         </ol>
         <h3>How to play</h3>
         <ul class="how">
-          <li><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="7" width="18" height="10" rx="3" /><path d="m14 11 2 2 2-2" /></svg><span>Pick a knot: Loose, Tight or Complex. Tap the grey line under it to change what, where and how many.</span></li>
+          <li><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="7" width="18" height="10" rx="3" /><path d="m14 11 2 2 2-2" /></svg><span>Pick a knot: Overhand, Bowline or Monkey's fist. Tap the grey line under it to change what, where and how many.</span></li>
           <li><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="6" width="18" height="12" rx="2" /><path d="M7 10h1M11 10h1M15 10h1M8 14h8" /></svg><span>Type the answer or pick one of four. Small typos are fixed for you.</span></li>
-          <li><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="13" r="8" /><path d="M12 9v4l2.5 2M10 3h4" /></svg><span>15 seconds a question. Wrong? Try again until the time runs out.</span></li>
+          <li><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="13" r="8" /><path d="M12 9v4l2.5 2M10 3h4" /></svg><span>20 seconds a question. Wrong? Try again until the time runs out.</span></li>
           <li><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5" width="16" height="15" rx="3" /><path d="M4 10h16M9 3v4M15 3v4" /><path d="M8 17l2.5-2.5 2 1.5 3.5-3.5" /></svg><span>The Daily: eight questions, the same for everyone, from easy to very hard.</span></li>
           <li class="knots"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12h4.5M16.5 12H21" /><circle cx="12" cy="12" r="4.5" /></svg><span>Every answer ties a knot. All right the first time, and the rope closes into a ring.<Fragment set:html={ROPE} /></span></li>
         </ul>
