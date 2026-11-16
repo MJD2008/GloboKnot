@@ -1,6 +1,7 @@
-// Practice sets (src/scripts/sets.ts): one per category, filled in at once (James, 16 Nov 2026). Each region holds
-// what the quiz can ask there, every item can be found by typing its answer, and a set keeps its order, so it can be
-// learnt. Run: node --test (Node 22.18 or newer, which reads the TypeScript sources directly).
+// Practice sets (src/scripts/sets.ts): one per category (James, 16 Nov 2026). Each region holds what the quiz can ask
+// there, every item can be found by typing its answer, maps go by name, and one item at a time is asked: the next one
+// by itself (nextItem), a continent at a time on a map, round to the earliest still to find on cards.
+// Run: node --test (Node 22.18 or newer, which reads the TypeScript sources directly).
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -48,12 +49,59 @@ test('every item can be found by typing its answer', { skip }, async () => {
   assert.deepEqual(both.map(j => peaks[j].key).sort(), ['FRA', 'ITA']);
 });
 
-test('a set keeps its order; lists go by name', { skip }, async () => {
-  const { setItems, practiceKey, kb } = await load();
-  const flags = p => setItems(kb, p).map(it => it.key);
-  assert.deepEqual(flags({ set: 'flags', region: 'Africa' }), flags({ set: 'flags', region: 'Africa' }));
+test('maps go by name; flags are the whole world; records keep their names', { skip }, async () => {
+  const { setItems, practiceKey, regionFor, kb } = await load();
   const caps = setItems(kb, { set: 'capitals', region: 'Europe' }).map(it => it.clue);
   assert.deepEqual(caps, [...caps].sort((a, b) => a.localeCompare(b)));
+  assert.equal(regionFor('flags', 'Africa'), 'world', 'flags: "they should not be organised by continent"');
+  assert.equal(regionFor('capitals', 'Africa'), 'Africa');
   assert.equal(practiceKey({ set: 'capitals', region: 'Europe' }), 'C-eu-f', 'records are kept under this name: never change it');
   assert.equal(practiceKey({ set: 'countries', region: 'world' }), 'L-w-f');
+});
+
+test('on the map, every country, capital and highest point has a place and a continent', { skip }, async () => {
+  const { setItems, kb } = await load();
+  for (const set of ['countries', 'capitals', 'peaks']) {
+    for (const it of setItems(kb, { set, region: 'world' })) {
+      assert.ok(it.num && it.ll && it.ll.every(Number.isFinite), `${set}: ${it.key} has no place`);
+      assert.ok(it.cont, `${set}: ${it.key} has no continent`);
+      if (set !== 'countries') assert.ok(it.marks?.length, `${set}: ${it.key} has no ${set === 'capitals' ? 'capital' : 'peak'} on the map`);
+    }
+  }
+  const za = setItems(kb, { set: 'capitals', region: 'Africa' }).find(it => it.key === 'ZAF');
+  assert.equal(za.marks.length, 3, 'South Africa: Pretoria, Cape Town and Bloemfontein, each with its dot');
+});
+
+test('the next one asked: cards go on and come round to the earliest; maps walk to the nearest, a continent at a time', { skip }, async () => {
+  const { setItems, nextItem, arc, kb } = await load();
+  // Cards: the next still to find after it; after the last, the earliest still to find, not the first.
+  const cards = setItems(kb, { set: 'flags', region: 'world' }), n = cards.length, found = cards.map(() => false);
+  assert.equal(nextItem(cards, found, -1), 0, 'it starts with the first');
+  assert.equal(nextItem(cards, found, 0), 1);
+  found[0] = found[1] = found[2] = true;
+  assert.equal(nextItem(cards, found, n - 1), 3, 'after the last: the earliest still to find (James: "rather than restarting from the beginning")');
+  assert.equal(nextItem(cards, found, 5), 6);
+  const all = cards.map(() => true);
+  assert.equal(nextItem(cards, all, 4), -1, 'all found: nothing more');
+  const one = cards.map((_, i) => i !== 7);
+  assert.equal(nextItem(cards, one, 7), 7, 'the last one left stays');
+  // A map: the nearest still to find, in the same continent while there is one.
+  const world = setItems(kb, { set: 'countries', region: 'world' }), f = world.map(() => false);
+  const at = id => world.findIndex(it => it.key === id);
+  const next = j => world[nextItem(world, f, j)].key;
+  assert.equal(next(at('BEL')), 'NLD', 'Brussels: Amsterdam is the nearest capital');
+  f[at('NLD')] = true;
+  assert.equal(next(at('BEL')), 'LUX', 'then Luxembourg');
+  // From Madrid, Rabat (Morocco) is nearer than Lisbon is far... but Europe is finished first.
+  const europe = world.map((it, i) => i).filter(i => world[i].cont === 'Europe');
+  const f3 = world.map(() => false);
+  for (const i of europe) f3[i] = world[i].key !== 'PRT';
+  assert.equal(world[nextItem(world, f3, at('ESP'))].key, 'PRT', 'a continent is finished first, even when another is nearer');
+  // Skipped ones come last, in the order they were skipped.
+  const g = world.map(() => true);
+  ['FRA', 'DEU', 'ITA'].forEach(id => (g[at(id)] = false));
+  assert.equal(world[nextItem(world, g, at('FRA'), [at('DEU')])].key, 'ITA', 'Germany was skipped: Italy first');
+  g[at('ITA')] = true;
+  assert.equal(world[nextItem(world, g, at('FRA'), [at('DEU')])].key, 'DEU', 'then Germany again');
+  assert.ok(arc([50.85, 4.35], [49.61, 6.13]) < 2, 'arc: Brussels to Luxembourg is under 2 degrees');
 });

@@ -6,10 +6,11 @@
 // face them.
 // Zooming in (the wheel, a pinch, a double tap, or + beside it) grows the globe itself (James, 16 Nov 2026: "so you
 // can cover the screen with your globe if you so wish"): it leaves its rope for a layer over the whole screen and
-// glides to the middle while the rest of the home screen fades away, covers the screen, then goes on into the ground,
-// with the countries' borders; it holds still to be looked at. ↺, −, Esc or the logo bring it back. Day and night
-// are as they are right now ("With night and day and lights too?"): the night side darkens through the twilight, and
-// the lights of some 6,000 towns and cities glow there.
+// grows round its own place, behind the menu, which stays where it is and can still be used ("could the menu still
+// stay visible when earth is zoomed into?"); it covers the screen, then goes on into the ground, with the countries'
+// borders, and holds still to be looked at. ↺, −, Esc or the logo bring it back. Day and night are as they are right
+// now ("With night and day and lights too?"): the night side darkens through the twilight, and the lights of some
+// 6,000 towns and cities glow there.
 // Canvas, Natural Earth 1:110m (public domain); zoomed in, and for the names, the quiz's 1:50m map; the lights from
 // Natural Earth's populated places (scripts/build-lights.mjs).
 import { geoCentroid, geoDistance, geoGraticule10, geoInterpolate, geoOrthographic, geoPath } from 'd3-geo';
@@ -42,8 +43,7 @@ const EVERY = 2600;   // ms between new chains
 const RAD = Math.PI / 180;
 const ZOOM_STEP = 2;   // the + and − buttons, and a double tap
 const MAX_COVER = 4;   // zoomed all the way in, the globe is four times as big as it takes to cover the screen
-const FIT = 0.46;      // it reaches the middle of the screen once its radius is this much of the shorter side
-const FADE_BY = 0.35;  // the rest of the home screen is gone by a zoom of 1.35
+const FADE_BY = 0.35;  // the rope round it is gone by a zoom of 1.35
 const TIE = '#f2c14e'; // the gold of a tied country (and of the rope, once The Gordian Knot is untied)
 const PULSE = 3600;    // ms the countries tied in the last round pulse
 const FACE = 1400;     // ms to turn and face them
@@ -113,8 +113,7 @@ export class Globe {
   private ldpr = 1;
   private big = false; // drawn on the layer
   private homeAt = { x: 0, y: 0, r: 100 }; // the globe in its rope, on the screen (css px)
-  /** The rest of the home screen, faded out while the globe is grown over it; and how much of it shows. */
-  private readonly faded: HTMLElement[];
+  /** The rope round the globe, faded out while the globe is grown out of it; and how much of it shows. */
   private readonly rope: SVGElement | null;
   private shown = 1;
   // ---- day and night
@@ -152,8 +151,8 @@ export class Globe {
     this.label.hidden = true;
     this.label.setAttribute('aria-hidden', 'true');
     canvas.after(this.label);
-    // + and −, and back to the globe in its rope once zoomed in: beside the globe, outside the rope; grown, in the
-    // corner of the screen.
+    // + and −, and back to the globe in its rope once zoomed in: beside the globe, outside the rope, where they stay
+    // while it grows.
     this.zoomBox = document.createElement('div');
     this.zoomBox.className = 'globe-zoom';
     this.zoomBox.innerHTML = `<button type="button" data-z="in" aria-label="Zoom in" title="Zoom in">${ICONS.in}</button>`
@@ -166,19 +165,21 @@ export class Globe {
       if (z === 'out') this.zoomBy(1 / ZOOM_STEP);
       if (z === 'home') this.zoomBy(0);
     });
-    // The layer the globe grows on, over the home screen and under the header.
-    const start = canvas.closest<HTMLElement>('.start') ?? canvas.parentElement!.parentElement!;
-    this.faded = [...start.children].filter((el): el is HTMLElement => el instanceof HTMLElement && !el.matches('.sky, .globe-box'));
+    // The layer the globe grows on: over the whole screen, but under the menu and the header. It comes right after the
+    // globe's box, before the menu, which is on the same level (z-index 1) and so is drawn over it; the + and −
+    // (z-index 2) stay on top too. Between the buttons the globe can still be turned.
     this.rope = canvas.parentElement!.querySelector<SVGElement>('.globe-rope');
     this.layer = document.createElement('canvas');
     this.layer.className = 'globe-layer';
     this.layer.hidden = true;
     this.layer.setAttribute('role', 'img');
     this.layer.setAttribute('aria-label', 'The globe, zoomed in: drag to turn it, pinch or scroll to zoom, Esc to go back');
-    start.append(this.layer);
+    canvas.parentElement!.after(this.layer);
     this.layerCtx = this.layer.getContext('2d')!;
     new ResizeObserver(() => { this.resize(); this.redraw(); }).observe(canvas);
     new ResizeObserver(() => { this.resizeLayer(); this.redraw(); }).observe(this.layer);
+    // Grown round its place in the page, it moves with the page when the page scrolls (a short phone).
+    addEventListener('scroll', () => { if (this.big) { this.dirty = true; this.redraw(); } }, { passive: true });
     this.readColors();
     this.resize();
     this.listen(canvas);
@@ -346,10 +347,12 @@ export class Globe {
     return a && b ? Math.hypot(a.x - b.x, a.y - b.y) : 1;
   }
 
-  /** Zoomed all the way in, the globe is four times as big as it takes to cover the screen, and at least six times
-   *  its size in the rope. */
+  /** Zoomed all the way in, the globe is four times as big as it takes to cover the screen from where it is (to reach
+   *  the farthest corner), and at least six times its size in the rope. */
   private zoomMax() {
-    return Math.max(6, (MAX_COVER * Math.hypot(innerWidth, innerHeight)) / 2 / Math.max(40, this.homeAt.r));
+    const { x, y, r } = this.homeAt, w = innerWidth, h = innerHeight;
+    const far = Math.max(Math.hypot(x, y), Math.hypot(w - x, y), Math.hypot(x, h - y), Math.hypot(w - x, h - y));
+    return Math.max(6, (MAX_COVER * far) / Math.max(40, r));
   }
 
   /** Zooms by a factor (0: back to the globe in its rope); `now` follows a finger or the wheel without easing. */
@@ -386,18 +389,15 @@ export class Globe {
       this.resizeLayer();
     } else {
       this.layer.width = this.layer.height = this.lw = this.lh = 0; // let the memory go
-      this.fadeHome(1);
+      this.fadeRope(1);
     }
     this.dirty = true;
   }
 
-  /** The globe on the layer (css px): it grows from its place in the rope and reaches the middle of the screen as it
-   *  fills the shorter side; from there it grows round the middle. */
+  /** The globe on the layer (css px): it grows round its place in the rope, behind the menu. */
   private bigView() {
-    const { x, y, r } = this.homeAt, w = this.layer.clientWidth || innerWidth, h = this.layer.clientHeight || innerHeight;
-    const rr = r * this.zoom, fit = Math.max(r * 1.25, Math.min(w, h) * FIT);
-    const s = smoothstep(r, fit, rr);
-    return { x: x + (w / 2 - x) * s, y: y + (h / 2 - y) * s, r: rr };
+    const { x, y, r } = this.homeAt;
+    return { x, y, r: r * this.zoom };
   }
 
   /** Turning or zooming: under a finger, from a throw, or on its own. */
@@ -412,16 +412,11 @@ export class Globe {
     return { x: b.left + b.width / 2, y: b.top + b.height / 2, r: b.width / 2 - 2 };
   }
 
-  /** The rest of the home screen fades as the globe grows over it, and can't be reached until it comes back. */
-  private fadeHome(shown: number) {
+  /** The rope fades as the globe grows out of it. The rest of the home screen stays as it is, over the globe. */
+  private fadeRope(shown: number) {
     if (shown === this.shown) return;
     this.shown = shown;
-    const o = shown >= 1 ? '' : String(Math.round(shown * 100) / 100);
-    for (const el of this.faded) {
-      el.style.opacity = o;
-      el.inert = shown < 0.5;
-    }
-    if (this.rope) this.rope.style.opacity = o;
+    if (this.rope) this.rope.style.opacity = shown >= 1 ? '' : String(Math.round(shown * 100) / 100);
   }
 
   /** Degrees of turn per css pixel of drag, so the ground follows the finger near the middle. */
@@ -576,7 +571,7 @@ export class Globe {
       if (!this.lw) return;
       this.measure();
       const v = this.bigView(), k = this.ldpr;
-      this.fadeHome(1 - clamp((this.zoom - 1) / FADE_BY, 0, 1));
+      this.fadeRope(1 - clamp((this.zoom - 1) / FADE_BY, 0, 1));
       this.layerCtx.clearRect(0, 0, this.lw, this.lh);
       this.paint(this.layerCtx, this.lw, this.lh, v.x * k, v.y * k, v.r * k, k, t, true);
       // where it is, how big, and which way it faces, for the tests

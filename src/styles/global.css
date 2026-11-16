@@ -12,6 +12,8 @@
   --accent-ink: #ffffff;
   --ok: #17995a;
   --ok-soft: #e0f5e9;
+  --target: #16b35a; /* Practice: the one asked now */
+  --flash: #e38b06;  /* Practice: one named wrongly, where it is */
   --ok-ring: rgba(23, 153, 90, 0.2);
   --bad: #d9443a;
   --bad-soft: #fde5e2;
@@ -52,6 +54,8 @@ body.home > .top {
   --accent-ink: #ffffff;
   --ok: #3fcf88;
   --ok-soft: #13301f;
+  --target: #3ee483;
+  --flash: #ffaa2b;
   --ok-ring: rgba(63, 207, 136, 0.22);
   --bad: #ff6a5f;
   --bad-soft: #3a1714;
@@ -263,14 +267,13 @@ body.home .logo circle { fill: var(--glow, var(--accent)); }
 .globe-zoom button:hover:not(:disabled) { background: rgba(40, 56, 90, 0.85); }
 .globe-zoom button:disabled { opacity: 0.3; cursor: default; }
 .globe-zoom svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-/* Zoomed in, the globe grows out of its rope onto a layer over the whole screen, under the header (preview 16); the
-   rest of the home screen fades away (globe.ts) and the buttons move to the corner, a little bigger. */
+/* Zoomed in, the globe grows out of its rope onto a layer over the whole screen (preview 16), round its own place and
+   behind the menu, which stays over it and usable (globe.ts puts the layer before the menu, on the same z-index); the
+   buttons stay beside it. Over land and sea the tagline gets a dark halo, to stay readable. */
 .globe-layer { position: fixed; inset: 0; z-index: 1; display: block; width: 100%; height: 100%; cursor: grab; touch-action: none; -webkit-user-select: none; user-select: none; }
 .globe-layer[hidden] { display: none; }
 .globe-layer.dragging { cursor: grabbing; }
-body.globe-big .globe-zoom { position: fixed; z-index: 3; right: max(16px, env(safe-area-inset-right, 0px)); bottom: max(16px, env(safe-area-inset-bottom, 0px)); gap: 8px; }
-body.globe-big .globe-zoom button { width: 42px; height: 42px; }
-body.globe-big .globe-zoom svg { width: 21px; height: 21px; }
+body.globe-big .hero { text-shadow: 0 0 3px rgba(4, 8, 18, 0.9), 0 2px 18px rgba(4, 8, 18, 0.85); }
 /* The name of the country under the pointer (or the finger, for a moment). */
 .globe-label {
   position: fixed;
@@ -858,15 +861,37 @@ body.untied .logo .rope { stroke: #e3b341; }
 .fill-map { width: 100%; height: 100%; aspect-ratio: auto; touch-action: none; border-radius: 18px; border: 1px solid var(--line); background: var(--ocean); }
 .fill-map .land { fill: color-mix(in srgb, var(--land) 72%, var(--border)); }
 .fill-map .land.set { fill: var(--land); transition: fill 0.25s; }
-.fill-map .land.set.found { fill: color-mix(in srgb, var(--ok) 55%, var(--land)); stroke: var(--ok); }
+.fill-map .land.set.found { fill: color-mix(in srgb, var(--ok) 40%, var(--land)); stroke: var(--ok); }
 .fill-map .land.set.missed { fill: color-mix(in srgb, var(--bad) 45%, var(--land)); stroke: var(--bad); }
-.fill-map .set-dot { fill: var(--land); stroke: var(--ink); stroke-width: 1.4; }
-.fill-map .set-dot.found { fill: var(--ok); stroke: var(--ok); }
-.fill-map .set-dot.missed { fill: var(--bad); stroke: var(--bad); }
+.fill-map .set-dot circle:not(.hit):not(.pulse) { fill: var(--land); stroke: var(--ink); stroke-width: 1.4; }
+.fill-map .set-dot.found circle:not(.hit):not(.pulse) { fill: var(--ok); stroke: var(--ok); }
+.fill-map .set-dot.missed circle:not(.hit):not(.pulse) { fill: var(--bad); stroke: var(--bad); }
 .fill[data-layout="rivers"] .fill-map .land { fill: var(--land); }
 .fill-map .river.set { stroke: color-mix(in srgb, var(--river) 40%, var(--border)); stroke-opacity: 0.9; stroke-width: 2.6; }
 .fill-map .river.set.found { stroke: var(--river); stroke-opacity: 1; stroke-width: 3; }
 .fill-map .river.set.missed { stroke: var(--bad); stroke-opacity: 1; stroke-width: 3; }
+/* The one asked now, in green (James: "highlight a country on the globe/map in green"); one named wrongly shows where
+   it is, in amber, for a moment. Everything that can be tapped has a wide, see-through hit area. */
+.fill-map [data-k] { cursor: pointer; }
+.fill-map .hit { fill: transparent; stroke: none; }
+.fill-map .river-hit { fill: none; stroke: transparent; stroke-width: 14; stroke-linecap: round; pointer-events: stroke; }
+.fill-map .river, .fill-map .river-case, .fill-map .names { pointer-events: none; }
+.fill-map .land.set.cur { fill: var(--target); stroke: #eafff2; stroke-width: 1.4; animation: target 1.6s ease-in-out infinite; }
+.fill-map .land.set.flash, .fill-map .river.set.flash { fill: color-mix(in srgb, var(--flash) 70%, var(--land)); stroke: var(--flash); stroke-width: 1.6; }
+.fill-map .river.set.flash { fill: none; stroke-width: 4; }
+.fill-map .set-dot.cur circle:not(.hit):not(.pulse), .fill-map .mark.cur > :last-child { fill: var(--target); stroke: #eafff2; stroke-width: 1.6; }
+.fill-map .set-dot.flash circle:not(.hit):not(.pulse), .fill-map .mark.flash > :last-child { fill: var(--flash); stroke: var(--flash); }
+.fill-map .set-dot .pulse, .fill-map .mark .pulse { fill: none; stroke: var(--target); stroke-width: 2; opacity: 0.7; animation: pulse 1.6s ease-out infinite; transform-box: fill-box; transform-origin: center; }
+.fill-map .river.set.cur { stroke: var(--target); stroke-opacity: 1; stroke-width: 4.2; animation: target-line 1.6s ease-in-out infinite; }
+.fill-map .river-case.cur { stroke-width: 8; }
+.fill-map .ring { stroke: var(--target); pointer-events: none; }
+.fill-map .mark > :last-child { fill: var(--surface); stroke: var(--ink); stroke-width: 1.5; stroke-linejoin: round; }
+.fill-map .mark.found > :last-child { fill: var(--ok); stroke: var(--surface); }
+.fill-map .mark.missed > :last-child { fill: var(--bad); stroke: var(--surface); }
+.fill-map .peak-marks .mark > :last-child { stroke-width: 1.3; }
+@keyframes target { 50% { fill: color-mix(in srgb, var(--target) 72%, #ffffff); } }
+@keyframes target-line { 50% { stroke-width: 5.4; } }
+@media (prefers-reduced-motion: reduce) { .fill-map .land.set.cur, .fill-map .river.set.cur { animation: none; } }
 .fill-cards { list-style: none; margin: 8px 0 0; padding: 0; display: grid; gap: 6px; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); }
 .fill-cards.flags { grid-template-columns: repeat(auto-fill, minmax(104px, 1fr)); gap: 8px; }
 .fill-cards.texts { grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 8px; }
@@ -878,6 +903,11 @@ body.untied .logo .rope { stroke: #e3b341; }
 .fill-cards.flags img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: 6px; box-shadow: 0 0 0 1px var(--flag-edge); background: var(--line); }
 .fill-cards.texts blockquote { margin: 0; font-size: 0.92rem; line-height: 1.45; display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; }
 .fill-cards.flags .slot, .fill-cards.texts .slot { flex: none; text-align: center; font-size: 0.88rem; }
+/* The card asked now: a green ring; any other can be tapped to be asked next. */
+.fill-card { cursor: pointer; }
+.fill-card.found { cursor: default; }
+.fill-card.cur { border-color: var(--target); box-shadow: 0 0 0 2px var(--target), 0 6px 22px color-mix(in srgb, var(--target) 30%, transparent); }
+.fill-card.cur .slot { border-bottom-color: var(--target); }
 .fill-card.found { border-color: var(--ok); background: var(--ok-soft); animation: pop 0.25s ease-out; }
 .fill-card.found .slot, .fill-card.missed .slot { border-bottom-color: transparent; }
 .fill-card.missed { border-color: var(--bad); background: var(--bad-soft); }

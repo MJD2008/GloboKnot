@@ -1,7 +1,11 @@
-// Practice, filled in at once (James, 16 Nov 2026): one set (sets.ts) on one screen. Each answer typed finds its place
-// as soon as it is spelt right, in any order; Enter forgives a typo. Countries and rivers light up on a map that zooms
-// and turns; capitals and highest points fill a list, flags and text samples their cards. No time limit, and no clock
-// while playing: the time is only told at the end, beside the best. Give up shows what was missed, in red.
+// Practice (James, 16 Nov 2026): one set (sets.ts) on one screen. Since his finishing notes that evening, one item at a
+// time is asked, picked out in green: on a map a country, its capital, its highest point or a river; otherwise a flag
+// or a text sample. Once it is answered the next comes up by itself: on a map the nearest one still to find, a
+// continent at a time; on cards the next one along, and after the last one the earliest still to find (nextItem).
+// Tapping any other one asks that one instead, and Skip (or → in an empty box) moves on, leaving it for later. Enter
+// forgives a typo; a wrong answer that names another one of the set shows where that one is, for a moment. No time
+// limit, and no clock while playing: the time is only told at the end, beside the best. Give up shows what was missed,
+// in red.
 import { geoCentroid, geoOrthographic } from 'd3-geo';
 import { resolveFor } from '../../scripts/lib/match.mjs';
 import { norm } from '../../scripts/lib/text.mjs';
@@ -9,13 +13,14 @@ import type { Entity, Knowledge } from './kb';
 import type { MapSet, WorldMap } from './map';
 import { clockOf } from './menu';
 import { better, saveStats, stats, type Best } from './prefs';
-import type { Pool } from './questions';
-import { nameIndex, practiceKey, practiceLabel, setItems, setOf, type Item, type Practice } from './sets';
+import { shuffle, type Pool } from './questions';
+import { nameIndex, nextItem, practiceKey, practiceLabel, setItems, setOf, type Item, type Practice } from './sets';
 import { sound } from './sound';
 import { zoomable, type Zoom } from './zoom';
 
 const $ = <T extends HTMLElement = HTMLElement>(root: ParentNode, sel: string) => root.querySelector(sel) as T;
 const RAD = 180 / Math.PI;
+const FLASH = 1400; // ms a place named wrongly shows where it is
 const esc = (s: string) => s.replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]!);
 export const bestLabel = (b: Best) => `${b.pct}% in ${clockOf(b.ms)}`;
 export const practiceBest = (p: Practice): Best | undefined => stats.practice?.[practiceKey(p)];
@@ -39,15 +44,19 @@ export function initFill(root: HTMLElement, d: FillDeps) {
     input: $<HTMLInputElement>(root, '#fill-input'),
     bar: $(root, '.fill-progress i'),
     last: $(root, '#fill-last'),
+    skip: $<HTMLButtonElement>(root, '#fill-skip'),
     give: $<HTMLButtonElement>(root, '#fill-give'),
     end: $(root, '#fill-end'),
     score: $(root, '#fill-score'),
     time: $(root, '#fill-time'),
     best: $(root, '#fill-best'),
     board: $(root, '#fill-board'),
+    top: $(root, '.fill-top'),
   };
   let p: Practice | null = null, items: Item[] = [], found: boolean[] = [], index = new Map<string, number[]>();
-  let started = 0, done = false, streak = 0, wait = 0, clearing = 0;
+  /** The item asked now; on a map, the ones skipped, in the order they were (they come back once the rest is done). */
+  let cur = -1, skipped: number[] = [];
+  let started = 0, done = false, streak = 0, wait = 0, clearing = 0, flashing = 0;
   let mapSet: MapSet | null = null, svg: SVGSVGElement | null = null, zoom: Zoom | null = null, cards: HTMLElement[] = [];
 
   const left = () => found.filter(f => !f).length;
@@ -56,30 +65,47 @@ export function initFill(root: HTMLElement, d: FillDeps) {
     ui.count.textContent = `${n} / ${items.length}`;
     ui.bar.style.setProperty('--done', String(items.length ? n / items.length : 0));
   };
+  const keyOf = (it: Item) => it.num ?? it.river ?? it.key;
 
   async function start(practice: Practice) {
     p = practice;
     const set = setOf(p.set)!;
     if (set.layout === 'rivers') await d.loadRivers();
     items = setItems(d.kb, p);
+    // Cards come in a new mixed order every time (flags: "a completely mixed, worldwide order").
+    if (set.layout === 'flags' || set.layout === 'texts') items = shuffle(items);
+    if (set.layout === 'rivers') for (const it of items) it.ll ??= middleOf(d.world.rivers[it.river!]);
     found = items.map(() => false);
+    skipped = [];
+    cur = -1;
     index = nameIndex(items, d.pools[set.pool]);
     done = false;
     streak = 0;
     clearTimeout(wait);
+    clearTimeout(flashing);
     ui.title.textContent = practiceLabel(p);
-    ui.input.placeholder = set.type;
     ui.input.value = '';
     ui.input.classList.remove('wrong');
-    ui.form.hidden = ui.give.hidden = false;
+    ui.form.hidden = ui.give.hidden = ui.skip.hidden = false;
     ui.end.hidden = true;
     ui.last.textContent = '';
     ui.last.className = 'fill-last';
     root.dataset.layout = set.layout;
+    root.classList.remove('all-found');
     paintCount();
     board();
+    ask(firstItem());
     started = performance.now();
     ui.input.focus({ preventScroll: true });
+  }
+
+  /** Where it starts: on cards, the first; on a map, a well-known one in view (France, Brazil...), else any in view. */
+  function firstItem(): number {
+    if (!mapSet) return 0;
+    const inView = items.map((it, j) => j).filter(j => items[j].ll && d.world.inView([items[j].ll![1], items[j].ll![0]], 40));
+    const famous = inView.filter(j => d.kb.country(items[j].key)?.tier === 'famous');
+    const from = famous.length ? famous : inView.length ? inView : items.map((_, j) => j);
+    return from[Math.floor(Math.random() * from.length)];
   }
 
   // ---------------------------------------------------------------- the board: a map, or cards
@@ -95,24 +121,53 @@ export function initFill(root: HTMLElement, d: FillDeps) {
       svg.setAttribute('aria-label', set.layout === 'map' ? 'Map of the countries to find' : 'Map of the rivers to find');
       ui.board.append(svg);
       zoom = zoomable(svg, d.world, { drag: true });
+      listenMap(svg);
+      const names = new Map(items.map(it => [keyOf(it), it.answer]));
       mapSet = set.layout === 'map'
-        ? { countries: new Map(items.map(it => [it.num!, it.ll!])), found: new Set(), missed: new Set(), names: new Map(items.map(it => [it.num!, it.answer])) }
-        : { rivers: items.map(it => it.river!), found: new Set(), missed: new Set(), names: new Map(items.map(it => [it.river!, it.answer])) };
+        ? {
+          countries: new Map(items.map(it => [it.num!, it.ll!])), found: new Set(), missed: new Set(), names,
+          ...(set.mark ? { mark: set.mark, marks: new Map(items.map(it => [it.num!, it.marks ?? []])) } : {}),
+        }
+        : { rivers: items.map(it => it.river!), found: new Set(), missed: new Set(), names };
       drawMap();
       return;
     }
     const list = document.createElement('ol');
     list.className = `fill-cards ${set.layout}`;
-    for (const it of items) {
+    items.forEach((it, j) => {
       const li = document.createElement('li');
       li.className = 'fill-card';
+      li.dataset.j = String(j);
       if (it.flag) li.innerHTML = `<img alt="A flag" loading="lazy" src="${d.url(`flags/${it.flag}.svg`)}" /><span class="slot"></span>`;
-      else if (it.text) li.innerHTML = `<blockquote dir="auto" lang="${esc(it.lang ?? '')}">${esc(it.text)}</blockquote><span class="slot"></span>`;
-      else li.innerHTML = `<span class="clue">${esc(it.clue ?? '')}</span><span class="slot"></span>`;
+      else li.innerHTML = `<blockquote dir="auto" lang="${esc(it.lang ?? '')}">${esc(it.text ?? '')}</blockquote><span class="slot"></span>`;
       list.append(li);
       cards.push(li);
-    }
+    });
+    // A card tapped is asked next. The answer box keeps the focus (and a phone its keyboard); a finger that scrolls
+    // the cards picks nothing.
+    list.addEventListener('pointerdown', e => { if ((e.target as HTMLElement).closest('.fill-card')) e.preventDefault(); });
+    list.addEventListener('click', e => {
+      const card = (e.target as HTMLElement).closest<HTMLElement>('.fill-card');
+      if (card && !done) pick(Number(card.dataset.j));
+    });
     ui.board.append(list);
+  }
+
+  /** On the map, a tap (not a drag) on a country, a dot, a peak or a river asks that one. */
+  function listenMap(el: SVGSVGElement) {
+    let down: { x: number; y: number; k: string } | null = null;
+    el.addEventListener('pointerdown', e => {
+      const k = (e.target as Element).closest<SVGElement>('[data-k]')?.dataset.k ?? '';
+      down = { x: e.clientX, y: e.clientY, k };
+      e.preventDefault(); // the answer box keeps the focus (and a phone its keyboard)
+    });
+    el.addEventListener('pointerup', e => {
+      const t = down;
+      down = null;
+      if (!t?.k || done || Math.hypot(e.clientX - t.x, e.clientY - t.y) > 6) return;
+      const j = items.findIndex(it => keyOf(it) === t.k);
+      if (j >= 0) pick(j);
+    });
   }
 
   /** The view of the region: its countries (their capitals) filling the frame, wide or tall. Rivers get the same
@@ -153,53 +208,98 @@ export function initFill(root: HTMLElement, d: FillDeps) {
     resized = window.setTimeout(() => { if (!root.hidden && svg) drawMap(); }, 200);
   });
 
+  // ---------------------------------------------------------------- the one asked now
+  /** Asks item j: green on the map (turned into view if it is out of sight), or the card picked out and scrolled to. */
+  function ask(j: number) {
+    cur = j;
+    skipped = skipped.filter(i => i !== j);
+    const it = items[j], set = setOf(p!.set)!;
+    root.dataset.cur = it ? it.key : '';
+    ui.input.placeholder = it?.clue && set.ask ? set.ask(it.clue) : set.type;
+    if (mapSet) {
+      mapSet.current = it ? keyOf(it) : undefined;
+      drawMap(true);
+      if (it?.ll && !d.world.inView([it.ll[1], it.ll[0]])) {
+        zoom?.reset();
+        d.world.turnTo([it.ll[1], it.ll[0]]);
+      }
+    } else {
+      cards.forEach((c, i) => c.classList.toggle('cur', i === j));
+      if (cards[j]) bring(cards[j]);
+    }
+  }
+
+  /** Scrolls a card into view, below the answer box that stays at the top. */
+  function bring(card: HTMLElement) {
+    const r = card.getBoundingClientRect(), top = ui.top.getBoundingClientRect().bottom + 8;
+    const bottom = (window.visualViewport?.height ?? innerHeight) - 8;
+    const smooth = !matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (r.top < top) scrollBy({ top: r.top - top, behavior: smooth ? 'smooth' : 'auto' });
+    else if (r.bottom > bottom) scrollBy({ top: Math.min(r.bottom - bottom, r.top - top), behavior: smooth ? 'smooth' : 'auto' });
+  }
+
+  /** A tap on one: asked now; one found already shows its name again. */
+  function pick(j: number) {
+    if (done || j < 0) return;
+    if (found[j]) { again(j); return; }
+    if (j !== cur) ask(j);
+    if (matchMedia('(pointer: fine)').matches) ui.input.focus({ preventScroll: true });
+  }
+
+  /** Skip (or → in an empty box): on to the next, this one left for later. */
+  function skip() {
+    if (done || cur < 0) return;
+    if (mapSet && !skipped.includes(cur)) skipped.push(cur);
+    const j = nextItem(items, found, cur, skipped);
+    if (j !== cur) ask(j);
+    ui.input.focus({ preventScroll: true });
+  }
+  ui.skip.addEventListener('pointerdown', e => e.preventDefault()); // the box keeps the focus
+  ui.skip.addEventListener('click', skip);
+
   // ---------------------------------------------------------------- typing
-  /** The items still to find that `text` names exactly. */
-  const named = (text: string) => (index.get(norm(text)) ?? []).filter(j => !found[j]);
-  /** How long a name typed waits before it counts, in case it is the start of a longer one: of something else still
-   *  to find ("Niger" on the way to "Nigeria"), or of the same ("Vatican" on the way to "Vatican City", so the rest
-   *  of it isn't left behind in the box). */
-  const pause = (k: string, js: number[]) => {
+  /** How long a name typed waits before it counts, in case it is the start of a longer name: of another one of the
+   *  set ("Niger" on the way to "Nigeria"), or of the same ("Vatican" on the way to "Vatican City", so the rest of it
+   *  isn't left behind in the box). */
+  const pause = (k: string) => {
     let ms = 0;
-    for (const [n, ks] of index) {
+    for (const [n, js] of index) {
       if (n.length <= k.length || !n.startsWith(k)) continue;
-      if (ks.some(j => !found[j] && !js.includes(j))) return 600;
-      if (ks.some(j => js.includes(j))) ms = 350;
+      if (js.some(j => j !== cur && !found[j])) return 600;
+      if (js.includes(cur)) ms = 350;
     }
     return ms;
   };
 
   ui.input.addEventListener('input', () => {
     clearTimeout(wait);
-    if (done) return;
+    if (done || cur < 0) return;
     if (clearing) { clearTimeout(clearing); clearing = 0; ui.input.classList.remove('wrong'); }
-    const text = ui.input.value, js = named(text);
-    if (!js.length) return;
-    // Right as typed: found at once, unless it may be the start of a longer name still to find.
-    const k = norm(text);
-    wait = window.setTimeout(() => { if (norm(ui.input.value) === k) find(named(text), text); }, pause(k, js));
+    const text = ui.input.value, k = norm(text);
+    // Right as typed: found at once, unless it may be the start of a longer name.
+    if (!(index.get(k) ?? []).includes(cur)) return;
+    const j = cur;
+    wait = window.setTimeout(() => { if (norm(ui.input.value) === k && cur === j) find(j, text); }, pause(k));
+  });
+
+  ui.input.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight' && !ui.input.value) { e.preventDefault(); skip(); }
   });
 
   ui.form.addEventListener('submit', e => {
     e.preventDefault();
     clearTimeout(wait);
-    if (done) return;
+    if (done || cur < 0) return;
     const text = ui.input.value.trim();
     if (!text) return;
-    const exact = named(text);
-    if (exact.length) { find(exact, text); return; }
+    if ((index.get(norm(text)) ?? []).includes(cur)) { find(cur, text); return; }
     // Enter forgives a typo ("Liechtenstien"), as in a round.
-    const set = setOf(p!.set)!, want = items.flatMap((it, j) => (found[j] ? [] : it.accept));
-    const hit = resolveFor(text, d.pools[set.pool], want);
-    const js = hit ? items.flatMap((it, j) => (!found[j] && it.accept.includes(hit.id) ? [j] : [])) : [];
-    if (js.length) { find(js, hit!.name); return; }
-    // Found already: it shows again. Otherwise the try shakes and fades out.
-    const again = (index.get(norm(text)) ?? []).filter(j => found[j]);
-    if (again.length) {
-      again.forEach(flashItem);
-      ui.input.value = '';
-      return;
-    }
+    const set = setOf(p!.set)!, pool = d.pools[set.pool], it = items[cur];
+    const meant = resolveFor(text, pool, it.accept);
+    if (meant && it.accept.includes(meant.id)) { find(cur, meant.name); return; }
+    // Wrong. When it names another one of the set, that one shows where it is, for a moment.
+    const other = meant ? items.findIndex((x, j) => j !== cur && x.accept.includes(meant.id)) : -1;
+    if (other >= 0) flash(other);
     streak = 0;
     sound.retry();
     ui.input.classList.remove('wrong');
@@ -213,26 +313,23 @@ export function initFill(root: HTMLElement, d: FillDeps) {
     }, 420);
   });
 
-  function find(js: number[], typed: string) {
-    if (!js.length || done) return;
-    for (const j of js) {
-      found[j] = true;
-      const it = items[j];
-      if (mapSet) mapSet.found.add(it.num ?? it.river!);
-      const card = cards[j];
-      if (card) {
-        card.classList.add('found');
-        card.querySelector('.slot')!.textContent = it.flag || it.text ? it.answer : typedName(it, typed);
-      }
+  function find(j: number, typed: string) {
+    if (done || found[j]) return;
+    found[j] = true;
+    const it = items[j];
+    if (mapSet) mapSet.found.add(keyOf(it));
+    const card = cards[j];
+    if (card) {
+      card.classList.add('found');
+      card.querySelector('.slot')!.textContent = it.answer;
     }
-    if (mapSet) drawMap(true);
     ui.input.value = '';
-    const first = items[js[0]];
     ui.last.className = 'fill-last ok';
-    ui.last.textContent = first.clue ? `${typedName(first, typed)} · ${first.clue}${js.length > 1 ? ` +${js.length - 1}` : ''}` : js.map(j => items[j].answer).join(' · ');
+    ui.last.textContent = it.clue ? `${typedName(it, typed)} · ${it.clue}` : it.answer;
     sound.right(streak++);
     paintCount();
-    if (!left()) finish(false);
+    if (!left()) { finish(false); return; }
+    ask(nextItem(items, found, j, skipped));
   }
   /** The name as typed when it is one of the right ones (Sucre for Bolivia), else the item's own. */
   function typedName(it: Item, typed: string): string {
@@ -240,16 +337,24 @@ export function initFill(root: HTMLElement, d: FillDeps) {
     const e = d.pools[set.pool].find(x => it.accept.includes(x.id) && [x.name, ...x.aliases].some(n => norm(n) === norm(typed)));
     return e?.name ?? it.answer;
   }
-  function flashItem(j: number) {
+  /** One found already, tapped: its name again. */
+  function again(j: number) {
     const card = cards[j];
     if (card) {
       card.classList.remove('again');
       void card.offsetWidth;
       card.classList.add('again');
-      card.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
     }
     ui.last.className = 'fill-last';
-    ui.last.textContent = `${items[j].answer}: found already`;
+    ui.last.textContent = items[j].clue ? `${items[j].answer} · ${items[j].clue}` : items[j].answer;
+  }
+  /** One named wrongly: on the map it shows where it is, in amber, for a moment. */
+  function flash(j: number) {
+    if (!mapSet) return;
+    clearTimeout(flashing);
+    mapSet.flash = keyOf(items[j]);
+    drawMap(true);
+    flashing = window.setTimeout(() => { if (mapSet) { mapSet.flash = undefined; drawMap(true); } }, FLASH);
   }
 
   // ---------------------------------------------------------------- the end: all found, or given up
@@ -258,20 +363,25 @@ export function initFill(root: HTMLElement, d: FillDeps) {
     if (done || !p) return;
     done = true;
     clearTimeout(wait);
+    clearTimeout(flashing);
     const ms = performance.now() - started;
     const n = items.length - left(), pct = Math.round((n / items.length) * 100);
+    cur = -1;
+    root.dataset.cur = '';
+    cards.forEach(c => c.classList.remove('cur'));
+    if (mapSet) { mapSet.current = mapSet.flash = undefined; }
     if (gaveUp) {
       items.forEach((it, j) => {
         if (found[j]) return;
-        if (mapSet) mapSet.missed.add(it.num ?? it.river!);
+        if (mapSet) mapSet.missed.add(keyOf(it));
         const card = cards[j];
         if (card) { card.classList.add('missed'); card.querySelector('.slot')!.textContent = it.answer; }
       });
-      if (mapSet) drawMap(true);
     }
+    if (mapSet) drawMap(true);
     const prev = practiceBest(p), now = { pct, ms };
     if (n && better(now, prev)) { (stats.practice ??= {})[practiceKey(p)] = now; saveStats(); }
-    ui.form.hidden = ui.give.hidden = true;
+    ui.form.hidden = ui.give.hidden = ui.skip.hidden = true;
     ui.end.hidden = false;
     ui.last.textContent = '';
     ui.score.textContent = `${n} / ${items.length}`;
@@ -298,4 +408,11 @@ export function initFill(root: HTMLElement, d: FillDeps) {
     resume(away: number) { started += away; if (!done) ui.input.focus({ preventScroll: true }); },
     get practice() { return p; },
   };
+}
+
+/** The middle of a river's course (its longest line), [lat, lng]. */
+function middleOf(lines: [number, number][][] | undefined): [number, number] | undefined {
+  const line = lines?.reduce((a, b) => (b.length > a.length ? b : a), [] as [number, number][]);
+  const m = line?.[Math.floor(line.length / 2)];
+  return m ? [m[1], m[0]] : undefined;
 }

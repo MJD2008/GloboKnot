@@ -1,6 +1,6 @@
 // The map: an orthographic globe turned and zoomed to what is asked (a country, a capital, a peak, a river).
 // Natural Earth 1:50m (public domain) via world-atlas; tiny countries get a ring so they can be found.
-import { geoArea, geoCentroid, geoCircle, geoContains, geoDistance, geoGraticule10, geoOrthographic, geoPath } from 'd3-geo';
+import { geoArea, geoCentroid, geoCircle, geoContains, geoDistance, geoGraticule10, geoInterpolate, geoOrthographic, geoPath } from 'd3-geo';
 import type { GeoPermissibleObjects, GeoStream } from 'd3-geo';
 import { feature } from 'topojson-client';
 import type { Feature, FeatureCollection, MultiPolygon, Polygon, Position } from 'geojson';
@@ -17,8 +17,14 @@ export interface MapOptions {
   set?: MapSet; view?: { center: LonLat; radius: number }; size?: [number, number];
 }
 /** A practice set on the map: its countries (ISO numeric codes, with their positions) or its rivers; the ones found
- *  light up with their names, and after giving up the ones missed show in red. */
-export interface MapSet { countries?: Map<string, [number, number]>; rivers?: string[]; found: Set<string>; missed: Set<string>; names: Map<string, string> }
+ *  light up with their names, and after giving up the ones missed show in red. The one asked now (`current`) is
+ *  picked out in green, one named wrongly (`flash`) shows where it is for a moment. Capitals and highest points
+ *  (`marks`, `mark`): each country's capital dot(s) or peak, [lat, lng], the names of the ones found beside them. Every
+ *  shape, dot and course that can be tapped carries its key in `data-k`. */
+export interface MapSet {
+  countries?: Map<string, [number, number]>; rivers?: string[]; found: Set<string>; missed: Set<string>; names: Map<string, string>;
+  current?: string; flash?: string; marks?: Map<string, [number, number][]>; mark?: 'dot' | 'peak';
+}
 /** The view of the map last drawn: where it is centred and how wide (degrees), where it started, and its frame. */
 interface View { svg: SVGSVGElement; o: MapOptions; center: LonLat; radius: number; home: LonLat; base: number; revealed: string[]; w: number; h: number }
 
@@ -125,6 +131,7 @@ export class WorldMap {
       radius = Math.min(60, Math.max(11, this.nearestLandmark(center) * 1.1 + 5));
     }
     const [w, h] = o.size ?? [W, H];
+    this.turning++;
     this.view = { svg, o, center, radius, home: center, base: radius, revealed: [], w, h };
     this.draw();
   }
@@ -154,6 +161,7 @@ export class WorldMap {
   settle(k: number, tx: number, ty: number) {
     const v = this.view, p = this.last?.projection;
     if (!v || !p) return;
+    this.turning++;
     const c = p.invert?.([(v.w / 2 - tx) / k, (v.h / 2 - ty) / k]);
     if (c && Number.isFinite(c[0]) && Number.isFinite(c[1])) v.center = [c[0], Math.max(-89, Math.min(89, c[1]))];
     v.radius = Math.min(90, Math.max(Math.max(0.8, v.base / 6), v.radius / k));
@@ -163,6 +171,7 @@ export class WorldMap {
   /** Back to the view as first drawn. */
   resetView() {
     if (!this.view) return;
+    this.turning++;
     this.view.center = this.view.home;
     this.view.radius = this.view.base;
     this.draw();
@@ -194,24 +203,36 @@ export class WorldMap {
       land += path(s) ?? '';
     }
     parts.push(`<path class="land" d="${land}"/>`);
-    // A practice set's countries each on their own, lit up once found; the smallest also as a dot, to be seen.
+    // A practice set's countries each on their own, lit up once found; the smallest also as a dot, to be seen. The one
+    // asked now is drawn last, over its neighbours.
+    const state = (n: string) => (set?.found.has(n) ? ' found' : set?.missed.has(n) ? ' missed' : '') + (n === set?.current ? ' cur' : '') + (n === set?.flash ? ' flash' : '');
     if (set && own) {
-      const state = (n: string) => (set.found.has(n) ? ' found' : set.missed.has(n) ? ' missed' : '');
       const flat = geoPath(projection);
-      let dots = '';
+      let dots = '', top = '';
       for (const [n, at] of own) {
         const s = this.byNum.get(n), cls = state(n);
+        const [[x0, y0], [x1, y1]] = s ? flat.bounds(mainPart(s)) : [[0, 0], [0, 0]];
         if (s) {
           const cap = this.caps.get(s)!;
           if (geoDistance(center, cap.c) - cap.r > view) continue;
-          parts.push(`<path class="land set${cls}" d="${path(s) ?? ''}"/>`);
+          const d = `<path class="land set${cls}" data-k="${n}" d="${path(s) ?? ''}"/>`;
+          if (n === set.current || n === set.flash) top += d; else parts.push(d);
+          // The one asked now, when small (Luxembourg on the world map): a ring round it too, to be seen at once.
+          const big = Math.max(x1 - x0, y1 - y0);
+          if (n === set.current && big >= 7 && big < 16) {
+            const pt = projection(geoCentroid(mainPart(s)) as LonLat);
+            if (pt) top += `<circle class="ring" cx="${pt[0].toFixed(1)}" cy="${pt[1].toFixed(1)}" r="${(big / 2 + 7).toFixed(1)}"/>`;
+          }
         }
-        const [[x0, y0], [x1, y1]] = s ? flat.bounds(mainPart(s)) : [[0, 0], [0, 0]];
+        if (set.marks?.get(n)?.length) continue; // its capital or peak marks it, and is what a finger can find
         if (s && Math.max(x1 - x0, y1 - y0) >= 7) continue;
         const pt = projection(s ? (geoCentroid(mainPart(s)) as LonLat) : [at[1], at[0]]);
-        if (pt && pt[0] > -8 && pt[0] < W + 8 && pt[1] > -8 && pt[1] < H + 8) dots += `<circle class="set-dot${cls}" cx="${pt[0].toFixed(1)}" cy="${pt[1].toFixed(1)}" r="4.5"/>`;
+        if (pt && pt[0] > -8 && pt[0] < W + 8 && pt[1] > -8 && pt[1] < H + 8) {
+          const g = `<g class="set-dot${cls}" data-k="${n}" transform="translate(${pt[0].toFixed(1)} ${pt[1].toFixed(1)})"><circle class="hit" r="11"/>${n === set.current ? '<circle class="pulse" r="9"/>' : ''}<circle r="${n === set.current ? 5.5 : 4.5}"/></g>`;
+          if (n === set.current) top += g; else dots += g;
+        }
       }
-      parts.push(dots);
+      parts.push(dots, top);
     }
     if (target) parts.push(`<path class="land hl" d="${path(target) ?? ''}"/>`);
     parts.push(`<g class="rv">${this.revealPath(path, v.revealed)}</g>`);
@@ -231,18 +252,52 @@ export class WorldMap {
     // A practice set's rivers: all of them faint, those found in blue with their names, those missed in red.
     let riverNames = '';
     if (set?.rivers) {
-      const order = [...set.rivers].sort((a, b) => Number(set.found.has(a) || set.missed.has(a)) - Number(set.found.has(b) || set.missed.has(b)));
+      // Found and missed over the rest, the one asked now (and one named wrongly) over everything.
+      const rank = (id: string) => (id === set.current || id === set.flash ? 2 : set.found.has(id) || set.missed.has(id) ? 1 : 0);
+      const order = [...set.rivers].sort((a, b) => rank(a) - rank(b));
       const taken: [number, number, number, number][] = [];
+      let hits = '';
       for (const id of order) {
         const lines = this.rivers[id];
         if (!lines?.length) continue;
         const d = path({ type: 'MultiLineString', coordinates: lines }) ?? '';
         if (!d) continue;
-        const cls = set.found.has(id) ? ' found' : set.missed.has(id) ? ' missed' : '';
-        parts.push(`<path class="river-case" d="${d}"/><path class="river set${cls}" d="${d}"/>`);
-        const name = cls ? set.names.get(id) : '';
+        const cls = state(id);
+        parts.push(`<path class="river-case${cls}" d="${d}"/><path class="river set${cls}" d="${d}"/>`);
+        hits += `<path class="river-hit" data-k="${id}" d="${d}"/>`;
+        const name = set.found.has(id) || set.missed.has(id) ? set.names.get(id) : '';
         if (name) riverNames += this.riverName(projection, lines, name, taken, W, H);
       }
+      parts.push(hits); // wide and see-through, over all of them: a course is easy to tap
+    }
+    // Capitals or highest points: a dot or a peak for each country, its name beside it once found.
+    let markNames = '';
+    if (set?.marks) {
+      let marks = '', top = '';
+      const taken: [number, number, number, number][] = [];
+      const shape = set.mark === 'peak' ? '<path d="M0-6.5 6.5 4.6H-6.5z"/>' : '<circle r="3.8"/>';
+      for (const [n, list] of set.marks) {
+        const cls = state(n), now = n === set.current;
+        for (const ll of list) {
+          const p: LonLat = [ll[1], ll[0]];
+          if (geoDistance(center, p) > Math.min(view, Math.PI / 2 - 0.02)) continue;
+          const pt = projection(p);
+          if (!pt || pt[0] < -8 || pt[0] > W + 8 || pt[1] < -8 || pt[1] > H + 8) continue;
+          const g = `<g class="mark${cls}" data-k="${n}" transform="translate(${pt[0].toFixed(1)} ${pt[1].toFixed(1)})"><circle class="hit" r="11"/>${now ? '<circle class="pulse" r="10"/>' : ''}${shape}</g>`;
+          if (now || n === set.flash) top += g; else marks += g;
+          const name = set.found.has(n) || set.missed.has(n) ? set.names.get(n) : '';
+          if (name && list.length === 1) markNames += this.markName(pt, name, taken, W, H);
+        }
+        // Two capitals (Bolivia, South Africa): each named by its own dot.
+        if (list.length > 1 && (set.found.has(n) || set.missed.has(n))) {
+          const names = (set.names.get(n) ?? '').split(' / ');
+          list.forEach((ll, i) => {
+            const pt = geoDistance(center, [ll[1], ll[0]]) < Math.PI / 2 - 0.02 ? projection([ll[1], ll[0]]) : null;
+            if (pt && names[i]) markNames += this.markName(pt as [number, number], names[i], taken, W, H);
+          });
+        }
+      }
+      parts.push(`<g class="marks ${set.mark ?? 'dot'}-marks">${marks}${top}</g>`); // not "dot": the quiz's capital dot is styled so
     }
     if (o.dot) {
       const pt = projection([o.dot[1], o.dot[0]]);
@@ -253,8 +308,8 @@ export class WorldMap {
       if (pt) parts.push(`<g class="peak" transform="translate(${pt[0].toFixed(1)} ${pt[1].toFixed(1)})"><circle class="pulse" r="12"/><path d="M0-9 9 6H-9z"/></g>`);
     }
     if (o.labels?.length) parts.push(this.names(svg, projection, o.labels, !!ring));
-    if (set?.countries) parts.push(this.names(svg, projection, [...set.found, ...set.missed].map(num => ({ num, name: set.names.get(num) ?? '' })), false, true));
-    if (riverNames) parts.push(`<g class="names">${riverNames}</g>`);
+    if (set?.countries && !set.marks) parts.push(this.names(svg, projection, [...set.found, ...set.missed].map(num => ({ num, name: set.names.get(num) ?? '' })), false, true));
+    if (riverNames || markNames) parts.push(`<g class="names">${riverNames}${markNames}</g>`);
     svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
     // One group around everything, so a pinch or a drag can move the drawing before it is drawn again.
     svg.innerHTML = `<g class="zoomer">${parts.join('')}</g>`;
@@ -313,6 +368,48 @@ export class WorldMap {
     if (taken.some(b => b[0] < box[2] && box[0] < b[2] && b[1] < box[3] && box[1] < b[3])) return '';
     taken.push(box);
     return `<text class="name river-name" x="${cx.toFixed(1)}" y="${cy.toFixed(1)}" style="font-size:${size.toFixed(1)}px;stroke-width:${(3.2 * k).toFixed(1)}px">${escapeXml(name)}</text>`;
+  }
+
+  /** A capital's or a peak's name beside its mark (to the right, or to the left near the right edge), unless it would
+   *  cover another name. */
+  private markName([x, y]: [number, number], name: string, taken: [number, number, number, number][], W: number, H: number): string {
+    const k = W / (this.view!.svg.parentElement?.clientWidth || W);
+    const size = 11 * k, w = name.length * size * 0.58 + 4 * k, h = size * 1.25, off = 8 * k;
+    // To the right, else to the left, else above or below: wherever it covers no other name.
+    for (const [cx, cy] of [[x + off + w / 2, y], [x - off - w / 2, y], [x, y - off - h / 2 + 2 * k], [x, y + off + h / 2 - 2 * k]]) {
+      const bx = Math.min(Math.max(cx, w / 2 + 3), W - w / 2 - 3), by = Math.min(Math.max(cy, h / 2 + 3), H - h / 2 - 3);
+      const box: [number, number, number, number] = [bx - w / 2, by - h / 2, bx + w / 2, by + h / 2];
+      if (taken.some(b => b[0] < box[2] && box[0] < b[2] && b[1] < box[3] && box[1] < b[3])) continue;
+      taken.push(box);
+      return `<text class="name mark-name" x="${bx.toFixed(1)}" y="${by.toFixed(1)}" style="font-size:${size.toFixed(1)}px;stroke-width:${(3.2 * k).toFixed(1)}px">${escapeXml(name)}</text>`;
+    }
+    return '';
+  }
+
+  /** Whether a place [lon, lat] shows in the frame now, at least `m` map units in from its edges. */
+  inView(p: LonLat, m = 28): boolean {
+    const v = this.view, pr = this.last?.projection;
+    if (!v || !pr || this.last?.svg !== v.svg || geoDistance(v.center, p) > Math.PI / 2 - 0.08) return false;
+    const xy = pr(p);
+    return !!xy && xy[0] > m && xy[0] < v.w - m && xy[1] > m && xy[1] < v.h - m;
+  }
+
+  private turning = 0;
+  /** Turns the view over a moment until it is centred on a place [lon, lat], as zoomed in as it is (Practice: the
+   *  next one asked lies out of sight). A gesture, a new map or going back stops it. */
+  turnTo(p: LonLat, ms = 420) {
+    const v = this.view;
+    if (!v) return;
+    const id = ++this.turning, step = geoInterpolate(v.center, p), t0 = performance.now();
+    const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const frame = (t: number) => {
+      if (id !== this.turning || this.view !== v) return;
+      const k = still ? 1 : Math.min(1, (t - t0) / ms), e = 1 - (1 - k) ** 3;
+      v.center = step(e) as LonLat;
+      this.draw();
+      if (k < 1) requestAnimationFrame(frame);
+    };
+    requestAnimationFrame(frame);
   }
 
   /** After an answer: lights up these countries (ISO numeric codes) on the map just drawn. */
