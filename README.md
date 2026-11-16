@@ -83,8 +83,8 @@ with a button to try it. A round's knots, its ring and its title on the results 
 sends the score with a challenge link (`#c=...`: the question codes and subjects plus a seed and the level, so a friend
 gets the same questions, asked the same way, at the same level, and a score to beat); the share icon at the top shares
 the site. Stopping a round shows the answers so far, without a score. Leaving a round asks first ("Leave this round?",
-James, 16 Nov): Esc, the X or the logo opens the question, and a second Esc or Leave goes, while Enter or Keep playing
-goes back; meanwhile the question's time stands still.
+James, 16 Nov): Esc, the X or the logo opens the question, and a second Esc or Leave goes, while Enter or Resume
+goes back; meanwhile the question's time stands still and the question is blurred behind the card.
 
 Tapping an answer opens it again: the map of the country it was about with the countries around it named (for a highest
 point, the peak with its country), and a card with

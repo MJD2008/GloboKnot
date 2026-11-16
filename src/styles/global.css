@@ -442,7 +442,7 @@ body[data-lv] .beads, body[data-lv] .ring, .beads i[class*="lv-"] { --accent: va
   border-radius: 22px;
   box-shadow: var(--shadow);
   padding: 10px;
-  transition: border-color 0.2s, box-shadow 0.2s;
+  transition: border-color 0.2s, box-shadow 0.2s, filter 0.2s ease-out, opacity 0.2s ease-out;
 }
 .card.ok { border-color: var(--ok); box-shadow: 0 0 0 4px var(--ok-ring), var(--shadow); }
 .card.bad { border-color: var(--bad); box-shadow: 0 0 0 4px var(--bad-ring), var(--shadow); animation: shake 0.36s; }
@@ -969,7 +969,8 @@ body.untied .logo .rope { stroke: #e3b341; }
 .review { width: min(720px, calc(100% - 20px)); max-width: none; max-height: calc(100% - 20px); padding: 0; border: 0; border-radius: 18px; background: var(--surface); color: var(--ink); box-shadow: var(--shadow); }
 .review[open] { animation: pop 0.2s ease-out; }
 .review::backdrop { background: rgba(10, 14, 20, 0.45); animation: fadein 0.2s; }
-/* Leave this round? A small card in the middle, Keep playing first (Enter), Leave under it (Esc). */
+/* Leave this round? A small card in the middle, Resume first (Enter), Leave under it (Esc). Behind it the question
+   is blurred and faded (body.paused, James, 16 Nov 2026: "the question behind it subtly hidden"). */
 .leave { width: min(340px, calc(100% - 32px)); max-width: none; padding: 0; border: 0; border-radius: 18px; background: var(--surface); color: var(--ink); box-shadow: var(--shadow); }
 .leave[open] { animation: pop 0.16s ease-out; }
 .leave::backdrop { background: rgba(10, 14, 20, 0.5); animation: fadein 0.15s; }
@@ -978,7 +979,8 @@ body.untied .logo .rope { stroke: #e3b341; }
 .leave p { margin: 0 0 14px; color: var(--muted); font-size: 0.95rem; }
 .leave-actions { display: grid; gap: 10px; }
 .leave-actions .btn { display: flex; align-items: center; justify-content: center; gap: 8px; }
-.leave-actions .btn.primary kbd { background: rgba(255, 255, 255, 0.2); border-color: transparent; color: inherit; }
+.fill-board { transition: filter 0.2s ease-out, opacity 0.2s ease-out; }
+body.paused .card, body.paused .fill-board { filter: blur(14px) saturate(0.6); opacity: 0.45; }
 .review-in { display: grid; gap: 12px; padding: 12px; }
 .review-head { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 10px; padding-left: 4px; }
 .review-n { min-width: 44px; padding: 4px 8px; border-radius: 99px; text-align: center; font-size: 0.85rem; font-weight: 750; font-variant-numeric: tabular-nums; color: var(--accent-ink); background: var(--accent); }

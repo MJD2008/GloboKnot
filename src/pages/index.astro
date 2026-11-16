@@ -270,14 +270,15 @@ const INFO = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12
     </div>
   </dialog>
 
-  <!-- Leaving a round asks first (James, 16 Nov 2026): Esc a second time or Leave goes; Enter or Keep playing stays. -->
+  <!-- Leaving a round asks first (James, 16 Nov 2026): Esc a second time or Leave goes; Enter or Resume stays. The keys
+       are not written on the buttons (James, 16 Nov 2026: "remove the Enter/Esc labels, but keep the shortcuts"). -->
   <dialog id="leave" class="leave" aria-labelledby="leave-title" aria-describedby="leave-why">
     <div class="leave-in">
       <h2 id="leave-title">Leave this round?</h2>
       <p id="leave-why">Your answers so far won’t count.</p>
       <div class="leave-actions">
-        <button id="leave-stay" class="btn primary" type="button" autofocus>Keep playing <kbd>Enter</kbd></button>
-        <button id="leave-go" class="btn" type="button">Leave <kbd>Esc</kbd></button>
+        <button id="leave-stay" class="btn primary" type="button" autofocus>Resume</button>
+        <button id="leave-go" class="btn" type="button">Leave</button>
       </div>
     </div>
   </dialog>

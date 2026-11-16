@@ -742,8 +742,9 @@ function quit() {
   end(true);
 }
 
-// ---- leaving a round asks first (James, 16 Nov 2026): Esc a second time or Leave goes; Enter, Keep playing or a tap
-// beside the card stays. Meanwhile the round stands still: the question's time, the move to the next one, the clock.
+// ---- leaving a round asks first (James, 16 Nov 2026): Esc a second time or Leave goes; Enter, Resume or a tap beside
+// the card stays. Meanwhile the round stands still (the question's time, the move to the next one, the clock) and the
+// question is blurred behind the card (body.paused), so a pause is no time to study it.
 let leaving: (() => void) | null = null, pausedAt = 0, timeLeft = 0;
 function askLeave(then: () => void) {
   if (ui.leave.open) return;
@@ -755,6 +756,7 @@ function askLeave(then: () => void) {
     clearTimeout(state.auto);
     if (!state.locked) { cancelAnimationFrame(state.low); timeLeft = Math.max(0, state.deadline - pausedAt); }
   }
+  document.body.classList.add('paused');
   ui.leave.showModal();
   ui.leaveStay.focus();
 }
@@ -763,6 +765,7 @@ function stay() {
   ui.leave.close();
 }
 ui.leave.addEventListener('close', () => {
+  document.body.classList.remove('paused');
   const go = leaving;
   leaving = null;
   if (go) { go(); return; }
