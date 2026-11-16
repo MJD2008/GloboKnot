@@ -212,6 +212,8 @@ async function load() {
     globe.shapeOf = num => world?.shape(num) ?? null;
     paintTied();
     if (!screens.start.hidden) globe.play();
+    // The lights of the night side come a moment later; the globe doesn't wait for them.
+    fetch(url('data/lights.json')).then(r => r.json()).then(d => globe?.setLights(d)).catch(() => {});
   }).catch(() => { ui.globe.parentElement!.hidden = true; });
 
   const [data, topo] = await Promise.all([
@@ -1374,6 +1376,7 @@ function goHome() {
     state.round = [];
   }
   if (screens.start.hidden) show('start');
+  else globe?.back(); // home already: a grown globe goes back into its rope
 }
 $('.brand').addEventListener('click', e => {
   e.preventDefault();
@@ -1392,6 +1395,8 @@ ui.card.addEventListener('click', e => {
 document.addEventListener('keydown', e => {
   if (document.querySelector('dialog[open]')) return;
   if (!screens.fill.hidden && e.key === 'Escape') { e.preventDefault(); fill?.leave(); return; }
+  // On the home screen, Esc puts a grown globe back into its rope.
+  if (!screens.start.hidden && e.key === 'Escape' && globe?.back()) { e.preventDefault(); return; }
   if (screens.quiz.hidden) return;
   // Esc stops the round, as the X button does, once it is confirmed (a second Esc). → skips, but only with nothing
   // typed, so it still moves the cursor through a typed answer; after an answer, → and Enter both go on.

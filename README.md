@@ -107,9 +107,17 @@ doesn't tie countries or count as a round. (`sets.ts` makes the sets, `fill.ts` 
 
 The logo is the world in a loop of rope whose ends cross below it, as in a knot; the globe on the home screen sits in the
 same loop. Tapping the logo goes back to the home screen from anywhere (a round in progress is dropped, unscored). The
-home globe turns by itself or by dragging, and zooms up to six times: the + and − buttons beside it, a pinch, the
-scroll wheel or a double tap (the third button turns it back). Zoomed in, it stops turning by itself and draws the
-detailed borders (1:50m, `world.json`). A few words are only shown when asked for, behind an ⓘ (what the levels mean, what Practice is, what
+home globe turns by itself or by dragging. Zooming in (the + and − buttons beside it, a pinch, the scroll wheel or a
+double tap) grows the globe itself (James, 16 Nov: "so you can cover the screen with your globe if you so wish"): it
+leaves its rope for a layer over the whole screen and glides to the middle while the rest of the home screen fades away
+and can't be reached, covers the screen, and goes on to four times that size; the buttons move to the corner. Grown,
+it stops turning by itself and draws the countries' borders: the detailed 1:50m map (`world.json`) at rest, the 1:110m
+one while it moves, and only the land in view. ↺, − all the way, Esc or the logo bring it back into its rope, and so
+does leaving the home screen. Day and night are as they are at that moment ("With night and day and lights too?"):
+`sun.ts` works out where the sun stands overhead (the U.S. Naval Observatory's approximate solar coordinates), the
+night side darkens through a soft twilight, the day side a little away from the sun, and the lights of 6,099 towns and
+cities (Natural Earth's populated places of 10,000 people or more, `lights.json`, `npm run build:lights`) come on
+across the night side, bigger and brighter for bigger places. A few words are only shown when asked for, behind an ⓘ (what the levels mean, what Practice is, what
 Auto-submit does). About opens with the numbers (194 countries, 1,417 checked facts...), counted from the facts as they
 load, then how a fact gets in, how to play, and the sources. Settings has three volumes (Volume, Effects, Music); the
 sounds and music go in named slots, listed in [docs/AUDIO.md](docs/AUDIO.md).
@@ -167,11 +175,12 @@ src/scripts/press.ts      a press you can feel: the press on every button, held 
 src/scripts/questions.ts  question templates (12 kinds, one clue each, given/asked tags), the levels and the round builder: approved facts in, questions out
 src/scripts/kb.ts         the knowledge base as the site reads it
 src/scripts/map.ts        the map: a globe turned and zoomed to the asked country, capital, peak or river
-src/scripts/globe.ts      the globe on the start screen: turns by itself, can be dragged and zoomed, names the country under the pointer, lights the countries tied
+src/scripts/globe.ts      the globe on the start screen: turns by itself, can be dragged, grows over the screen when zoomed, names the country under the pointer, lights the countries tied, shows day, night and city lights
+src/scripts/sun.ts        where the sun stands overhead at a moment, for day and night on the globe
 src/scripts/sky.ts        the night sky behind the start screen: stars that light up and tie together when touched
 src/scripts/sound.ts      sounds and music in named slots (docs/AUDIO.md): a file in public/audio per slot, else a
                           small synthesised placeholder; the three volumes in Settings
-public/data/              countries.json (npm run build:data), rivers.json (npm run import), world.json (1:50m) and globe.json (1:110m countries; npm run build:map)
+public/data/              countries.json (npm run build:data), rivers.json (npm run import), world.json (1:50m) and globe.json (1:110m countries; npm run build:map), lights.json (npm run build:lights)
 public/flags/             flags from flag-icons (npm run build:flags)
 ```
 

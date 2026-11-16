@@ -206,7 +206,7 @@ body.home .logo circle { fill: var(--glow, var(--accent)); }
 /* ---------- home: a night sky in both themes */
 .top { position: relative; z-index: 2; }
 .start { padding-top: clamp(0px, 2vh, 28px); text-align: center; }
-.start > :not(.sky):not(.globe-label):not(.globe-box) { position: relative; z-index: 1; }
+.start > :not(.sky):not(.globe-label):not(.globe-box):not(.globe-layer) { position: relative; z-index: 1; }
 .sky {
   position: fixed;
   inset: 0;
@@ -263,6 +263,14 @@ body.home .logo circle { fill: var(--glow, var(--accent)); }
 .globe-zoom button:hover:not(:disabled) { background: rgba(40, 56, 90, 0.85); }
 .globe-zoom button:disabled { opacity: 0.3; cursor: default; }
 .globe-zoom svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+/* Zoomed in, the globe grows out of its rope onto a layer over the whole screen, under the header (preview 16); the
+   rest of the home screen fades away (globe.ts) and the buttons move to the corner, a little bigger. */
+.globe-layer { position: fixed; inset: 0; z-index: 1; display: block; width: 100%; height: 100%; cursor: grab; touch-action: none; -webkit-user-select: none; user-select: none; }
+.globe-layer[hidden] { display: none; }
+.globe-layer.dragging { cursor: grabbing; }
+body.globe-big .globe-zoom { position: fixed; z-index: 3; right: max(16px, env(safe-area-inset-right, 0px)); bottom: max(16px, env(safe-area-inset-bottom, 0px)); gap: 8px; }
+body.globe-big .globe-zoom button { width: 42px; height: 42px; }
+body.globe-big .globe-zoom svg { width: 21px; height: 21px; }
 /* The name of the country under the pointer (or the finger, for a moment). */
 .globe-label {
   position: fixed;
