@@ -73,7 +73,10 @@ const nePeaks = JSON.parse(await read('sources/cache/ne-elevation-points.geojson
 const DISPLAY = { 'Mountain of Smoke': 'Jabal ad Dukhan', 'Monte Rosa Massif': 'Dufourspitze', 'Volcán Tajumulco y Tacana': 'Volcán Tajumulco',
   'Marrah Mountains': 'Jebel Marra', 'Mount Richard-Molard': 'Mount Nimba', 'Baekdu Mountain': 'Mount Paektu' };
 const peaks = new Map(), facts = [], review = { peaks: [], rivers: [] }, nearby = {};
-function addPeak(id, name, aliases, elevation, ll, position) {
+function addPeak(id, name, aliases, elevation, ll, position, owner) {
+  // Two mountains of one name (Mount Olympus: Greece's at 2,917 m, Cyprus's at 1,951 m) are two peaks: the second
+  // gets the country's name in its id. The same peak for two countries (Everest) stays one.
+  if (peaks.has(id) && km([+peaks.get(id).lng, +peaks.get(id).lat], ll) > 25) id = `${id}-${slug(owner.name)}`;
   const p = peaks.get(id);
   if (p) { aliases.forEach(a => p.aliases.add(a)); return p; }
   const q = { id, name, aliases: new Set(aliases), elevation, lat: ll[1].toFixed(3), lng: ll[0].toFixed(3), position };
@@ -90,7 +93,7 @@ for (const c of countries) {
     const ne = d.ne_name && nePeaks.find(p => p.name === d.ne_name);
     if (d.ne_name && !ne) throw new Error(`decision for ${c.id}: no Natural Earth peak named ${d.ne_name}`);
     const p = addPeak(d.object, d.name, d.aliases.split('|').filter(a => a && a !== d.name), m ? +m[2].replace(/,/g, '') : ne.elevation,
-      ne ? ne.ll : [+d.lng, +d.lat], ne ? 'naturalearth' : 'decision');
+      ne ? ne.ll : [+d.lng, +d.lat], ne ? 'naturalearth' : 'decision', c);
     facts.push({ subject: c.id, relation: 'highest_point', object: p.id, sources: 'factbook+decision', status: 'approved', checked: `${d.by}:${d.date}`, note: d.note });
     continue;
   }
@@ -110,7 +113,7 @@ for (const c of countries) {
   if (!hit) { review.peaks.push({ c, text, why: near.length ? `no Natural Earth peak with this name and height (${near.length} nearby)` : 'no Natural Earth peak nearby' }); continue; }
   const neName = hit.name_en || hit.name;
   const name = DISPLAY[neName] || neName;
-  const p = addPeak(slug(name), name, [fbName, ...other, hit.name, hit.name_en, hit.name_alt].filter(n => n && n !== name && !/\bunnamed\b/i.test(n)), elevation, hit.ll, 'naturalearth');
+  const p = addPeak(slug(name), name, [fbName, ...other, hit.name, hit.name_en, hit.name_alt].filter(n => n && n !== name && !/\bunnamed\b/i.test(n)), elevation, hit.ll, 'naturalearth', c);
   facts.push({ subject: c.id, relation: 'highest_point', object: p.id, sources: 'factbook+naturalearth', status: 'approved', checked: `auto:${TODAY}`, note: '' });
 }
 /** Is the point within `limit` km of the shape's outline? (Coarse: checks the outline's vertices.) */

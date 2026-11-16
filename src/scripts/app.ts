@@ -13,6 +13,7 @@ import { WorldMap, type MapLabel, type MapOptions } from './map';
 import { catOn, clockOf, icon, initMenu, levelIcon, levelTag, placesLabel } from './menu';
 import { initFill } from './fill';
 import { initPractice } from './practice';
+import { initSheets, type Photo, type Sheets } from './sheet';
 import type { Practice } from './sets';
 import { ACCENTS, ATLAS_AT, GOLD_AT, TIME, applySettings, atlasOpen, better, dailyResult, dailyRope, endTrial, nextDailyIn, saveDaily, saveSelection, saveSettings, saveStats, saveTied, selection, setLevel, settings, stats, tie, tied, today, type Accent, type Theme } from './prefs';
 import { ALL_KINDS, ANSWERS, CATS, DAILY, GORDIAN, LEVELS, LEVEL_IDS, available, buildRound, codeOf, dailyRound, isCustom, levelAsk, rebuildRound, remember, levelOf, type Answers, type Ask, type Level, type Pool, type Question, type Selection, type Tempt } from './questions';
@@ -120,6 +121,7 @@ if (!screens.start.hidden) sky.play();
 let menu: { paint(): void } | null = null;
 let practiceSheet: { paint(): void } | null = null;
 let fill: ReturnType<typeof initFill> | null = null;
+let countrySheets: Sheets | null = null; // a country's sheet, from a tap on the home globe
 let riversLoaded: Promise<void> | null = null;
 
 interface Result {
@@ -208,6 +210,7 @@ async function load() {
     globe = new Globe(ui.globe, topo);
     globe.chainNear = chainNear;
     globe.countryAt = countryAt;
+    globe.onTap = hit => { if (hit.id) countrySheets?.open(hit.id); };
     globe.detail = () => world?.detail ?? null;
     globe.shapeOf = num => world?.shape(num) ?? null;
     paintTied();
@@ -230,6 +233,7 @@ async function load() {
   menu = initMenu(kb, ui.menu, paintHome);
   fill = initFill(screens.fill, { kb, world, pools, url, loadRivers, askLeave, home: () => show('start') });
   practiceSheet = initPractice(kb, ui.practiceSheet, startPractice);
+  countrySheets = initSheets($('#country-sheets'), { kb, world, url, loadRivers, photos: photoList(), onFront: frontSheet });
   [ui.play, ui.daily, ui.practice].forEach(b => (b.disabled = false));
   paintHome();
   document.body.classList.add('ready');
@@ -247,7 +251,19 @@ function countryAt(p: [number, number]) {
   if (!kb || !world) return null;
   byNum ??= new Map(kb.countries.map(c => [c.num, c]));
   const hit = world.countryAt(p), c = hit && byNum.get(hit.num);
-  return c ? { name: c.name, shape: hit.shape } : null;
+  return c ? { name: c.name, shape: hit.shape, id: c.id } : null;
+}
+
+/** James's photos of the countries, listed into the page when it is built (docs/PHOTOS.md). */
+function photoList(): Record<string, Photo> {
+  try { return JSON.parse(document.getElementById('photos')?.textContent || '{}'); } catch { return {}; }
+}
+
+/** The sheet in front: its country in green on the globe, which turns to it if it is out of sight. */
+function frontSheet(id: string | null) {
+  const c = id ? kb.country(id) : undefined, shape = c ? world.shape(c.num) : null;
+  globe?.pick(c && shape ? { name: c.name, shape, id: c.id } : null);
+  if (c) globe?.look(c.ll);
 }
 
 /** A walk of up to five neighbouring countries starting near (lon, lat), for the globe on the home screen. */
@@ -370,7 +386,7 @@ function show(name: keyof typeof screens) {
   const lv = name === 'start' || name === 'fill' ? null : state.gordian ? 'impossible' : state.level ?? state.challenge?.level ?? null;
   if (lv) document.body.dataset.lv = lv; else delete document.body.dataset.lv;
   themeColor();
-  if (name === 'start') { globe?.play(); sky.play(); paintHome(); } else { globe?.pause(); sky.pause(); }
+  if (name === 'start') { globe?.play(); sky.play(); paintHome(); } else { globe?.pause(); sky.pause(); countrySheets?.closeAll(); }
   sound.scene(name === 'quiz' || name === 'fill' ? 'music-quiz' : 'music-home');
   if (name !== 'results') clearKnotSounds();
   window.scrollTo({ top: 0 });
@@ -1395,8 +1411,8 @@ ui.card.addEventListener('click', e => {
 document.addEventListener('keydown', e => {
   if (document.querySelector('dialog[open]')) return;
   if (!screens.fill.hidden && e.key === 'Escape') { e.preventDefault(); fill?.leave(); return; }
-  // On the home screen, Esc puts a grown globe back into its rope.
-  if (!screens.start.hidden && e.key === 'Escape' && globe?.back()) { e.preventDefault(); return; }
+  // On the home screen, Esc closes the country sheet in front, then puts a grown globe back into its rope.
+  if (!screens.start.hidden && e.key === 'Escape' && (countrySheets?.back() || globe?.back())) { e.preventDefault(); return; }
   if (screens.quiz.hidden) return;
   // Esc stops the round, as the X button does, once it is confirmed (a second Esc). → skips, but only with nothing
   // typed, so it still moves the cursor through a typed answer; after an answer, → and Enter both go on.

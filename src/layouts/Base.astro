@@ -9,7 +9,7 @@ const { title, description } = Astro.props;
 const PREVIEW = true;
 ---
 <!doctype html>
-<html lang="en">
+<html lang="en" data-preview={PREVIEW ? '' : undefined}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />

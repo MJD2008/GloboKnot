@@ -361,13 +361,15 @@ export const TEMPLATES: Template[] = [
   },
   {
     // Named, without a map while it is asked: a triangle on the map would show the country, so the name is the one
-    // clue. The review afterwards shows where it is. A peak named after its country (Mount Kenya) is no question.
+    // clue. The review afterwards shows where it is. A peak named after its country (Mount Kenya) is no question. Two
+    // peaks of one name (Mount Olympus, in Greece and in Cyprus) are one question, and either country is right.
     id: 'peak.map', code: 'K', cat: 'mountains', label: 'Highest point → country', given: 'Mountain', asked: 'Country', natural: 'type', typable: true,
-    subjects: (kb, inPlace) => kb.peaks.filter(p => kb.peakCountries(p.id).some(inPlace) && !namesake(kb, p.name, kb.peakCountries(p.id))).map(p => p.id),
+    subjects: (kb, inPlace) => kb.peaks.filter((p, i) => kb.peakCountries(p.id).some(inPlace) && !namesake(kb, p.name, kb.peakCountries(p.id))
+      && kb.peaks.findIndex(o => o.name === p.name) === i).map(p => p.id),
     // As well known as the best-known country it is the highest point of, or a peak of 5,000 m or more.
     fame: (kb, id) => Math.max(mostFamous(kb, kb.peakCountries(id)), (kb.get<Peak>(id)?.m ?? 0) >= 5000 ? 1 : 0) as Fame,
     make: (kb, id, rng, { format, tempt }) => {
-      const p = kb.get<Peak>(id)!, where = kb.peakCountries(id);
+      const p = kb.get<Peak>(id)!, where = [...new Set(kb.peaks.filter(o => o.name === p.name).flatMap(o => kb.peakCountries(o.id)))];
       return inForm(kb, rng,
         { key: `peak-map:${id}`, kind: 'peak.map', format, prompt: `${p.name} is the highest point of which country?`,
           clue: `${p.name} is the highest point of`, media: { kind: 'none' }, pools: ['country'], accept: where, reveal: where, countries: where },

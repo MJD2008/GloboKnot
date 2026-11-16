@@ -62,7 +62,7 @@ const ICONS = {
 const clamp = (x: number, a: number, b: number) => Math.min(b, Math.max(a, x));
 /** 0 at a, 1 at b (either way round), smooth in between. */
 const smoothstep = (a: number, b: number, x: number) => { const t = clamp((x - a) / (b - a), 0, 1); return t * t * (3 - 2 * t); };
-export interface Hit { name: string; shape: GeoPermissibleObjects }
+export interface Hit { name: string; shape: GeoPermissibleObjects; id?: string }
 
 export class Globe {
   private readonly ctx: CanvasRenderingContext2D;
@@ -94,6 +94,8 @@ export class Globe {
   private readonly zoomBox: HTMLElement;
   private released = -Infinity;
   private hover: Hit | null = null;
+  /** The country whose sheet is open, in green. */
+  private picked: Hit | null = null;
   private pointer: { x: number; y: number } | null = null; // the mouse, while it is over the globe
   private lastHit = 0;
   private tapTimer = 0;
@@ -104,7 +106,7 @@ export class Globe {
   private running = false;
   private size = 0;
   private dpr = 1;
-  private colors = { ocean: '', land: '', coast: '', grat: '', accent: '', dot: '' };
+  private colors = { ocean: '', land: '', coast: '', grat: '', accent: '', dot: '', pick: '' };
   // ---- grown: the layer over the whole screen
   private readonly layer: HTMLCanvasElement;
   private readonly layerCtx: CanvasRenderingContext2D;
@@ -128,6 +130,8 @@ export class Globe {
   chainNear: ((lon: number, lat: number) => LonLat[]) | null = null;
   /** The named country at a point (lon, lat), or null (sea, or a place the quiz has no country for). */
   countryAt: ((p: LonLat) => Hit | null) | null = null;
+  /** A tap or a click on a country: its sheet opens. */
+  onTap: ((hit: Hit) => void) | null = null;
   /** The quiz's map, once it has loaded: drawn when zoomed in. */
   detail: (() => Detail | null) | null = null;
   /** A country's shape on the quiz's map (1:50m), for the tied ones when zoomed in. */
@@ -238,9 +242,28 @@ export class Globe {
     this.redraw();
   }
 
-  /** Turns the globe to face a place [lat, lng], the shortest way round; back to the globe in its rope first. */
-  private faceTo([lat, lon]: [number, number]) {
-    if (this.zoomTo > 1) this.zoomBy(0);
+  /** Picks out the country whose sheet is open, in green (null: none). */
+  pick(hit: Hit | null) {
+    if (hit?.name === this.picked?.name) return;
+    this.picked = hit;
+    this.canvas.dataset.picked = hit?.name ?? '';
+    this.dirty = true;
+    this.redraw();
+  }
+
+  /** Turns the globe to a country opened from a sheet, unless it is in view already; as zoomed in as it is. */
+  look(ll: [number, number]) {
+    const g = this.where();
+    this.projection.scale(g.r).translate([g.x, g.y]).rotate([this.lambda, this.phi]).clipExtent(null);
+    const xy = geoDistance([ll[1], ll[0]], [-this.lambda, -this.phi]) < 1.35 ? this.projection([ll[1], ll[0]]) : null;
+    if (xy && xy[0] > 40 && xy[0] < innerWidth - 40 && xy[1] > 40 && xy[1] < innerHeight - 40 && Math.hypot(xy[0] - g.x, xy[1] - g.y) < g.r * 0.8) return;
+    this.faceTo(ll, true);
+  }
+
+  /** Turns the globe to face a place [lat, lng], the shortest way round; back to the globe in its rope first (unless
+   *  `stay`: as zoomed in as it is). */
+  private faceTo([lat, lon]: [number, number], stay = false) {
+    if (this.zoomTo > 1 && !stay) this.zoomBy(0);
     const l1 = this.lambda + ((((-lon - this.lambda) % 360) + 540) % 360) - 180, p1 = clamp(-lat, -60, 60);
     if (this.still || !this.running) { this.lambda = l1; this.phi = p1; this.released = performance.now(); return; }
     this.face = { t0: performance.now(), l0: this.lambda, p0: this.phi, l1, p1 };
@@ -319,10 +342,14 @@ export class Globe {
       this.drag = null;
       c.classList.remove('dragging');
       this.released = performance.now();
-      if (d.moved <= 6) { // a tap or a click: name the country there for a moment
+      if (d.moved <= 6) { // a tap or a click: the country's sheet opens (or its name shows for a moment)
         this.hoverAt(e.clientX, e.clientY);
         clearTimeout(this.tapTimer);
-        if (e.pointerType !== 'mouse') this.tapTimer = window.setTimeout(() => this.setHover(null), 2600);
+        const hit = this.hover;
+        if (hit && this.onTap) {
+          if (e.pointerType !== 'mouse') this.setHover(null);
+          this.onTap(hit);
+        } else if (e.pointerType !== 'mouse') this.tapTimer = window.setTimeout(() => this.setHover(null), 2600);
         return;
       }
       if (!this.still) this.spinV = e.timeStamp - d.t > 90 ? 0 : clamp(d.v / this.zoom, -360, 360);
@@ -543,7 +570,7 @@ export class Globe {
     // The home screen is a night sky in both themes, so the globe always has its night colours.
     const st = getComputedStyle(this.canvas);
     const v = (name: string) => st.getPropertyValue(name).trim();
-    this.colors = { ocean: v('--ocean'), land: v('--land'), coast: v('--border'), grat: v('--grat'), accent: v('--glow'), dot: '#0b111c' };
+    this.colors = { ocean: v('--ocean'), land: v('--land'), coast: v('--border'), grat: v('--grat'), accent: v('--glow'), dot: '#0b111c', pick: v('--target') || '#3ee483' };
   }
 
   /** Where the sun is overhead, looked up again every 30 s. */
@@ -637,7 +664,12 @@ export class Globe {
       ctx.globalAlpha = p; ctx.strokeStyle = TIE; ctx.lineWidth = 1.6 * k; ctx.stroke();
       ctx.globalAlpha = 1;
     }
-    if (this.hover) {
+    if (this.picked) {
+      ctx.beginPath(); path(this.picked.shape);
+      ctx.globalAlpha = 0.8; ctx.fillStyle = c.pick; ctx.fill();
+      ctx.globalAlpha = 1; ctx.strokeStyle = '#eafff2'; ctx.lineWidth = 1.2 * k; ctx.stroke();
+    }
+    if (this.hover && this.hover.name !== this.picked?.name) {
       ctx.beginPath(); path(this.hover.shape);
       ctx.globalAlpha = 0.7; ctx.fillStyle = c.accent; ctx.fill();
       ctx.globalAlpha = 1; ctx.strokeStyle = c.accent; ctx.lineWidth = k; ctx.stroke();

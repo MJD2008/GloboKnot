@@ -63,12 +63,14 @@ for (const c of countries) {
   if (!approved.some(f => f.subject === c.id && f.relation === 'capital')) warnings.push(`${c.id} (${c.name}) has no capital (excluded or pending)`);
 }
 
-// Answers: no accepted name may point to two entities of the same type (two rivers called Red are told apart by the map).
+// Answers: no accepted name may point to two entities of the same type (two rivers called Red are told apart by the map;
+// two peaks called Mount Olympus are each the right answer for their own country, and one question that accepts both).
 for (const [type, list] of [['country', countries], ['city', cities], ['language', languages], ['peak', peaks]]) {
   const seen = new Map();
   for (const e of list) for (const n of [e.name, ...e.aliases.split('|')].filter(Boolean)) {
     const k = norm(n);
-    if (seen.has(k) && seen.get(k) !== e.id) errors.push(`ambiguous ${type} answer "${n}": ${seen.get(k)} and ${e.id}`);
+    const twins = type === 'peak' && list.find(o => o.id === seen.get(k))?.name === e.name;
+    if (seen.has(k) && seen.get(k) !== e.id && !twins) errors.push(`ambiguous ${type} answer "${n}": ${seen.get(k)} and ${e.id}`);
     seen.set(k, e.id);
   }
 }

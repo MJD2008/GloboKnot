@@ -1,10 +1,22 @@
 ---
 import Base from '../layouts/Base.astro';
-import { readdirSync } from 'node:fs';
+import { readFileSync, readdirSync } from 'node:fs';
 // The sounds James has made so far: every audio file in public/audio, listed into the page so the game knows which
 // slots have one (see docs/AUDIO.md). Adding a sound is dropping the file in and building again.
 const AUDIO_FILES = (() => {
   try { return readdirSync('public/audio').filter(n => /\.(mp3|m4a|ogg|wav)$/i.test(n)).sort(); } catch { return []; }
+})();
+// James's photos of the countries (docs/PHOTOS.md): every image in public/photos named by the country's code (fra.jpg),
+// with a line under it from public/photos/credits.json if he writes one. Listed into the page like the sounds.
+const PHOTOS = (() => {
+  try {
+    let credits: Record<string, string> = {};
+    try { credits = JSON.parse(readFileSync('public/photos/credits.json', 'utf8')); } catch { /* none */ }
+    return Object.fromEntries(readdirSync('public/photos').filter(n => /^[a-z]{3}\.(jpe?g|webp|png|avif)$/i.test(n)).sort().map(n => {
+      const id = n.slice(0, 3).toUpperCase(), credit = credits[id.toLowerCase()] ?? credits[id];
+      return [id, credit ? { src: `photos/${n}`, credit } : { src: `photos/${n}` }];
+    }));
+  } catch { return {}; }
 })();
 const X = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg>';
 // About: a short rope with a knot tied the first time, one tied after a retry and a miss, drawn the way the ring on
@@ -88,6 +100,11 @@ const INFO = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12
         <Fragment set:html={GLOBE_ROPE} />
       </div>
       <h1 class="hero">Our world <em>in a knot.</em></h1>
+      <!-- A country's sheet: tap a country on the globe (scripts/sheet.ts). -->
+      <aside id="country-sheets" class="cs-stack" aria-label="Countries" hidden>
+        <nav class="cs-tabs" aria-label="Open countries" hidden></nav>
+        <div class="cs-row"></div>
+      </aside>
       <!-- The level, and under it what, where and how many in one grey line that opens the configuration. -->
       <div id="home-level" class="seg levels home-levels" role="group" aria-label="Level"></div>
       <button id="config" class="config-line" type="button" aria-haspopup="dialog" aria-label="Questions: what, where and how many">
@@ -229,6 +246,7 @@ const INFO = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12
   </main>
   <p id="toast" class="toast" role="status" hidden></p>
   <script is:inline id="audio-files" type="application/json" set:html={JSON.stringify(AUDIO_FILES)} />
+  <script is:inline id="photos" type="application/json" set:html={JSON.stringify(PHOTOS)} />
 
   <dialog id="review" class="review" aria-labelledby="review-title">
     <div class="review-in">
