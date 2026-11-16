@@ -67,7 +67,12 @@ the same eight, each asked its level's way (`eemmhhii` in the link). New round a
 Typing forgives: an exact name first, then the usual typo correction (one typo in names of 5 to 8 letters, two in
 longer ones, never between two real names such as Niger and Nigeria), and then a near miss for the right answer, with one
 typo more, when no other name is as close ("Ngera" for Nigeria). Some names count only for the right answer ("Congo"
-for DR Congo, "Korea" for South Korea: `context_aliases` in `data/countries/names.csv`).
+for DR Congo, "Korea" for South Korea: `context_aliases` in `data/countries/names.csv`). Other names count too,
+old ones and those in the place's own language (James, 16 Nov: "Denali / Mount McKinley"): Persia, Ceylon, Zaire,
+Deutschland, Suomi; Peking, Nur-Sultan, Wien; Sagarmatha, Mount McKinley, Monte Bianco; the Yellow River, the Ganga,
+the Oxus (`data/countries/names.csv` for countries and capitals, `data/geo/names.csv` for peaks and rivers). "Mt." is
+"Mount", "Mount" may be left out (Everest, Kilimanjaro; not where the rest is a country, as Mount Kenya), and "River"
+before or after a river's name is ignored ("the River Nile", "Mississippi River").
 
 On screens from 1240 px wide, the round so far hangs down the left side of the quiz as a rope, one knot per answer. The
 right side is left free: an advertisement can go there later (`.rail.right`, commented out in `index.astro`), away from
@@ -95,29 +100,49 @@ Australia's map showed the Timor Sea), and countries under 5,000 km² keep every
 island nations show inside their ring instead of vanishing (16 Nov). A capital's dot is always well inside the view
 (Kuala Lumpur, west of Malaysian Borneo). `test/map.test.mjs` checks all three for every country.
 
-Practice (simplified on 16 Nov, at James's ask, into a whole set filled in at once): one set per category, Countries,
-Capitals, Flags, Languages, Highest points or Rivers, in the whole world or one continent, on one screen. Each answer
-typed finds its place as soon as it is spelt right, in any order; a name that may be the start of a longer one waits a
-moment ("Niger" on the way to "Nigeria"), and Enter forgives a typo. Countries light up on a map of the region, named
-(the smallest as dots), rivers on a map of their own; capitals and highest points fill a list beside the countries'
-names, flags and text samples their cards. The maps zoom and turn with one finger; the world is a globe to turn. No
-time limit and no clock while playing (James: "could practice questions not be timed?"): the time shows at the end, next
-to the best (score, then time; kept per set and region, as `C-eu-f`). Give up shows what was missed, in red. Practice
-doesn't tie countries or count as a round. (`sets.ts` makes the sets, `fill.ts` the screen.)
+Practice (simplified on 16 Nov, at James's ask, into a whole set on one screen): one set per category, Countries,
+Capitals, Flags, Languages, Highest points or Rivers, in the whole world or one continent (flags are always the whole
+world, mixed anew each time). One item at a time is asked, picked out in green (James's finishing notes, 16 Nov): on a
+map a country, its capital, its highest point or a river; otherwise a flag or a text sample. Once it is answered the
+next comes up by itself (on a map the nearest still to find, a continent at a time; on cards the next along, and after
+the last the earliest still to find); a tap on any other asks that one instead, and Skip (or → in an empty box) leaves
+it for later. A name that may be the start of a longer one waits a moment ("Niger" on the way to "Nigeria"), Enter
+forgives a typo, and a wrong answer that names another one of the set shows where that one is, for a moment.
+Countries, capitals and highest points are on a map of the region (the smallest countries as dots), rivers on a map of
+their own, flags and text samples on cards. The maps zoom and turn with one finger; the world is a globe to turn. No
+time limit and no clock while playing (James: "could practice questions not be timed?"): the time shows at the end,
+next to the best (score, then time; kept per set and region, as `C-eu-f`). Give up shows what was missed, in red.
+Practice doesn't tie countries or count as a round. (`sets.ts` makes the sets, `fill.ts` the screen.)
 
 The logo is the world in a loop of rope whose ends cross below it, as in a knot; the globe on the home screen sits in the
 same loop. Tapping the logo goes back to the home screen from anywhere (a round in progress is dropped, unscored). The
 home globe turns by itself or by dragging. Zooming in (the + and − buttons beside it, a pinch, the scroll wheel or a
 double tap) grows the globe itself (James, 16 Nov: "so you can cover the screen with your globe if you so wish"): it
-leaves its rope for a layer over the whole screen and glides to the middle while the rest of the home screen fades away
-and can't be reached, covers the screen, and goes on to four times that size; the buttons move to the corner. Grown,
+leaves its rope for a layer over the whole screen and grows round its own place, behind the menu, which stays where it
+is and can still be used ("could the menu still stay visible when earth is zoomed into?"); only the rope fades. It
+covers the screen and goes on to four times that size, with + and − still beside it. Grown,
 it stops turning by itself and draws the countries' borders: the detailed 1:50m map (`world.json`) at rest, the 1:110m
 one while it moves, and only the land in view. ↺, − all the way, Esc or the logo bring it back into its rope, and so
 does leaving the home screen. Day and night are as they are at that moment ("With night and day and lights too?"):
 `sun.ts` works out where the sun stands overhead (the U.S. Naval Observatory's approximate solar coordinates), the
 night side darkens through a soft twilight, the day side a little away from the sun, and the lights of 6,099 towns and
 cities (Natural Earth's populated places of 10,000 people or more, `lights.json`, `npm run build:lights`) come on
-across the night side, bigger and brighter for bigger places. A few words are only shown when asked for, behind an ⓘ (what the levels mean, what Practice is, what
+across the night side, bigger and brighter for bigger places.
+
+Tapping a country on the home globe opens its sheet beside the globe (James, 16 Nov; a double tap zooms instead, so
+a tap waits 0.3 s for a second one) and picks the country out in green: its photo (James's own, in `public/photos`, see [docs/PHOTOS.md](docs/PHOTOS.md); until there is one, the
+private preview shows where it goes), a map with the capital, the major rivers and the notable peaks named and the
+neighbours around it, and the capital, languages, highest point, peaks, rivers and neighbours. A neighbour, by its name
+or its shape on the map, opens its own sheet without closing the first: a wide screen shows the last two side by side
+and slides the menu over, a narrower one shows one at a time with a tab for each open sheet (up to six). × or Esc
+closes the one in front; leaving the home screen closes them all. The rivers and peaks come from
+`public/data/sheets.json` (`npm run build:sheets`, loaded with the first sheet): the knowledge base's rivers and highest
+points, Natural Earth's rivers (one counts where at least 25 km of it, and a third of its longest stretch in any
+country, lie inside; six at most) and peaks of 1,000 m or more, and a few famous peaks Natural Earth leaves out
+(`data/geo/notable-peaks.csv`: Kangchenjunga, the Jungfrau, the Eiger, Mont Ventoux...). The sheets are to look at:
+the questions still ask approved facts only.
+
+A few words are only shown when asked for, behind an ⓘ (what the levels mean, what Practice is, what
 Auto-submit does). About opens with the numbers (194 countries, 1,417 checked facts...), counted from the facts as they
 load, then how a fact gets in, how to play, and the sources. Settings has three volumes (Volume, Effects, Music); the
 sounds and music go in named slots, listed in [docs/AUDIO.md](docs/AUDIO.md).
@@ -175,12 +200,14 @@ src/scripts/press.ts      a press you can feel: the press on every button, held 
 src/scripts/questions.ts  question templates (12 kinds, one clue each, given/asked tags), the levels and the round builder: approved facts in, questions out
 src/scripts/kb.ts         the knowledge base as the site reads it
 src/scripts/map.ts        the map: a globe turned and zoomed to the asked country, capital, peak or river
+src/scripts/sheet.ts      a country's sheet, opened from the home globe: photo, map, facts, neighbours side by side
 src/scripts/globe.ts      the globe on the start screen: turns by itself, can be dragged, grows over the screen when zoomed, names the country under the pointer, lights the countries tied, shows day, night and city lights
 src/scripts/sun.ts        where the sun stands overhead at a moment, for day and night on the globe
 src/scripts/sky.ts        the night sky behind the start screen: stars that light up and tie together when touched
 src/scripts/sound.ts      sounds and music in named slots (docs/AUDIO.md): a file in public/audio per slot, else a
                           small synthesised placeholder; the three volumes in Settings
-public/data/              countries.json (npm run build:data), rivers.json (npm run import), world.json (1:50m) and globe.json (1:110m countries; npm run build:map), lights.json (npm run build:lights)
+public/data/              countries.json (npm run build:data), rivers.json (npm run import), world.json (1:50m) and globe.json (1:110m countries; npm run build:map), lights.json (npm run build:lights), sheets.json (npm run build:sheets)
+public/photos/            James's photos for the country sheets, one per country (docs/PHOTOS.md)
 public/flags/             flags from flag-icons (npm run build:flags)
 ```
 
@@ -196,12 +223,14 @@ data/
     languages.csv         languages (ISO 639-3 ids)
     facts.csv             every fact with its sources and status (approved / rejected / excluded)
     decisions.csv         human decisions; these always win over the sources
-    names.csv             preferred names, extra accepted answers, removed ambiguous ones
+    names.csv             preferred names, extra accepted answers (other and former names), removed ambiguous ones
     positions.csv         capitals' positions where the sources disagree
   geo/                    highest points and rivers
     peaks.csv, rivers.csv entities (generated by scripts/import-geo.mjs)
     facts.csv             highest_point and flows_through facts with their sources and status
     decisions.csv         human decisions on peaks and crossings
+    names.csv             other names of peaks and rivers (Sagarmatha, Mount McKinley, Yellow River), wrong ones removed
+    notable-peaks.csv     famous peaks Natural Earth leaves out, for the country sheets only (no facts, no questions)
   languages/
     samples.csv           a short text in each language (UDHR Article 1, generated by scripts/import-samples.mjs)
     clusters.csv          languages written so alike that they count for one another
@@ -222,7 +251,7 @@ public/data/countries.json compact output for the site (generated, approved fact
    places, two places sharing an accepted answer, and more.
 5. `npm run build:data` writes `public/data/countries.json` with approved facts only.
 
-`npm run data` runs steps 2 to 5 and copies the flags. `npm test` tests the answer matcher (silent typo correction, near misses, context names), the names people type, and the round builder: the levels, both answer forms of every question type, challenge links, and no country or river twice in a round (this one needs Node 22.18 or newer; older versions skip it).
+`npm run data` runs steps 2 to 5, copies the flags and builds the country sheets' rivers and peaks. `npm test` tests the answer matcher (silent typo correction, near misses, context names), the names people type (old names and names in their own language too), and the round builder: the levels, both answer forms of every question type, challenge links, and no country or river twice in a round (this one needs Node 22.18 or newer; older versions skip it).
 
 ## Adding a subject later
 

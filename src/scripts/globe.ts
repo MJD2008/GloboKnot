@@ -42,6 +42,7 @@ const FADE = 900;
 const EVERY = 2600;   // ms between new chains
 const RAD = Math.PI / 180;
 const ZOOM_STEP = 2;   // the + and − buttons, and a double tap
+const DOUBLE_TAP = 300; // a tap waits this long for a second one before the country's sheet opens (ms)
 const MAX_COVER = 4;   // zoomed all the way in, the globe is four times as big as it takes to cover the screen
 const FADE_BY = 0.35;  // the rope round it is gone by a zoom of 1.35
 const TIE = '#f2c14e'; // the gold of a tied country (and of the rope, once The Gordian Knot is untied)
@@ -132,6 +133,8 @@ export class Globe {
   countryAt: ((p: LonLat) => Hit | null) | null = null;
   /** A tap or a click on a country: its sheet opens. */
   onTap: ((hit: Hit) => void) | null = null;
+  /** A tap waiting to see whether a second one follows: a double tap zooms, and opens no sheet. */
+  private tapWait = 0;
   /** The quiz's map, once it has loaded: drawn when zoomed in. */
   detail: (() => Detail | null) | null = null;
   /** A country's shape on the quiz's map (1:50m), for the tied ones when zoomed in. */
@@ -348,7 +351,9 @@ export class Globe {
         const hit = this.hover;
         if (hit && this.onTap) {
           if (e.pointerType !== 'mouse') this.setHover(null);
-          this.onTap(hit);
+          // The second tap of a double tap: the double tap zooms (dblclick), and the first tap's sheet stays shut.
+          if (this.tapWait) { clearTimeout(this.tapWait); this.tapWait = 0; return; }
+          this.tapWait = window.setTimeout(() => { this.tapWait = 0; this.onTap?.(hit); }, DOUBLE_TAP);
         } else if (e.pointerType !== 'mouse') this.tapTimer = window.setTimeout(() => this.setHover(null), 2600);
         return;
       }
