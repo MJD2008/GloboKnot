@@ -225,9 +225,33 @@ function simplifyLines(lines, tol) {
   return lines.map(l => dp(l).map(([x, y]) => [Math.round(x * 100) / 100, Math.round(y * 100) / 100]));
 }
 
+// ---------------------------------------------------------------- Other and former names that count (James, 16 Nov 2026:
+// "alternative and former names should also be accepted ... Denali / Mount McKinley"). "Mount X" counts as X too
+// (Everest), unless X is a country's name (Mount Kenya stays Mount Kenya). Then data/geo/names.csv: names the sources
+// miss (Sagarmatha, Monte Bianco, Oxus...), and ones taken out that are no names of it ("Canary Islands" for Teide).
+const countryNames = new Set(countries.flatMap(c => [c.name, ...c.aliases.split('|')]).filter(Boolean).map(norm));
+for (const p of peaks.values()) {
+  const bare = p.name.match(/^Mount (.+)$/)?.[1];
+  if (bare && !countryNames.has(norm(bare))) p.aliases.add(bare);
+}
+for (const n of parseCsv(await read('data/geo/names.csv'))) {
+  const add = n.add_aliases.split('|').filter(Boolean), remove = n.remove_aliases.split('|').filter(Boolean);
+  const peak = peaks.get(n.id), river = rivers.find(r => r.id === n.id);
+  if (!peak && !river) throw new Error(`data/geo/names.csv: no peak or river ${n.id}`);
+  if (peak) {
+    if (n.name && n.name !== peak.name) { peak.aliases.add(peak.name); peak.name = n.name; }
+    add.forEach(a => peak.aliases.add(a));
+    remove.forEach(a => peak.aliases.delete(a));
+  } else {
+    if (n.name && n.name !== river.name) { river.names.push(river.name); river.name = n.name; }
+    river.names.push(...add.filter(a => !river.names.includes(a)));
+    river.names = river.names.filter(a => !remove.includes(a));
+  }
+}
+
 // ---------------------------------------------------------------- Write
 const used = new Set(facts.filter(f => f.relation === 'flows_through').map(f => f.subject));
-const riverRows = rivers.filter(r => used.has(r.id)).map(r => ({ id: r.id, name: r.name, aliases: r.names.slice(1).filter(n => n !== r.name).join('|'),
+const riverRows = rivers.filter(r => used.has(r.id)).map(r => ({ id: r.id, name: r.name, aliases: [...new Set(r.names.slice(1))].filter(n => n !== r.name).join('|'),
   length_km: r.km, course: courses[r.id] ? 'naturalearth' : '' }));
 const peakRows = [...peaks.values()].map(p => ({ ...p, aliases: [...p.aliases].filter(a => a !== p.name).join('|') }));
 const order = { approved: 0, draft: 1, rejected: 2 };

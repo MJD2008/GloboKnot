@@ -179,11 +179,15 @@ test('a highest point is asked by its name, without a map; which country a river
     const q = ask('peak.map', id);
     assert.equal(q.media.kind, 'none', `${id}: no map`);
     assert.match(q.prompt, / is the highest point of which country\?$/, id);
-    assert.deepEqual(q.accept, kb.peakCountries(id), `${id}: its own countries only`);
+    // Its own countries only; a name two highest points share is either: Mount Olympus is Greece's and Cyprus's.
+    const namesakes = kb.peaks.filter(o => o.name === kb.get(id).name);
+    assert.deepEqual(q.accept, [...new Set(namesakes.flatMap(o => kb.peakCountries(o.id)))], `${id}: its own countries only`);
   }
+  assert.deepEqual(ask('peak.map', 'mount-olympus').accept.sort(), ['CYP', 'GRC'], 'Mount Olympus: Cyprus or Greece');
+  assert.equal(subjects.filter(id => kb.get(id).name === 'Mount Olympus').length, 1, 'asked once');
   // A peak named after its country is no question: Mount Kenya, Mount Cameroon, Pico de São Tomé, Morne Seychellois.
   for (const id of ['mount-kenya', 'mount-cameroon', 'pico-de-sao-tome', 'morne-seychellois']) assert.ok(!subjects.includes(id), id);
-  assert.equal(subjects.length, kb.peaks.length - 4);
+  assert.equal(subjects.length, kb.peaks.length - 4 - 1, 'less the four, and the second Mount Olympus');
   // As well known as its country, or 5,000 m or more.
   assert.equal(byId['peak.map'].fame(kb, 'mount-kilimanjaro'), 1);
   assert.equal(byId['river.name'].fame(kb, 'columbia'), 0, 'a river is as well known as its name');

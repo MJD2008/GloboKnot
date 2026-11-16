@@ -15,8 +15,16 @@ export function decodeHtml(s) {
     .replace(/\s+/g, ' ').trim();
 }
 
-// Normalise a name for comparison: case, accents, punctuation, "the", "St."/"Saint", "&"/"and".
+// Normalise a name for comparison: case, accents, punctuation, "the", "St."/"Saint", "Mt."/"Mount", "&"/"and", and
+// "river" before or after a river's name.
 export function norm(s) {
+  return plain(String(s || '').replace(/\bmt\.?\s/gi, 'mount ')) // Mt Everest, Mt. Fuji
+    .replace(/^river\s+|\s+river$/g, '') // the River Nile, the Mississippi River
+    .trim();
+}
+
+/** Case, accents, punctuation, "the", "St."/"Saint", "&"/"and": what ids are made of, so they never change. */
+function plain(s) {
   return String(s || '')
     .normalize('NFD').replace(/[̀-ͯ]/g, '')
     .toLowerCase()
@@ -31,5 +39,5 @@ export function norm(s) {
 }
 
 export function slug(s) {
-  return norm(s).replace(/\s+/g, '-');
+  return plain(s).replace(/\s+/g, '-');
 }
