@@ -1,42 +1,52 @@
 # Putting Globoknot online
 
-The site is static: `npm run build` writes plain files into `dist/`, and Cloudflare serves them for free.
-Cloudflare recommends Workers for new projects (Pages still works, but it is the older route), so these steps
-use Workers. The repository already has the settings file it needs, `wrangler.jsonc`.
+The site is static: `npx astro build` writes plain files into `dist/`, and Cloudflare serves them for free from a
+Worker. The repository already has the settings file it needs, `wrangler.jsonc`, and `public/_headers` (the build's
+hashed files are kept by browsers for a year; everything else is checked again on each visit).
 
-## 1. Connect the repository (once, about 5 minutes)
+Checked on 16 Nov 2026: a fresh clone of the branch builds on Node 24 (Cloudflare's default) with `npm ci` and
+`npx astro build`, and `npx wrangler deploy --dry-run` accepts the result (220 files, no bindings).
 
-1. Log in at dash.cloudflare.com (a free account is enough).
+## 1. Put the site in `main`
+
+Cloudflare publishes the `main` branch. The site itself is in pull request #2 until it is merged; after that, every
+merge into `main` rebuilds and publishes the site by itself, in a minute or two.
+
+## 2. Connect the repository (once, about 5 minutes)
+
+1. Log in at dash.cloudflare.com.
 2. Go to **Compute > Workers & Pages** and choose **Create application**.
 3. Under **Import a repository**, connect your GitHub account and pick **MJD2008/GloboKnot**.
 4. Set **Build command** to `npx astro build` and **Deploy command** to `npx wrangler deploy`.
-   Production branch: `main`.
+   Production branch: `main`. Leave the Node.js version alone (the default, 24, works).
 5. Choose **Save and Deploy**. After a minute or two the site is live on an address like
    `globoknot.<your-account>.workers.dev`.
 
-From then on, every merge into `main` rebuilds and publishes the site by itself.
+## 3. Use globoknot.com (once)
 
-## 2. Use globoknot.com (once, then a wait of minutes to a few hours)
+The domain is already on Cloudflare (parked), so its nameservers need no change. If it isn't marked **Active** under
+**Websites** yet, add it there first (Free plan) and follow the nameserver steps Cloudflare shows.
 
-Cloudflare can only attach a domain it manages, so the domain moves its DNS to Cloudflare first. You keep
-it registered where you bought it; only the nameservers change.
+1. Open the domain's **DNS > Records** and delete the parking records for `globoknot.com` and `www` (the A, AAAA or
+   CNAME records that point at the parking page). A Worker's custom domain can't be added over an existing CNAME,
+   and Cloudflare makes the records it needs itself.
+2. Open the `globoknot` Worker, then **Settings > Domains & Routes > Add > Custom domain**, and add
+   `globoknot.com`. Add `www.globoknot.com` the same way. The certificate comes by itself within minutes.
+3. Optional, one address for search engines: **Rules > Redirect Rules**, the template **Redirect from WWW to root**.
+4. Optional, visitor numbers without cookies or a consent banner: **Analytics & Logs > Web Analytics**, enable it
+   for `globoknot.com`.
 
-1. In the Cloudflare dashboard choose **Add a domain**, enter `globoknot.com`, pick the **Free** plan.
-2. Cloudflare shows two nameservers (like `xxx.ns.cloudflare.com`). At the shop where you bought the
-   domain, replace its nameservers with those two.
-3. Wait until Cloudflare marks the domain **Active** (it emails you).
-4. Open the `globoknot` Worker, then **Settings > Domains & Routes > Add > Custom domain**, and add
-   `globoknot.com`. Add `www.globoknot.com` the same way.
+The dashboard's labels change now and then; if one doesn't match, the same steps are in Cloudflare's Workers docs
+under "Custom Domains".
 
-The dashboard's labels change now and then; if one doesn't match, the same steps are in Cloudflare's
-Workers docs under "Custom Domains".
-
-## 3. Before the public launch
+## 4. Before the public launch
 
 The preview is hidden from search engines on purpose. When the site should be found:
 
-- `src/layouts/Base.astro`: set `PREVIEW` to `false` (removes the noindex tag and the "preview" badge).
+- `src/layouts/Base.astro`: set `PREVIEW` to `false` (removes the noindex tag, the "preview" badge, and the photo
+  placeholders on the country sheets).
 - `public/robots.txt`: replace `Disallow: /` with `Allow: /`.
+- `CREDITS.md`: check OHCHR's terms of use for the UDHR quotes (the language texts).
 
 ## Checking a build on your own computer
 
