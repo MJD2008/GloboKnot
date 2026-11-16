@@ -11,9 +11,11 @@ import { Sky } from './sky';
 import { Knowledge, type Country, type Entity, type KBData, type Language, type Peak, type River } from './kb';
 import { WorldMap, type MapLabel, type MapOptions } from './map';
 import { catOn, clockOf, icon, initMenu, levelIcon, levelTag, placesLabel } from './menu';
-import { bestLabel, initPractice, practiceBest, practiceKey, practiceLabel, practicePlaces, practiceSeed, type Practice } from './practice';
+import { initFill } from './fill';
+import { initPractice } from './practice';
+import type { Practice } from './sets';
 import { ACCENTS, ATLAS_AT, GOLD_AT, TIME, applySettings, atlasOpen, better, dailyResult, dailyRope, endTrial, nextDailyIn, saveDaily, saveSelection, saveSettings, saveStats, saveTied, selection, setLevel, settings, stats, tie, tied, today, type Accent, type Theme } from './prefs';
-import { ALL_KINDS, ANSWERS, CATS, DAILY, GORDIAN, LEVELS, LEVEL_IDS, available, buildRound, codeOf, dailyRound, isCustom, levelAsk, practiceRound, rebuildRound, remember, levelOf, type Answers, type Ask, type Level, type Pool, type Question, type Selection, type Tempt } from './questions';
+import { ALL_KINDS, ANSWERS, CATS, DAILY, GORDIAN, LEVELS, LEVEL_IDS, available, buildRound, codeOf, dailyRound, isCustom, levelAsk, rebuildRound, remember, levelOf, type Answers, type Ask, type Level, type Pool, type Question, type Selection, type Tempt } from './questions';
 import { flash } from './press';
 import { zoomable, type Zoom } from './zoom';
 import { sound } from './sound';
@@ -23,7 +25,7 @@ const url = (path: string) => new URL(path, document.baseURI).href;
 
 applySettings();
 
-const screens = { start: $('#start'), quiz: $('#quiz'), results: $('#results') };
+const screens = { start: $('#start'), quiz: $('#quiz'), results: $('#results'), fill: $('#fill') };
 const ui = {
   homeLevel: $('#home-level'),
   config: $<HTMLButtonElement>('#config'),
@@ -36,7 +38,6 @@ const ui = {
   daily: $<HTMLButtonElement>('#daily'),
   dailySub: $('#daily-sub'),
   dailyRope: $('#daily-rope'),
-  tiedBadge: $<HTMLButtonElement>('#tied'),
   resultsNote: $('#results-note'),
   practice: $<HTMLButtonElement>('#practice'),
   quit: $<HTMLButtonElement>('#quit'),
@@ -98,6 +99,10 @@ const ui = {
   globe: $<HTMLCanvasElement>('#globe'),
   menu: $<HTMLDialogElement>('#menu'),
   practiceSheet: $<HTMLDialogElement>('#practice-sheet'),
+  leave: $<HTMLDialogElement>('#leave'),
+  leaveStay: $<HTMLButtonElement>('#leave-stay'),
+  leaveGo: $<HTMLButtonElement>('#leave-go'),
+  leaveWhy: $('#leave-why'),
   settings: $<HTMLDialogElement>('#settings'),
   about: $<HTMLDialogElement>('#about'),
 };
@@ -114,6 +119,7 @@ const sky = new Sky($<HTMLCanvasElement>('#sky'));
 if (!screens.start.hidden) sky.play();
 let menu: { paint(): void } | null = null;
 let practiceSheet: { paint(): void } | null = null;
+let fill: ReturnType<typeof initFill> | null = null;
 let riversLoaded: Promise<void> | null = null;
 
 interface Result {
@@ -171,7 +177,6 @@ const state = {
   daily: false,
   challenge: null as Challenge | null, // the challenge being played
   gordian: false,                      // The Gordian Knot: every question in the game
-  practice: null as Practice | null,   // a practice run: every question of one type in one region
   level: null as Level | null,         // the level of a round of the player's own (not the Daily, a challenge or All)
   stopped: false,                      // Esc or Stop: the answers so far, without a score
   planned: 0,                          // questions in the round as it began (a stop cuts it short)
@@ -221,7 +226,8 @@ async function load() {
   ui.edition.textContent = data.edition;
   paintNumbers(data);
   menu = initMenu(kb, ui.menu, paintHome);
-  practiceSheet = initPractice(kb, ui.practiceSheet, p => start(selection, false, null, p));
+  fill = initFill(screens.fill, { kb, world, pools, url, loadRivers, askLeave, home: () => show('start') });
+  practiceSheet = initPractice(kb, ui.practiceSheet, startPractice);
   [ui.play, ui.daily, ui.practice].forEach(b => (b.disabled = false));
   paintHome();
   document.body.classList.add('ready');
@@ -314,16 +320,11 @@ function untilNextDaily() {
 setInterval(() => { if (kb && !screens.start.hidden) paintDaily(); }, 30_000);
 
 /** Tie the world (experiment): the countries tied so far light up on the home globe, gold once right in three
- *  categories, and the count shows beside it. The ones tied in the round just played pulse once, when the home screen
- *  comes back. */
+ *  categories. The ones tied in the round just played pulse once, when the home screen comes back. The count is on the
+ *  results only: a badge beside the globe felt out of place on the home screen (James, 16 Nov 2026). */
 function paintTied() {
-  if (!EXPERIMENTS.tieTheWorld || !kb) return;
+  if (!EXPERIMENTS.tieTheWorld || !kb || !globe) return;
   const ids = Object.keys(tied).filter(id => kb!.country(id));
-  const all = kb.countries.length;
-  ui.tiedBadge.hidden = !ids.length;
-  ui.tiedBadge.innerHTML = `<b>${ids.length}</b><span>/${all}</span>`;
-  ui.tiedBadge.setAttribute('aria-label', `${ids.length} of ${all} countries tied. What is this?`);
-  if (!globe) return;
   const fresh = new Set(screens.start.hidden ? [] : state.freshTies);
   globe.setTied(ids.map(id => {
     const c = kb!.country(id)!;
@@ -362,13 +363,13 @@ function show(name: keyof typeof screens) {
   // The home screen is a night sky; the quiz and the results follow the theme.
   document.body.classList.toggle('home', name === 'start');
   // The Gordian Knot is played in crimson, with a heartbeat.
-  document.body.classList.toggle('gordian', name !== 'start' && state.gordian);
+  document.body.classList.toggle('gordian', (name === 'quiz' || name === 'results') && state.gordian);
   // A round takes its level's colour: the knots along the top and the ring at the end.
-  const lv = name === 'start' ? null : state.gordian ? 'impossible' : state.level ?? state.challenge?.level ?? null;
+  const lv = name === 'start' || name === 'fill' ? null : state.gordian ? 'impossible' : state.level ?? state.challenge?.level ?? null;
   if (lv) document.body.dataset.lv = lv; else delete document.body.dataset.lv;
   themeColor();
   if (name === 'start') { globe?.play(); sky.play(); paintHome(); } else { globe?.pause(); sky.pause(); }
-  sound.scene(name === 'quiz' ? 'music-quiz' : 'music-home');
+  sound.scene(name === 'quiz' || name === 'fill' ? 'music-quiz' : 'music-home');
   if (name !== 'results') clearKnotSounds();
   window.scrollTo({ top: 0 });
 }
@@ -393,22 +394,27 @@ for (const d of sheets) {
 }
 
 // ---------------------------------------------------------------- a round
-async function start(sel: Selection, daily = false, ch: Challenge | null = null, practice: Practice | null = null) {
+/** Practice: one set filled in at once, on a screen of its own (fill.ts). */
+function startPractice(p: Practice) {
+  if (!fill) return;
+  ui.practiceSheet.close();
+  show('fill');
+  void fill.start(p);
+}
+
+async function start(sel: Selection, daily = false, ch: Challenge | null = null) {
   if (!kb) return;
   state.sel = sel;
   state.daily = daily;
   state.challenge = ch;
-  state.practice = practice;
-  state.gordian = !daily && !ch && !practice && sel.size === 0;
+  state.gordian = !daily && !ch && sel.size === 0;
   if (state.gordian) state.sel = sel = GORDIAN; // every question in the game, whatever else was picked
-  state.level = daily || ch || practice || state.gordian ? null : levelOf(sel);
+  state.level = daily || ch || state.gordian ? null : levelOf(sel);
   state.stopped = false;
-  // Every round has a seed, so it can be played again by someone else from a link. A practice's seed is its name:
-  // the same order every time.
-  state.seed = ch ? ch.seed : daily ? `daily-${today()}` : practice ? practiceSeed(practice) : Math.random().toString(36).slice(2, 10);
+  // Every round has a seed, so it can be played again by someone else from a link.
+  state.seed = ch ? ch.seed : daily ? `daily-${today()}` : Math.random().toString(36).slice(2, 10);
   state.round = ch ? rebuildRound(kb, ch.items, ch.seed, ch.asks, ch.levels)
-    : practice ? practiceRound(kb, practice.kind, practicePlaces(kb, practice.region), practice.answers, state.seed)
-      : daily ? dailyRound(kb, state.seed) : buildRound(kb, sel, Math.random, false, state.seed);
+    : daily ? dailyRound(kb, state.seed) : buildRound(kb, sel, Math.random, false, state.seed);
   if (!state.round.length) return;
   state.planned = state.round.length;
   if (state.gordian && !stats.gordianSeen) { stats.gordianSeen = true; saveStats(); }
@@ -550,33 +556,34 @@ function preload(q?: Question) {
 // each second. Drawn frame by frame: it is information, so it runs even when the player asked for reduced motion
 // (which only stops the heartbeat).
 function startTimer() {
-  const total = TIME * 1000;
-  state.deadline = performance.now() + total;
+  state.deadline = performance.now() + TIME * 1000;
   state.secs = 0;
   ui.timer.classList.remove('low', 'out', 'beat', 'stopped');
   ui.count.textContent = '';
   cancelAnimationFrame(state.low);
-  const frame = () => {
-    if (state.locked) return;
-    const ms = Math.max(0, state.deadline - performance.now());
-    ui.timer.style.setProperty('--left', (ms / total).toFixed(4));
-    const s = Math.ceil(ms / 1000);
-    if (ms > 0 && s <= 5) {
-      const tenths = (Math.ceil(ms / 100) / 10).toFixed(1);
-      if (ui.count.textContent !== tenths) ui.count.textContent = tenths;
-    }
-    if (ms > 0 && s <= 5 && s !== state.secs) {
-      state.secs = s;
-      ui.timer.classList.add('low');
-      ui.timer.classList.remove('beat');
-      void ui.timer.offsetWidth; // restart the heartbeat on every second
-      ui.timer.classList.add('beat');
-      sound.tick(s);
-    }
-    if (ms <= 0) { timeUp(); return; }
-    state.low = requestAnimationFrame(frame);
-  };
-  frame();
+  tick();
+}
+/** One frame of the time limit: the bar, the tenths in the last five seconds, a heartbeat each second. */
+function tick() {
+  if (state.locked) return;
+  const total = TIME * 1000;
+  const ms = Math.max(0, state.deadline - performance.now());
+  ui.timer.style.setProperty('--left', (ms / total).toFixed(4));
+  const s = Math.ceil(ms / 1000);
+  if (ms > 0 && s <= 5) {
+    const tenths = (Math.ceil(ms / 100) / 10).toFixed(1);
+    if (ui.count.textContent !== tenths) ui.count.textContent = tenths;
+  }
+  if (ms > 0 && s <= 5 && s !== state.secs) {
+    state.secs = s;
+    ui.timer.classList.add('low');
+    ui.timer.classList.remove('beat');
+    void ui.timer.offsetWidth; // restart the heartbeat on every second
+    ui.timer.classList.add('beat');
+    sound.tick(s);
+  }
+  if (ms <= 0) { timeUp(); return; }
+  state.low = requestAnimationFrame(tick);
 }
 function stopTimer() {
   cancelAnimationFrame(state.low);
@@ -717,6 +724,46 @@ function quit() {
   end(true);
 }
 
+// ---- leaving a round asks first (James, 16 Nov 2026): Esc a second time or Leave goes; Enter, Keep playing or a tap
+// beside the card stays. Meanwhile the round stands still: the question's time, the move to the next one, the clock.
+let leaving: (() => void) | null = null, pausedAt = 0, timeLeft = 0;
+function askLeave(then: () => void) {
+  if (ui.leave.open) return;
+  leaving = then;
+  pausedAt = performance.now();
+  ui.leaveWhy.textContent = screens.fill.hidden ? 'Your answers so far won’t count.' : 'What you found won’t count.';
+  if (!screens.quiz.hidden) {
+    clearTimeout(state.advance);
+    clearTimeout(state.auto);
+    if (!state.locked) { cancelAnimationFrame(state.low); timeLeft = Math.max(0, state.deadline - pausedAt); }
+  }
+  ui.leave.showModal();
+  ui.leaveStay.focus();
+}
+function stay() {
+  leaving = null;
+  ui.leave.close();
+}
+ui.leave.addEventListener('close', () => {
+  const go = leaving;
+  leaving = null;
+  if (go) { go(); return; }
+  const now = performance.now();
+  if (!screens.fill.hidden) { fill?.resume(now - pausedAt); return; }
+  state.started += now - pausedAt;
+  if (screens.quiz.hidden) return;
+  if (state.locked) state.advance = window.setTimeout(next, 900);
+  else {
+    state.deadline = now + timeLeft;
+    tick();
+    if (state.round[state.i]?.format === 'type') ui.input.focus({ preventScroll: true });
+  }
+});
+// Esc on the card is the second Esc: the dialog closes by itself with `leaving` still set, so it leaves. So does Leave.
+ui.leaveGo.addEventListener('click', () => ui.leave.close());
+ui.leaveStay.addEventListener('click', stay);
+ui.leave.addEventListener('click', e => { if (e.target === ui.leave) stay(); });
+
 function nudge() {
   ui.card.classList.remove('shake');
   void ui.card.offsetWidth; // restart the animation
@@ -831,13 +878,13 @@ function end(stopped = false) {
   const right = knots.filter(k => k !== 'miss').length, loose = knots.filter(k => k === 'loose').length;
   const share = scoreOf(state.results);
   const pct = Math.round(share * 100);
-  // Recently seen questions rest in the next rounds; a practice run goes through them all on purpose, so it doesn't.
-  if (!state.practice) remember(state.round.map(q => q.key));
+  // Recently seen questions rest in the next rounds.
+  remember(state.round.map(q => q.key));
   state.stopped = stopped;
   screens.results.classList.toggle('stopped', stopped);
-  // Above the score: what was played. A level as its knot, in its colour; the Daily, Practice or The Gordian Knot.
+  // Above the score: what was played. A level as its knot, in its colour; the Daily or The Gordian Knot.
   const lv = state.level ?? state.challenge?.level;
-  ui.resultsTitle.innerHTML = stopped ? 'Stopped' : state.practice ? 'Practice' : state.gordian ? 'The Gordian Knot' : state.daily ? 'Daily' : lv ? levelTag(lv) : '';
+  ui.resultsTitle.innerHTML = stopped ? 'Stopped' : state.gordian ? 'The Gordian Knot' : state.daily ? 'Daily' : lv ? levelTag(lv) : '';
   ui.resultsTitle.hidden = !ui.resultsTitle.innerHTML;
   ui.versus.hidden = ui.best.hidden = ui.unlock.hidden = ui.nextLevel.hidden = ui.untied.hidden = ui.resultsNote.hidden = true;
   ui.shareNote.hidden = true;
@@ -904,7 +951,7 @@ function end(stopped = false) {
       ui.versus.className = `versus ${won ? 'won' : lost ? 'lost' : 'draw'}`;
     }
 
-    // The Gordian Knot keeps one record: the best score, then the fastest. So does each practice.
+    // The Gordian Knot keeps one record: the best score, then the fastest.
     if (state.gordian) {
       const prev = stats.record, now = { pct, ms };
       if (better(now, prev)) stats.record = now;
@@ -916,12 +963,6 @@ function end(stopped = false) {
         ui.untied.hidden = false;
         ui.untiedTime.textContent = `Untied in ${clockOf(ms)}`;
       }
-    }
-    if (state.practice) {
-      const prev = practiceBest(state.practice), now = { pct, ms };
-      if (better(now, prev)) (stats.practice ??= {})[practiceKey(state.practice)] = now;
-      ui.best.hidden = false;
-      ui.best.textContent = `${practiceLabel(state.practice)} · ${better(now, prev) ? (prev ? 'New best!' : 'First run') : `Best ${bestLabel(prev!)}`}`;
     }
 
     // A great Monkey's fist round of the level's own questions opens Atlas, the hidden fourth level, with The Gordian Knot
@@ -1091,7 +1132,7 @@ async function shareResult() {
   // The Daily's day is in its seed (also when it is played from a link, on another day).
   const day = /^daily-(\d{4}-\d{2}-\d{2})$/.exec(state.seed)?.[1];
   const what = day ? `Daily ${new Date(`${day}T12:00:00Z`).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', timeZone: 'UTC' })}` : state.gordian ? 'The Gordian Knot'
-    : state.practice ? `Practice · ${practiceLabel(state.practice)}` : `${state.level ? `${LEVELS[state.level].label} · ` : ''}${r.knots.length} questions`;
+    : `${state.level ? `${LEVELS[state.level].label} · ` : ''}${r.knots.length} questions`;
   const text = `Globoknot · ${what}\n${r.rank} · ${r.pct}%\n${signs.length <= 50 ? signs : ''}`.trim();
   let link = location.origin + location.pathname;
   if (state.round.length <= CHALLENGE_MAX) {
@@ -1273,7 +1314,6 @@ ui.homeLevel.addEventListener('click', e => {
   paintHome();
 });
 ui.config.addEventListener('click', () => open(ui.menu));
-ui.tiedBadge.addEventListener('click', () => toast('Countries you got right the first time. Gold: right in three categories.', 4200));
 ui.practice.addEventListener('click', () => open(ui.practiceSheet));
 $('#share-site').addEventListener('click', () => void shareSite());
 ui.play.addEventListener('click', () => (challenge ? start(selection, false, challenge) : start(selection)));
@@ -1289,10 +1329,10 @@ ui.form.addEventListener('submit', e => { e.preventDefault(); flash(ui.form.quer
 ui.input.addEventListener('input', () => autoSubmit());
 ui.skip.addEventListener('click', () => (state.locked ? next() : giveUp()));
 ui.next.addEventListener('click', next);
-ui.quit.addEventListener('click', quit);
+ui.quit.addEventListener('click', () => askLeave(quit));
 // New round: the same kind of round again, with new questions. After the Daily (the same eight all day) that is a round of
 // the player's own.
-ui.again.addEventListener('click', () => (state.daily ? start(selection) : start(state.sel, false, null, state.practice)));
+ui.again.addEventListener('click', () => start(state.daily ? selection : state.sel));
 // ⓘ buttons show the few words they control, and hide them again; a sheet closes with them hidden.
 document.addEventListener('click', e => {
   const b = (e.target as HTMLElement).closest<HTMLButtonElement>('button.info[aria-controls]');
@@ -1323,10 +1363,9 @@ window.addEventListener('hashchange', () => {
   if (screens.quiz.hidden) show('start');
 });
 ui.home.addEventListener('click', () => show('start'));
-// The logo goes home from anywhere. In the middle of a round, the round is left as it is: no score, no results.
-$('.brand').addEventListener('click', e => {
-  e.preventDefault();
-  for (const d of document.querySelectorAll('dialog[open]')) (d as HTMLDialogElement).close();
+// The logo goes home from anywhere. In the middle of a round it asks first, then leaves the round as it is: no score,
+// no results.
+function goHome() {
   if (!screens.quiz.hidden) {
     clearTimeout(state.advance);
     clearTimeout(state.auto);
@@ -1335,6 +1374,14 @@ $('.brand').addEventListener('click', e => {
     state.round = [];
   }
   if (screens.start.hidden) show('start');
+}
+$('.brand').addEventListener('click', e => {
+  e.preventDefault();
+  if (ui.leave.open) return;
+  for (const d of document.querySelectorAll('dialog[open]')) (d as HTMLDialogElement).close();
+  if (!screens.quiz.hidden && state.results.length < state.round.length) askLeave(goHome);
+  else if (!screens.fill.hidden) fill?.leave();
+  else goHome();
 });
 ui.card.addEventListener('animationend', e => { if (e.target === ui.card) ui.card.classList.remove('shake'); });
 ui.card.addEventListener('click', e => {
@@ -1343,10 +1390,12 @@ ui.card.addEventListener('click', e => {
 });
 
 document.addEventListener('keydown', e => {
-  if (document.querySelector('dialog[open]') || screens.quiz.hidden) return;
-  // Esc stops the round, as the X button does. → skips, but only with nothing typed, so it still moves the cursor
-  // through a typed answer; after an answer, → and Enter both go on.
-  if (e.key === 'Escape') { e.preventDefault(); quit(); return; }
+  if (document.querySelector('dialog[open]')) return;
+  if (!screens.fill.hidden && e.key === 'Escape') { e.preventDefault(); fill?.leave(); return; }
+  if (screens.quiz.hidden) return;
+  // Esc stops the round, as the X button does, once it is confirmed (a second Esc). → skips, but only with nothing
+  // typed, so it still moves the cursor through a typed answer; after an answer, → and Enter both go on.
+  if (e.key === 'Escape') { e.preventDefault(); askLeave(quit); return; }
   if ((e.key === 'Enter' || e.key === 'ArrowRight') && state.locked) { e.preventDefault(); next(); return; }
   if (e.key === 'ArrowRight' && !e.shiftKey && !e.altKey && !e.ctrlKey && !e.metaKey && (state.round[state.i]?.format === 'choice' || !ui.input.value)) {
     e.preventDefault();

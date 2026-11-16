@@ -10,10 +10,17 @@ type LonLat = [number, number];
 /** A country's name on the map (ISO numeric code); the main one is the country the map is about. */
 export interface MapLabel { num: string; name: string; main?: boolean }
 /** What a map shows: a country (ISO numeric code, its position [lat, lng]), a capital's dot, a peak or a river, and
- *  the names of countries in view (the answers do: a country with its neighbours around it). */
-export interface MapOptions { num?: string; ll?: [number, number]; dot?: [number, number]; peak?: [number, number]; river?: string; labels?: MapLabel[] }
-/** The view of the map last drawn: where it is centred and how wide (degrees), and where it started. */
-interface View { svg: SVGSVGElement; o: MapOptions; center: LonLat; radius: number; home: LonLat; base: number; revealed: string[] }
+ *  the names of countries in view (the answers do: a country with its neighbours around it). Or a practice set
+ *  (`set`), in a view given (`view`) and a frame of its own size (`size`, in map units). */
+export interface MapOptions {
+  num?: string; ll?: [number, number]; dot?: [number, number]; peak?: [number, number]; river?: string; labels?: MapLabel[];
+  set?: MapSet; view?: { center: LonLat; radius: number }; size?: [number, number];
+}
+/** A practice set on the map: its countries (ISO numeric codes, with their positions) or its rivers; the ones found
+ *  light up with their names, and after giving up the ones missed show in red. */
+export interface MapSet { countries?: Map<string, [number, number]>; rivers?: string[]; found: Set<string>; missed: Set<string>; names: Map<string, string> }
+/** The view of the map last drawn: where it is centred and how wide (degrees), where it started, and its frame. */
+interface View { svg: SVGSVGElement; o: MapOptions; center: LonLat; radius: number; home: LonLat; base: number; revealed: string[]; w: number; h: number }
 
 export const W = 640, H = 400;
 const PAD = 12;
@@ -94,7 +101,8 @@ export class WorldMap {
     const main = target ? mainPart(target) : null;
     const course = o.river ? this.rivers[o.river] : undefined;
     let center: LonLat, radius: number;
-    if (course?.length) {
+    if (o.view) ({ center, radius } = o.view);
+    else if (course?.length) {
       // The whole course in view, with a little land around it.
       const line = { type: 'MultiLineString', coordinates: course } as const;
       center = geoCentroid(line) as LonLat;
@@ -108,14 +116,23 @@ export class WorldMap {
       // Zoom out until a large landmass is in view too: a small island alone in the sea can't be recognised,
       // but Nauru between New Guinea and the Marshall Islands can.
       radius = Math.min(60, Math.max(7, reach * 1.5 + 2, this.nearestLandmark(center, target) * 1.1 + 4));
+      // The capital's dot well inside the view, also when it lies away from the mainland (Kuala Lumpur, west of the
+      // Malaysian part of Borneo).
+      if (o.dot) radius = Math.min(60, Math.max(radius, geoDistance(center, [o.dot[1], o.dot[0]]) * RAD * 1.25 + 1));
     } else {
       // A peak: enough of the region around it to tell which country it is in.
       center = [o.peak[1], o.peak[0]];
       radius = Math.min(60, Math.max(11, this.nearestLandmark(center) * 1.1 + 5));
     }
-    this.view = { svg, o, center, radius, home: center, base: radius, revealed: [] };
+    const [w, h] = o.size ?? [W, H];
+    this.view = { svg, o, center, radius, home: center, base: radius, revealed: [], w, h };
     this.draw();
   }
+
+  /** Draws the map in view again, as it is now (a practice set with one more found). */
+  redraw() { if (this.view) this.draw(); }
+  /** The frame of the map in view, in map units. */
+  get size(): [number, number] { return this.view ? [this.view.w, this.view.h] : [W, H]; }
 
   // ---- zoom: a gesture first scales and moves the drawing (cheap), then settle() draws it again, sharp, from the
   // new centre and width. Drawing takes tens of milliseconds, too slow for every frame of a pinch.
@@ -137,7 +154,7 @@ export class WorldMap {
   settle(k: number, tx: number, ty: number) {
     const v = this.view, p = this.last?.projection;
     if (!v || !p) return;
-    const c = p.invert?.([(W / 2 - tx) / k, (H / 2 - ty) / k]);
+    const c = p.invert?.([(v.w / 2 - tx) / k, (v.h / 2 - ty) / k]);
     if (c && Number.isFinite(c[0]) && Number.isFinite(c[1])) v.center = [c[0], Math.max(-89, Math.min(89, c[1]))];
     v.radius = Math.min(90, Math.max(Math.max(0.8, v.base / 6), v.radius / k));
     this.draw();
@@ -153,7 +170,7 @@ export class WorldMap {
 
   private draw() {
     const v = this.view!;
-    const { svg, o, center, radius } = v;
+    const { svg, o, center, radius, w: W, h: H } = v;
     const target = o.num ? this.byNum.get(o.num) : undefined;
     const main = target ? mainPart(target) : null;
     const course = o.river ? this.rivers[o.river] : undefined;
@@ -168,19 +185,39 @@ export class WorldMap {
     const parts: string[] = [];
     parts.push(`<path class="ocean" d="${path({ type: 'Sphere' }) ?? ''}"/>`);
     parts.push(`<path class="grat" d="${path(geoGraticule10()) ?? ''}"/>`);
+    const set = o.set, own = set?.countries;
     let land = '';
     for (const s of this.shapes) {
-      if (s === target) continue;
+      if (s === target || own?.has(String(s.id))) continue;
       const cap = this.caps.get(s)!;
       if (geoDistance(center, cap.c) - cap.r > view) continue;
       land += path(s) ?? '';
     }
     parts.push(`<path class="land" d="${land}"/>`);
+    // A practice set's countries each on their own, lit up once found; the smallest also as a dot, to be seen.
+    if (set && own) {
+      const state = (n: string) => (set.found.has(n) ? ' found' : set.missed.has(n) ? ' missed' : '');
+      const flat = geoPath(projection);
+      let dots = '';
+      for (const [n, at] of own) {
+        const s = this.byNum.get(n), cls = state(n);
+        if (s) {
+          const cap = this.caps.get(s)!;
+          if (geoDistance(center, cap.c) - cap.r > view) continue;
+          parts.push(`<path class="land set${cls}" d="${path(s) ?? ''}"/>`);
+        }
+        const [[x0, y0], [x1, y1]] = s ? flat.bounds(mainPart(s)) : [[0, 0], [0, 0]];
+        if (s && Math.max(x1 - x0, y1 - y0) >= 7) continue;
+        const pt = projection(s ? (geoCentroid(mainPart(s)) as LonLat) : [at[1], at[0]]);
+        if (pt && pt[0] > -8 && pt[0] < W + 8 && pt[1] > -8 && pt[1] < H + 8) dots += `<circle class="set-dot${cls}" cx="${pt[0].toFixed(1)}" cy="${pt[1].toFixed(1)}" r="4.5"/>`;
+      }
+      parts.push(dots);
+    }
     if (target) parts.push(`<path class="land hl" d="${path(target) ?? ''}"/>`);
     parts.push(`<g class="rv">${this.revealPath(path, v.revealed)}</g>`);
     // Tiny or shapeless countries: a ring around them (not needed when the capital's dot marks the spot).
     let ring: [number, number] | null = null;
-    if (target || (!o.peak && !course)) {
+    if (!set && (target || (!o.peak && !course))) {
       const [[x0, y0], [x1, y1]] = main ? geoPath(projection).bounds(main) : [[0, 0], [0, 0]];
       if ((!main || Math.max(x1 - x0, y1 - y0) < 12) && !o.dot) {
         ring = projection(v.home);
@@ -191,6 +228,22 @@ export class WorldMap {
       const d = path({ type: 'MultiLineString', coordinates: course }) ?? '';
       parts.push(`<path class="river-case" d="${d}"/><path class="river" d="${d}"/>`);
     }
+    // A practice set's rivers: all of them faint, those found in blue with their names, those missed in red.
+    let riverNames = '';
+    if (set?.rivers) {
+      const order = [...set.rivers].sort((a, b) => Number(set.found.has(a) || set.missed.has(a)) - Number(set.found.has(b) || set.missed.has(b)));
+      const taken: [number, number, number, number][] = [];
+      for (const id of order) {
+        const lines = this.rivers[id];
+        if (!lines?.length) continue;
+        const d = path({ type: 'MultiLineString', coordinates: lines }) ?? '';
+        if (!d) continue;
+        const cls = set.found.has(id) ? ' found' : set.missed.has(id) ? ' missed' : '';
+        parts.push(`<path class="river-case" d="${d}"/><path class="river set${cls}" d="${d}"/>`);
+        const name = cls ? set.names.get(id) : '';
+        if (name) riverNames += this.riverName(projection, lines, name, taken, W, H);
+      }
+    }
     if (o.dot) {
       const pt = projection([o.dot[1], o.dot[0]]);
       if (pt) parts.push(`<g class="dot" transform="translate(${pt[0].toFixed(1)} ${pt[1].toFixed(1)})"><circle class="pulse" r="9"/><circle r="5.5"/></g>`);
@@ -200,6 +253,8 @@ export class WorldMap {
       if (pt) parts.push(`<g class="peak" transform="translate(${pt[0].toFixed(1)} ${pt[1].toFixed(1)})"><circle class="pulse" r="12"/><path d="M0-9 9 6H-9z"/></g>`);
     }
     if (o.labels?.length) parts.push(this.names(svg, projection, o.labels, !!ring));
+    if (set?.countries) parts.push(this.names(svg, projection, [...set.found, ...set.missed].map(num => ({ num, name: set.names.get(num) ?? '' })), false, true));
+    if (riverNames) parts.push(`<g class="names">${riverNames}</g>`);
     svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
     // One group around everything, so a pinch or a drag can move the drawing before it is drawn again.
     svg.innerHTML = `<g class="zoomer">${parts.join('')}</g>`;
@@ -213,22 +268,24 @@ export class WorldMap {
    *  width the map is shown at (the
    *  box around it: a dialog that is still growing into view would give a smaller width), so a name reads at about
    *  12.5 px on a phone and on a wide screen alike. */
-  private names(svg: SVGSVGElement, projection: ReturnType<typeof geoOrthographic>, labels: MapLabel[], ring: boolean): string {
+  private names(svg: SVGSVGElement, projection: ReturnType<typeof geoOrthographic>, labels: MapLabel[], ring: boolean, small = false): string {
+    const { w: W, h: H } = this.view!;
     const shown = svg.parentElement?.clientWidth || svg.getBoundingClientRect().width || W;
     const k = W / shown; // map units per pixel on screen
     const flat = geoPath(projection);
     const items = labels.flatMap(l => {
       const s = this.byNum.get(l.num);
       if (!s) return [];
-      const [x, y] = flat.centroid(s);
-      return Number.isFinite(x) && Number.isFinite(y) ? [{ ...l, x, y, area: flat.area(s), box: flat.bounds(s) }] : [];
+      const m = mainPart(s); // France is named in France, not between it and French Guiana
+      const [x, y] = flat.centroid(m);
+      return Number.isFinite(x) && Number.isFinite(y) ? [{ ...l, x, y, area: flat.area(m), box: flat.bounds(m) }] : [];
     }).sort((a, b) => Number(!!b.main) - Number(!!a.main) || b.area - a.area);
     const taken: [number, number, number, number][] = [];
     const edge = 16 * k, gap = 3 * k;
     let out = '';
     for (const it of items) {
       if (!it.main && (it.x < edge || it.x > W - edge || it.y < edge || it.y > H - edge)) continue;
-      const size = (it.main ? 13.5 : 12.5) * k;
+      const size = (it.main ? 13.5 : small ? 11 : 12.5) * k;
       const w = it.name.length * size * 0.58 + 2 * gap, h = size * 1.25;
       if (it.main && (ring || it.box[1][0] - it.box[0][0] < w * 1.1 || it.box[1][1] - it.box[0][1] < h * 1.8)) continue;
       for (const dy of it.main ? [0] : [0, -h, h]) {
@@ -242,6 +299,20 @@ export class WorldMap {
       }
     }
     return `<g class="names">${out}</g>`;
+  }
+
+  /** A river's name by its course, near the middle of the part in view, unless it would cover another name. */
+  private riverName(projection: ReturnType<typeof geoOrthographic>, lines: LonLat[][], name: string, taken: [number, number, number, number][], W: number, H: number): string {
+    const k = W / (this.view!.svg.parentElement?.clientWidth || W);
+    const pts = lines.flat().map(p => projection(p)).filter((p): p is [number, number] => !!p && p[0] > 0 && p[0] < W && p[1] > 0 && p[1] < H);
+    if (!pts.length) return '';
+    const [x, y] = pts[Math.floor(pts.length / 2)];
+    const size = 11 * k, w = name.length * size * 0.58 + 6 * k, h = size * 1.25;
+    const cx = Math.min(Math.max(x, w / 2 + 3), W - w / 2 - 3), cy = Math.min(Math.max(y - h * 0.6, h / 2 + 3), H - h / 2 - 3);
+    const box: [number, number, number, number] = [cx - w / 2, cy - h / 2, cx + w / 2, cy + h / 2];
+    if (taken.some(b => b[0] < box[2] && box[0] < b[2] && b[1] < box[3] && box[1] < b[3])) return '';
+    taken.push(box);
+    return `<text class="name river-name" x="${cx.toFixed(1)}" y="${cy.toFixed(1)}" style="font-size:${size.toFixed(1)}px;stroke-width:${(3.2 * k).toFixed(1)}px">${escapeXml(name)}</text>`;
   }
 
   /** After an answer: lights up these countries (ISO numeric codes) on the map just drawn. */

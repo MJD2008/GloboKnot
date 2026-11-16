@@ -263,27 +263,6 @@ body.home .logo circle { fill: var(--glow, var(--accent)); }
 .globe-zoom button:hover:not(:disabled) { background: rgba(40, 56, 90, 0.85); }
 .globe-zoom button:disabled { opacity: 0.3; cursor: default; }
 .globe-zoom svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-/* Tie the world (experiment): how many countries are tied, out of 194, left of the globe as the zoom is right of it.
-   A tap says what it means. */
-.globe-tied {
-  position: absolute;
-  z-index: 2;
-  left: max(calc(-10.5% - 38px), calc((var(--gw) - 100vw) / 2 + 4px));
-  bottom: 2%;
-  display: grid;
-  justify-items: center;
-  width: 34px;
-  padding: 5px 0 4px;
-  border: 0;
-  border-radius: 11px;
-  background: rgba(8, 12, 22, 0.62);
-  box-shadow: 0 0 0 1px color-mix(in srgb, var(--tie) 45%, transparent);
-  color: var(--tie);
-  font: inherit;
-  cursor: pointer;
-}
-.globe-tied b { font-size: 0.98rem; font-weight: 800; line-height: 1.15; font-variant-numeric: tabular-nums; letter-spacing: -0.02em; }
-.globe-tied span { font-size: 0.6rem; font-weight: 650; line-height: 1.2; white-space: nowrap; color: color-mix(in srgb, var(--tie) 70%, #8d97a3); }
 /* The name of the country under the pointer (or the finger, for a moment). */
 .globe-label {
   position: fixed;
@@ -850,6 +829,53 @@ body.untied .logo .rope { stroke: #e3b341; }
 .answers .ans img { display: block; height: 24px; width: auto; aspect-ratio: 4 / 3; border-radius: 3px; box-shadow: 0 0 0 1px var(--flag-edge); }
 .answers .ans s img { height: 18px; opacity: 0.5; filter: grayscale(0.6); margin-top: 3px; }
 
+/* ---------- Practice: one set filled in at once. The answer box stays at the top while the cards scroll under it;
+   a map takes the height there is. Found: green. Missed, after giving up: red. */
+.fill-title { flex: 1; min-width: 0; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.fill-count { font-variant-numeric: tabular-nums; font-weight: 700; color: var(--muted); }
+.fill-top { position: sticky; top: 0; z-index: 3; background: var(--bg); padding: 2px 0 6px; }
+.fill-progress { height: 4px; margin: 10px 0 2px; border-radius: 2px; background: var(--line); overflow: hidden; }
+.fill-progress i { display: block; height: 100%; width: calc(var(--done, 0) * 100%); background: var(--ok); border-radius: 2px; transition: width 0.3s ease-out; }
+.fill-under { display: flex; align-items: center; gap: 10px; min-height: 36px; }
+.fill-last { flex: 1; min-width: 0; margin: 0; color: var(--muted); font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.fill-last.ok { color: var(--ok); animation: rise 0.2s ease-out; }
+.fill-end { text-align: center; padding: 6px 0 4px; animation: rise 0.25s ease-out; }
+.fill-score { margin: 0; }
+.fill-score b { font-size: 2rem; font-weight: 800; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; }
+.fill.all-found .fill-score b { color: var(--ok); }
+.fill-score span { color: var(--muted); font-weight: 650; margin-left: 4px; }
+.fill-best { margin: 0 0 12px; color: var(--muted); font-weight: 600; min-height: 1.5em; }
+.fill-board { position: relative; }
+.fill[data-layout="map"] .fill-board, .fill[data-layout="rivers"] .fill-board { height: clamp(300px, calc(100dvh - 250px), 780px); }
+.fill-map { width: 100%; height: 100%; aspect-ratio: auto; touch-action: none; border-radius: 18px; border: 1px solid var(--line); background: var(--ocean); }
+.fill-map .land { fill: color-mix(in srgb, var(--land) 72%, var(--border)); }
+.fill-map .land.set { fill: var(--land); transition: fill 0.25s; }
+.fill-map .land.set.found { fill: color-mix(in srgb, var(--ok) 55%, var(--land)); stroke: var(--ok); }
+.fill-map .land.set.missed { fill: color-mix(in srgb, var(--bad) 45%, var(--land)); stroke: var(--bad); }
+.fill-map .set-dot { fill: var(--land); stroke: var(--ink); stroke-width: 1.4; }
+.fill-map .set-dot.found { fill: var(--ok); stroke: var(--ok); }
+.fill-map .set-dot.missed { fill: var(--bad); stroke: var(--bad); }
+.fill[data-layout="rivers"] .fill-map .land { fill: var(--land); }
+.fill-map .river.set { stroke: color-mix(in srgb, var(--river) 40%, var(--border)); stroke-opacity: 0.9; stroke-width: 2.6; }
+.fill-map .river.set.found { stroke: var(--river); stroke-opacity: 1; stroke-width: 3; }
+.fill-map .river.set.missed { stroke: var(--bad); stroke-opacity: 1; stroke-width: 3; }
+.fill-cards { list-style: none; margin: 8px 0 0; padding: 0; display: grid; gap: 6px; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); }
+.fill-cards.flags { grid-template-columns: repeat(auto-fill, minmax(104px, 1fr)); gap: 8px; }
+.fill-cards.texts { grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 8px; }
+.fill-card { display: flex; align-items: center; gap: 10px; min-height: 42px; padding: 8px 12px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface);
+  transition: background-color 0.2s, border-color 0.2s; }
+.fill-card .clue { flex: 1; min-width: 0; font-weight: 600; }
+.fill-card .slot { flex: 1; min-width: 0; min-height: 1.4em; border-bottom: 1.5px dashed var(--line-strong); font-weight: 750; text-align: right; color: var(--ok); }
+.fill-cards.flags .fill-card, .fill-cards.texts .fill-card { flex-direction: column; align-items: stretch; padding: 8px; gap: 6px; }
+.fill-cards.flags img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: 6px; box-shadow: 0 0 0 1px var(--flag-edge); background: var(--line); }
+.fill-cards.texts blockquote { margin: 0; font-size: 0.92rem; line-height: 1.45; display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; }
+.fill-cards.flags .slot, .fill-cards.texts .slot { flex: none; text-align: center; font-size: 0.88rem; }
+.fill-card.found { border-color: var(--ok); background: var(--ok-soft); animation: pop 0.25s ease-out; }
+.fill-card.found .slot, .fill-card.missed .slot { border-bottom-color: transparent; }
+.fill-card.missed { border-color: var(--bad); background: var(--bad-soft); }
+.fill-card.missed .slot { color: var(--bad); }
+.fill-card.again { animation: bump 0.5s ease-out; }
+
 /* ---------- wide screens: the round so far, a rope of knots down the left side, one knot per answer.
    The right side stays free (an advertisement may come there later: .rail.right). */
 .rail { display: none; }
@@ -905,6 +931,16 @@ body.untied .logo .rope { stroke: #e3b341; }
 .review { width: min(720px, calc(100% - 20px)); max-width: none; max-height: calc(100% - 20px); padding: 0; border: 0; border-radius: 18px; background: var(--surface); color: var(--ink); box-shadow: var(--shadow); }
 .review[open] { animation: pop 0.2s ease-out; }
 .review::backdrop { background: rgba(10, 14, 20, 0.45); animation: fadein 0.2s; }
+/* Leave this round? A small card in the middle, Keep playing first (Enter), Leave under it (Esc). */
+.leave { width: min(340px, calc(100% - 32px)); max-width: none; padding: 0; border: 0; border-radius: 18px; background: var(--surface); color: var(--ink); box-shadow: var(--shadow); }
+.leave[open] { animation: pop 0.16s ease-out; }
+.leave::backdrop { background: rgba(10, 14, 20, 0.5); animation: fadein 0.15s; }
+.leave-in { display: grid; gap: 6px; padding: 24px 20px 20px; text-align: center; }
+.leave h2 { margin: 0; font-size: 1.25rem; letter-spacing: -0.02em; }
+.leave p { margin: 0 0 14px; color: var(--muted); font-size: 0.95rem; }
+.leave-actions { display: grid; gap: 10px; }
+.leave-actions .btn { display: flex; align-items: center; justify-content: center; gap: 8px; }
+.leave-actions .btn.primary kbd { background: rgba(255, 255, 255, 0.2); border-color: transparent; color: inherit; }
 .review-in { display: grid; gap: 12px; padding: 12px; }
 .review-head { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 10px; padding-left: 4px; }
 .review-n { min-width: 44px; padding: 4px 8px; border-radius: 99px; text-align: center; font-size: 0.85rem; font-weight: 750; font-variant-numeric: tabular-nums; color: var(--accent-ink); background: var(--accent); }
@@ -1145,10 +1181,9 @@ h3 .info { margin-top: -6px; margin-bottom: -6px; }
 .fine { color: var(--muted); font-size: 0.85rem; margin: 16px 0 0; }
 
 /* ---------- Practice: one question type (under its category), a region with its number of questions, and how to answer */
-.p-what { display: grid; gap: 8px; }
-.p-cat { display: flex; align-items: center; gap: 7px; font-weight: 700; font-size: 0.9rem; margin-bottom: 4px; }
-.p-cat svg { width: 18px; height: 18px; fill: none; stroke: var(--icon); stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
-.p-kinds, .pills { display: flex; flex-wrap: wrap; gap: 6px; }
+.pills { display: flex; flex-wrap: wrap; gap: 6px; }
+.pill.set { display: inline-flex; align-items: center; gap: 6px; }
+.pill.set svg { width: 17px; height: 17px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; opacity: 0.8; }
 .pill {
   padding: 6px 11px;
   border-radius: 99px;
@@ -1284,12 +1319,12 @@ body.gordian::before {
   transition-timing-function: ease-out;
 }
 .btn-play:is(:active:not(:disabled), .pressed) { box-shadow: 0 1px 0 var(--edge-c), 0 4px 14px -10px var(--accent); }
-.icon-btn, .seg button, .globe-zoom button, .globe-tied, .zoom button, .go, .link, .ghost, .next, .not-now, .info, .expand, .pill, .swatches button, .switch, .config-line {
+.icon-btn, .seg button, .globe-zoom button, .zoom button, .go, .link, .ghost, .next, .not-now, .info, .expand, .pill, .swatches button, .switch, .config-line {
   transition: transform 0.32s var(--spring), background-color 0.15s, border-color 0.15s, color 0.15s, box-shadow 0.15s, opacity 0.15s;
 }
 .seg button { --press: 0.93; }
 .config-line { --press: 0.97; }
-:is(.icon-btn, .seg button, .globe-zoom button, .globe-tied, .zoom button, .go, .link, .ghost, .next, .not-now, .info, .expand, .pill, .swatches button, .switch, .config-line):is(:active:not(:disabled), .pressed) {
+:is(.icon-btn, .seg button, .globe-zoom button, .zoom button, .go, .link, .ghost, .next, .not-now, .info, .expand, .pill, .swatches button, .switch, .config-line):is(:active:not(:disabled), .pressed) {
   transform: scale(var(--press, 0.88));
   transition-duration: 0.05s;
   transition-timing-function: ease-out;

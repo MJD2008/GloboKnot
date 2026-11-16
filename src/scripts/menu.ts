@@ -4,8 +4,8 @@
 // question types), where (the whole world, continents or single countries) and how many questions. Every change is
 // kept at once; Play starts it. Something always stays selected: the last ticked box can't be unticked until another
 // one is ticked. Atlas, the hidden fourth level, is only here (not on the home screen), locked until a Monkey's fist round
-// of 75% or more; it is always typed: its answers can't be changed and it has no flag to pick. All, under Atlas, is
-// The Gordian Knot: every question in the game, so the rest can't be changed while it is picked.
+// of 75% or more. Atlas is everything, typed: every question type it asks (no flag to pick), the whole world, so only the
+// count can change (James, 16 Nov 2026). All, under Atlas, is The Gordian Knot: every question in the game.
 import { CONTINENTS, type Knowledge } from './kb';
 import { ANSWERS, CATS, GORDIAN, LEVELS, LEVEL_IDS, TEMPLATES, answersOf, available, canAsk, isCustom, levelOf, type Answers, type Cat, type Level } from './questions';
 import { ATLAS_AT, MAX_SIZE, SIZES, atlasOpen, clampSize, endTrial, saveSelection, saveStats, selection, setLevel, stats } from './prefs';
@@ -70,7 +70,7 @@ export function initMenu(kb: Knowledge, root: HTMLElement, onChange: () => void)
   const levels = root.querySelector<HTMLElement>('#menu-level')!;
   const levelHint = root.querySelector<HTMLElement>('#menu-level-hint')!;
   const answers = root.querySelector<HTMLElement>('#menu-answers')!;
-  const fixed = [...root.querySelectorAll<HTMLElement>('.fixed-by-all')]; // what The Gordian Knot decides
+  const fixed = [...root.querySelectorAll<HTMLElement>('.fixed-by-all')]; // what Atlas and The Gordian Knot decide
   const what = root.querySelector<HTMLElement>('#menu-what')!;
   const where = root.querySelector<HTMLElement>('#menu-where')!;
   const sizes = root.querySelector<HTMLElement>('#menu-size')!;
@@ -211,16 +211,17 @@ export function initMenu(kb: Knowledge, root: HTMLElement, onChange: () => void)
     const untied = stats.untied ? ` <span class="untied-note">Untied in ${clockOf(stats.untied.ms)}.</span>` : '';
     const hint = lockedTap && shut ? ATLAS_LOCKED
       : selection.size === 0 ? `The Gordian Knot: every question in the game, typed, in one go.${untied}`
-        : isCustom(selection) ? `Your own mix <button type="button" class="link" data-level="${selection.level}">Reset</button>` : '';
+        : selection.level === 'impossible' ? 'Atlas asks everything, about the whole world, typed. Only the count is yours.'
+          : isCustom(selection) ? `Your own mix <button type="button" class="link" data-level="${selection.level}">Reset</button>` : '';
     if (levelHint.innerHTML !== hint) levelHint.innerHTML = hint; // only when it changes, so it is read out once
     levelHint.hidden = !hint;
   }
 
   function paint() {
     paintLevel();
-    // While All is picked, the rest shows what The Gordian Knot asks, and can't be changed.
-    const all = selection.size === 0, view = all ? GORDIAN : selection;
-    for (const f of fixed) { f.inert = all; f.classList.toggle('fixed', all); }
+    // Under Atlas (and All, The Gordian Knot) the rest shows what it asks, and can't be changed.
+    const all = selection.size === 0, view = all ? GORDIAN : selection, locked = all || selection.level === 'impossible';
+    for (const f of fixed) { f.inert = locked; f.classList.toggle('fixed', locked); }
     const how = answersOf(view), level = levelOf(view), typedOnly = !!LEVELS[level].typedOnly;
     // Atlas is always typed: Choose and Both can't be picked.
     for (const b of answers.querySelectorAll<HTMLButtonElement>('[data-answers]')) {

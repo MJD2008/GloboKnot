@@ -22,8 +22,9 @@ The counts are Fibonacci numbers, each the two before it added up (8 + 13 = 21),
 Four levels, named after real knots (James, 14 Nov): Overhand, Bowline and Monkey's fist on the home screen, and Atlas,
 the hidden fourth. Each has its colour wherever it shows (home, configuration, the knots of a round, the results, a challenge):
 green, gold, orange and crimson, with a knot drawn beside its name. A level picks a set of question types and a way
-to answer, which the player can still change in the configuration (except on Atlas, which is always typed), and
-decides how well known the places asked about are. Atlas is not on the home screen: it waits in the configuration
+to answer, which the player can still change in the configuration, and decides how well known the places asked about
+are. Atlas is everything, typed: every question type it asks, about the whole world, and only the count can change
+(James, 16 Nov: "Atlas mode is locked in with everything, and in type mode"). Atlas is not on the home screen: it waits in the configuration
 behind a padlock until a Monkey's fist round of the level's own questions, 8 or more, scores 75% or more (whoever played
 three rounds before 14 Nov keeps it open). The ids stay `easy`, `medium`, `hard` and `impossible`: saved selections
 and links use them.
@@ -81,17 +82,28 @@ easy? Try Bowline"); Monkey's fist offers Atlas once it is open. Two rounds unde
 with a button to try it. A round's knots, its ring and its title on the results take the level's colour. Share
 sends the score with a challenge link (`#c=...`: the question codes and subjects plus a seed and the level, so a friend
 gets the same questions, asked the same way, at the same level, and a score to beat); the share icon at the top shares
-the site. Stopping a round shows the answers so far, without a score.
+the site. Stopping a round shows the answers so far, without a score. Leaving a round asks first ("Leave this round?",
+James, 16 Nov): Esc, the X or the logo opens the question, and a second Esc or Leave goes, while Enter or Keep playing
+goes back; meanwhile the question's time stands still.
 
 Tapping an answer opens it again: the map of the country it was about with the countries around it named (for a highest
 point, the peak with its country), and a card with
 its flag, capital, languages, highest point, rivers and neighbours (a river, a language or a mountain gets its own card).
 Names on the map are sized for the width the map is shown at, and left out where they would cover each other.
+The maps (`npm run build:map`) keep one shape per country (a reef with Australia's code once replaced its mainland, so
+Australia's map showed the Timor Sea), and countries under 5,000 km² keep every point, so Malta, Singapore and the
+island nations show inside their ring instead of vanishing (16 Nov). A capital's dot is always well inside the view
+(Kuala Lumpur, west of Malaysian Borneo). `test/map.test.mjs` checks all three for every country.
 
-Practice: one question type (Country → capital, Flag → country...) in the whole world or one continent, every question
-there is, in the same order every time (the order and the options come from a seed named after the practice, such as
-`p-C-eu-t`: capitals of Europe, typed). Typed or picked from four. Each practice keeps its best run (score, then time).
-For learning a set until it sticks, and for speedruns.
+Practice (simplified on 16 Nov, at James's ask, into a whole set filled in at once): one set per category, Countries,
+Capitals, Flags, Languages, Highest points or Rivers, in the whole world or one continent, on one screen. Each answer
+typed finds its place as soon as it is spelt right, in any order; a name that may be the start of a longer one waits a
+moment ("Niger" on the way to "Nigeria"), and Enter forgives a typo. Countries light up on a map of the region, named
+(the smallest as dots), rivers on a map of their own; capitals and highest points fill a list beside the countries'
+names, flags and text samples their cards. The maps zoom and turn with one finger; the world is a globe to turn. No
+time limit and no clock while playing (James: "could practice questions not be timed?"): the time shows at the end, next
+to the best (score, then time; kept per set and region, as `C-eu-f`). Give up shows what was missed, in red. Practice
+doesn't tie countries or count as a round. (`sets.ts` makes the sets, `fill.ts` the screen.)
 
 The logo is the world in a loop of rope whose ends cross below it, as in a knot; the globe on the home screen sits in the
 same loop. Tapping the logo goes back to the home screen from anywhere (a round in progress is dropped, unscored). The
@@ -120,8 +132,8 @@ switched off in `src/scripts/experiments.ts`, and the game is then as it was.
 
 - **Tie the world** (do ordinary rounds feel like they count?): a country answered right the first time is tied, in
   the category it was asked in (`gk-tied`: a letter per category). Tied countries light up on the home globe, gold once
-  right in three categories; the count sits left of the globe ("23 /194", a tap says what it means), and the results
-  say what the round tied ("+5 tied · 1 turned gold · 23 of 194"). The countries tied in the round just played pulse
+  right in three categories, and the results say what the round tied (a count beside the globe, from 15 Nov, was
+  taken off on 16 Nov: James found it out of place on the home screen) ("+5 tied · 1 turned gold · 23 of 194"). The countries tied in the round just played pulse
   when the home screen comes back, and the globe turns to face them. A question ties the country it is about; a river
   or a language text ties none. The globe lights countries from `globe.json` (Natural Earth 1:110m countries); the 29
   too small for it get a dot, and zoomed in they take the detailed shapes.
@@ -145,7 +157,9 @@ src/layouts/Base.astro    page frame: header, fonts, PREVIEW switch (noindex and
 src/styles/global.css     all styles; colours are tokens with light and dark values (blue and orange presets)
 src/scripts/app.ts        the quiz screens, keys and timing
 src/scripts/menu.ts       the configuration: level, answers, what, where, how many
-src/scripts/practice.ts   Practice: one question type in one region, in a fixed order, with a best run each
+src/scripts/practice.ts   the Practice sheet: which set, where, and the best so far
+src/scripts/sets.ts       Practice sets: one per category, every item of a region, and the names that find them
+src/scripts/fill.ts       Practice played: one set filled in at once, on a map or in cards, untimed
 src/scripts/prefs.ts      what the browser remembers: the selection, settings (auto-submit, theme, colour), the Daily, stats, the countries tied
 src/scripts/experiments.ts  the three experiments for the second playtest, each on or off
 src/scripts/rope.ts       the Daily rope: days in a row, one missed day a week forgiven, and the time to the next Daily

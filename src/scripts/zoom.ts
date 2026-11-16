@@ -2,7 +2,7 @@
 // back. On a phone one finger only moves the map once it is zoomed in, so the page can still scroll.
 // A gesture first moves and scales the drawing (cheap, every frame); a moment after it ends the map is drawn again,
 // sharp, from its new centre and width (WorldMap.settle).
-import { H, W, type WorldMap } from './map';
+import type { WorldMap } from './map';
 
 const ICONS = {
   in: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 6v12M6 12h12"/></svg>',
@@ -13,7 +13,8 @@ const STEP = 1.8; // one press of + or -
 
 export interface Zoom { reset(): void }
 
-export function zoomable(svg: SVGSVGElement, world: WorldMap): Zoom {
+/** `drag`: one finger always moves the map (Practice, where the map fills its screen and nothing needs scrolling). */
+export function zoomable(svg: SVGSVGElement, world: WorldMap, { drag = false } = {}): Zoom {
   const box = document.createElement('div');
   box.className = 'zoom';
   box.innerHTML = `<button type="button" data-z="in" aria-label="Zoom in" title="Zoom in">${ICONS.in}</button>`
@@ -46,7 +47,7 @@ export function zoomable(svg: SVGSVGElement, world: WorldMap): Zoom {
   };
   const soon = (ms = 180) => { clearTimeout(timer); timer = window.setTimeout(settle, ms); };
   const at = (e: { clientX: number; clientY: number }): [number, number] => {
-    const r = svg.getBoundingClientRect();
+    const r = svg.getBoundingClientRect(), [W, H] = world.size;
     return [((e.clientX - r.left) / r.width) * W, ((e.clientY - r.top) / r.height) * H];
   };
   /** Scales by f around p (map units), within the zoom limits. */
@@ -82,7 +83,7 @@ export function zoomable(svg: SVGSVGElement, world: WorldMap): Zoom {
     pts.set(e.pointerId, now);
     if (pts.size === 1) {
       // not zoomed in: a finger is left to scroll the page
-      if (e.pointerType === 'touch' && world.zoom * k <= 1.01) return;
+      if (e.pointerType === 'touch' && !drag && world.zoom * k <= 1.01) return;
       tx += now[0] - prev[0];
       ty += now[1] - prev[1];
       apply();
@@ -118,6 +119,7 @@ export function zoomable(svg: SVGSVGElement, world: WorldMap): Zoom {
       return;
     }
     if (k !== 1 || tx || ty) settle();
+    const [W, H] = world.size;
     scale(b.dataset.z === 'in' ? STEP : 1 / STEP, [W / 2, H / 2], true);
     soon(230); // after the eased step
   });

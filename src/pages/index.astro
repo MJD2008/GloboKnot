@@ -86,7 +86,6 @@ const INFO = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12
       <div class="globe-box">
         <canvas id="globe" class="globe" aria-label="A globe: drag to turn it, pinch or scroll to zoom, point at a country to see its name"></canvas>
         <Fragment set:html={GLOBE_ROPE} />
-        <button id="tied" class="globe-tied" type="button" hidden></button>
       </div>
       <h1 class="hero">Our world <em>in a knot.</em></h1>
       <!-- The level, and under it what, where and how many in one grey line that opens the configuration. -->
@@ -194,6 +193,38 @@ const INFO = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12
       <h2 class="answers-title">Answers</h2>
       <ol id="answers" class="answers"></ol>
     </section>
+
+    <!-- Practice: one set, filled in at once (James, 16 Nov 2026). Each answer typed finds its place, in any order. No
+         time limit and no clock: the time shows at the end. -->
+    <section id="fill" class="screen fill" hidden>
+      <div class="bar">
+        <button id="fill-quit" class="icon-btn" type="button" aria-label="Leave Practice" title="Leave" set:html={X} />
+        <span id="fill-title" class="fill-title"></span>
+        <span id="fill-count" class="fill-count"></span>
+      </div>
+      <div class="fill-top">
+        <form id="fill-form" class="answer" autocomplete="off">
+          <input id="fill-input" type="text" autocapitalize="words" autocorrect="off" spellcheck="false" enterkeyhint="go" aria-label="Your answer" />
+          <button class="go" type="submit" aria-label="Answer">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h13M13 6l6 6-6 6" /></svg>
+          </button>
+        </form>
+        <div class="fill-progress" aria-hidden="true"><i></i></div>
+        <div class="fill-under">
+          <p id="fill-last" class="fill-last" aria-live="polite"></p>
+          <button id="fill-give" class="ghost" type="button">Give up</button>
+        </div>
+        <div id="fill-end" class="fill-end" hidden>
+          <p class="fill-score"><b id="fill-score"></b> <span id="fill-time"></span></p>
+          <p id="fill-best" class="fill-best"></p>
+          <div class="actions">
+            <button id="fill-again" class="btn primary" type="button">Again</button>
+            <button id="fill-home" class="btn" type="button">Home</button>
+          </div>
+        </div>
+      </div>
+      <div id="fill-board" class="fill-board"></div>
+    </section>
   </main>
   <p id="toast" class="toast" role="status" hidden></p>
   <script is:inline id="audio-files" type="application/json" set:html={JSON.stringify(AUDIO_FILES)} />
@@ -217,6 +248,18 @@ const INFO = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12
         <button id="review-prev" class="btn" type="button"><span aria-hidden="true">&larr;</span> Previous</button>
         <button id="review-next" class="btn" type="button">Next <span aria-hidden="true">&rarr;</span></button>
       </footer>
+    </div>
+  </dialog>
+
+  <!-- Leaving a round asks first (James, 16 Nov 2026): Esc a second time or Leave goes; Enter or Keep playing stays. -->
+  <dialog id="leave" class="leave" aria-labelledby="leave-title" aria-describedby="leave-why">
+    <div class="leave-in">
+      <h2 id="leave-title">Leave this round?</h2>
+      <p id="leave-why">Your answers so far won’t count.</p>
+      <div class="leave-actions">
+        <button id="leave-stay" class="btn primary" type="button" autofocus>Keep playing <kbd>Enter</kbd></button>
+        <button id="leave-go" class="btn" type="button">Leave <kbd>Esc</kbd></button>
+      </div>
     </div>
   </dialog>
 
@@ -264,18 +307,14 @@ const INFO = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12
         <button class="icon-btn close" type="button" aria-label="Close" set:html={X} />
       </header>
       <div class="sheet-body">
-        <p id="practice-about" class="info-text" hidden>Every question of one kind, in the same order every time. Learn them, then beat your time.</p>
+        <p id="practice-about" class="info-text" hidden>A whole set on one screen. Type the answers in any order: each one finds its place. No time limit; your time shows at the end.</p>
         <section>
           <h3>What</h3>
-          <div id="practice-what" class="p-what"></div>
+          <div id="practice-what" class="pills" role="group" aria-label="What"></div>
         </section>
         <section>
           <h3>Where</h3>
           <div id="practice-where" class="pills" role="group" aria-label="Where"></div>
-        </section>
-        <section>
-          <h3>Answers</h3>
-          <div id="practice-answers" class="seg modes" role="group" aria-label="Answers"></div>
         </section>
       </div>
       <footer class="sheet-foot">

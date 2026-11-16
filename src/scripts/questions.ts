@@ -205,7 +205,7 @@ const options = (kb: Knowledge, ids: string[], rng: Rng): Choice[] => shuffle(id
 
 // Language tags for the text samples, so each script gets the right font (Japanese vs Chinese forms of the same
 // character) and right-to-left scripts run the right way.
-const BCP47: Record<string, string> = {
+export const BCP47: Record<string, string> = {
   ara: 'ar', heb: 'he', fas: 'fa', urd: 'ur', div: 'dv', zho: 'zh-Hans', jpn: 'ja', kor: 'ko', tha: 'th', lao: 'lo', khm: 'km',
   mya: 'my', dzo: 'dz', amh: 'am', tir: 'ti', hye: 'hy', kat: 'ka', ber: 'tzm-Tfng', hin: 'hi', nep: 'ne', ben: 'bn', tam: 'ta',
   rus: 'ru', ukr: 'uk', bel: 'be', bul: 'bg', mkd: 'mk', srp: 'sr', kaz: 'kk', kir: 'ky', tgk: 'tg', mon: 'mn', ell: 'el',
@@ -599,20 +599,6 @@ export function rebuildRound(kb: Knowledge, items: { code: string; subject: stri
   return out;
 }
 export const codeOf = (kind: string) => TEMPLATES.find(t => t.id === kind)?.code ?? '';
-
-/** How Practice asks: typed or picked, as the player chose, with some near and some far options (as on Bowline). */
-export const practiceAsk = (answers: Answers, kind: string): Ask =>
-  ({ answers: answers === 'type' && TEMPLATES.find(t => t.id === kind)?.typable ? 'type' : 'choose', tempt: 1 });
-/** Practice: every question of one type about the places given (none: the whole world), in the same order every
- *  time. The seed fixes the order and each question's options, so a run can be repeated, learned and timed. */
-export function practiceRound(kb: Knowledge, kind: string, places: string[], answers: Answers, seed: string): Question[] {
-  const t = TEMPLATES.find(x => x.id === kind);
-  if (!t) return [];
-  const ask = practiceAsk(answers, kind);
-  return shuffle(t.subjects(kb, placeTest({ kinds: [kind], places, size: 0 })), seeded(seed))
-    .map(id => makeQuestion(kb, t, id, seed, ask))
-    .filter((q): q is Question => !!q);
-}
 
 /** A seeded random generator (mulberry32), for the Daily, Practice and challenge links. */
 export function seeded(seed: string): Rng {

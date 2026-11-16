@@ -42,8 +42,8 @@ const OLD_SIZES: Record<number, number> = { 10: 13, 20: 21, 50: 34 };
 // Atlas (id impossible) is always typed (since 14 Nov 2026): a flag to pick, or Choose or Both, saved with it before, goes.
 kinds = kinds.filter(k => canAsk(level, k));
 export const selection: Selection & { level: Level } = {
-  kinds: kinds.length ? kinds : [...LEVELS[level].kinds],
-  places: Array.isArray(saved.places) ? saved.places : [],
+  kinds: kinds.length && level !== 'impossible' ? kinds : [...LEVELS[level].kinds],
+  places: Array.isArray(saved.places) && level !== 'impossible' ? saved.places : [],
   size: clampSize(v < 6 && saved.size && saved.size in OLD_SIZES ? OLD_SIZES[saved.size] : saved.size ?? DEFAULT_SIZE),
   level,
   ...(!LEVELS[level].typedOnly && ANSWERS.some(a => a.id === saved.answers) ? { answers: saved.answers } : {}),
@@ -51,13 +51,15 @@ export const selection: Selection & { level: Level } = {
 // While a new player's first round is still to come, its count of 8 is the game's, not theirs: 13 is saved, with
 // `first` so a reload keeps the 8.
 export const saveSelection = () => save(SEL_KEY, { ...selection, ...(trial ? { size: DEFAULT_SIZE, first: true } : {}), v: 6 });
-/** A level picks its own question types and answers (anything the player had changed is replaced). All (The Gordian
- *  Knot) only exists under Atlas. */
+/** A level picks its own question types and answers (anything the player had changed is replaced). Atlas is all of
+ *  it: every question type it asks, about the whole world, typed; only the count can change (James, 16 Nov 2026). All
+ *  (The Gordian Knot) only exists under Atlas. */
 export function setLevel(l: Level) {
   selection.level = l;
   selection.kinds = [...LEVELS[l].kinds];
   delete selection.answers;
-  if (l !== 'impossible' && selection.size === 0) selection.size = DEFAULT_SIZE;
+  if (l === 'impossible') selection.places = [];
+  else if (selection.size === 0) selection.size = DEFAULT_SIZE;
 }
 
 // ---------- settings
