@@ -250,7 +250,7 @@ export class WorldMap {
         if (s && Math.max(x1 - x0, y1 - y0) >= 7) continue;
         const pt = projection(s ? (geoCentroid(mainPart(s)) as LonLat) : [at[1], at[0]]);
         if (pt && pt[0] > -8 && pt[0] < W + 8 && pt[1] > -8 && pt[1] < H + 8) {
-          const g = `<g class="set-dot${cls}" data-k="${n}" transform="translate(${pt[0].toFixed(1)} ${pt[1].toFixed(1)})"><circle class="hit" r="11"/>${n === set.current ? '<circle class="pulse" r="9"/>' : ''}<circle r="${n === set.current ? 5.5 : 4.5}"/></g>`;
+          const g = `<g class="set-dot${cls}" data-k="${n}" transform="translate(${pt[0].toFixed(1)} ${pt[1].toFixed(1)})"><circle class="hit" r="11"/>${n === set.current ? '<circle class="halo" r="9"/>' : ''}<circle r="${n === set.current ? 5.5 : 4.5}"/></g>`;
           if (n === set.current) top += g; else dots += g;
         }
       }
@@ -305,7 +305,7 @@ export class WorldMap {
           if (geoDistance(center, p) > Math.min(view, Math.PI / 2 - 0.02)) continue;
           const pt = projection(p);
           if (!pt || pt[0] < -8 || pt[0] > W + 8 || pt[1] < -8 || pt[1] > H + 8) continue;
-          const g = `<g class="mark${cls}" data-k="${n}" transform="translate(${pt[0].toFixed(1)} ${pt[1].toFixed(1)})"><circle class="hit" r="11"/>${now ? '<circle class="pulse" r="10"/>' : ''}${shape}</g>`;
+          const g = `<g class="mark${cls}" data-k="${n}" transform="translate(${pt[0].toFixed(1)} ${pt[1].toFixed(1)})"><circle class="hit" r="11"/>${now ? '<circle class="halo" r="10"/>' : ''}${shape}</g>`;
           if (now || n === set.flash) top += g; else marks += g;
           const name = set.found.has(n) || set.missed.has(n) ? set.names.get(n) : '';
           if (name && list.length === 1) markNames += this.markName(pt, name, taken, W, H);

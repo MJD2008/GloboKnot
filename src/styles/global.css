@@ -863,9 +863,9 @@ body.untied .logo .rope { stroke: #e3b341; }
 .fill-map .land.set { fill: var(--land); transition: fill 0.25s; }
 .fill-map .land.set.found { fill: color-mix(in srgb, var(--ok) 40%, var(--land)); stroke: var(--ok); }
 .fill-map .land.set.missed { fill: color-mix(in srgb, var(--bad) 45%, var(--land)); stroke: var(--bad); }
-.fill-map .set-dot circle:not(.hit):not(.pulse) { fill: var(--land); stroke: var(--ink); stroke-width: 1.4; }
-.fill-map .set-dot.found circle:not(.hit):not(.pulse) { fill: var(--ok); stroke: var(--ok); }
-.fill-map .set-dot.missed circle:not(.hit):not(.pulse) { fill: var(--bad); stroke: var(--bad); }
+.fill-map .set-dot circle:not(.hit):not(.halo) { fill: var(--land); stroke: var(--ink); stroke-width: 1.4; }
+.fill-map .set-dot.found circle:not(.hit):not(.halo) { fill: var(--ok); stroke: var(--ok); }
+.fill-map .set-dot.missed circle:not(.hit):not(.halo) { fill: var(--bad); stroke: var(--bad); }
 .fill[data-layout="rivers"] .fill-map .land { fill: var(--land); }
 .fill-map .river.set { stroke: color-mix(in srgb, var(--river) 40%, var(--border)); stroke-opacity: 0.9; stroke-width: 2.6; }
 .fill-map .river.set.found { stroke: var(--river); stroke-opacity: 1; stroke-width: 3; }
@@ -876,22 +876,20 @@ body.untied .logo .rope { stroke: #e3b341; }
 .fill-map .hit { fill: transparent; stroke: none; }
 .fill-map .river-hit { fill: none; stroke: transparent; stroke-width: 14; stroke-linecap: round; pointer-events: stroke; }
 .fill-map .river, .fill-map .river-case, .fill-map .names { pointer-events: none; }
-.fill-map .land.set.cur { fill: var(--target); stroke: #eafff2; stroke-width: 1.4; animation: target 1.6s ease-in-out infinite; }
+/* The one asked now: a steady green, nothing pulsing (James, 17 Nov 2026: "just a clean green indication"). */
+.fill-map .land.set.cur { fill: var(--target); stroke: #eafff2; stroke-width: 1.4; }
 .fill-map .land.set.flash, .fill-map .river.set.flash { fill: color-mix(in srgb, var(--flash) 70%, var(--land)); stroke: var(--flash); stroke-width: 1.6; }
 .fill-map .river.set.flash { fill: none; stroke-width: 4; }
-.fill-map .set-dot.cur circle:not(.hit):not(.pulse), .fill-map .mark.cur > :last-child { fill: var(--target); stroke: #eafff2; stroke-width: 1.6; }
-.fill-map .set-dot.flash circle:not(.hit):not(.pulse), .fill-map .mark.flash > :last-child { fill: var(--flash); stroke: var(--flash); }
-.fill-map .set-dot .pulse, .fill-map .mark .pulse { fill: none; stroke: var(--target); stroke-width: 2; opacity: 0.7; animation: pulse 1.6s ease-out infinite; transform-box: fill-box; transform-origin: center; }
-.fill-map .river.set.cur { stroke: var(--target); stroke-opacity: 1; stroke-width: 4.2; animation: target-line 1.6s ease-in-out infinite; }
+.fill-map .set-dot.cur circle:not(.hit):not(.halo), .fill-map .mark.cur > :last-child { fill: var(--target); stroke: #eafff2; stroke-width: 1.6; }
+.fill-map .set-dot.flash circle:not(.hit):not(.halo), .fill-map .mark.flash > :last-child { fill: var(--flash); stroke: var(--flash); }
+.fill-map .set-dot .halo, .fill-map .mark .halo { fill: none; stroke: var(--target); stroke-width: 2; opacity: 0.75; }
+.fill-map .river.set.cur { stroke: var(--target); stroke-opacity: 1; stroke-width: 4.2; }
 .fill-map .river-case.cur { stroke-width: 8; }
-.fill-map .ring { stroke: var(--target); pointer-events: none; }
+.fill-map .ring { stroke: var(--target); pointer-events: none; animation: none; }
 .fill-map .mark > :last-child { fill: var(--surface); stroke: var(--ink); stroke-width: 1.5; stroke-linejoin: round; }
 .fill-map .mark.found > :last-child { fill: var(--ok); stroke: var(--surface); }
 .fill-map .mark.missed > :last-child { fill: var(--bad); stroke: var(--surface); }
 .fill-map .peak-marks .mark > :last-child { stroke-width: 1.3; }
-@keyframes target { 50% { fill: color-mix(in srgb, var(--target) 72%, #ffffff); } }
-@keyframes target-line { 50% { stroke-width: 5.4; } }
-@media (prefers-reduced-motion: reduce) { .fill-map .land.set.cur, .fill-map .river.set.cur { animation: none; } }
 .fill-cards { list-style: none; margin: 8px 0 0; padding: 0; display: grid; gap: 6px; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); }
 .fill-cards.flags { grid-template-columns: repeat(auto-fill, minmax(104px, 1fr)); gap: 8px; }
 .fill-cards.texts { grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 8px; }
