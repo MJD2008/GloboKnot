@@ -1,0 +1,433 @@
+---
+import Base from '../layouts/Base.astro';
+import { readFileSync, readdirSync } from 'node:fs';
+// The sounds James has made so far: every audio file in public/audio, listed into the page so the game knows which
+// slots have one (see docs/AUDIO.md). Adding a sound is dropping the file in and building again.
+const AUDIO_FILES = (() => {
+  try { return readdirSync('public/audio').filter(n => /\.(mp3|m4a|ogg|wav)$/i.test(n)).sort(); } catch { return []; }
+})();
+// James's photos of the countries (docs/PHOTOS.md): every image in public/photos named by the country's code (fra.jpg),
+// with a line under it from public/photos/credits.json if he writes one. Listed into the page like the sounds.
+const PHOTOS = (() => {
+  try {
+    let credits: Record<string, string> = {};
+    try { credits = JSON.parse(readFileSync('public/photos/credits.json', 'utf8')); } catch { /* none */ }
+    return Object.fromEntries(readdirSync('public/photos').filter(n => /^[a-z]{3}\.(jpe?g|webp|png|avif)$/i.test(n)).sort().map(n => {
+      const id = n.slice(0, 3).toUpperCase(), credit = credits[id.toLowerCase()] ?? credits[id];
+      return [id, credit ? { src: `photos/${n}`, credit } : { src: `photos/${n}` }];
+    }));
+  } catch { return {}; }
+})();
+const X = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg>';
+// About: a short rope with a knot tied the first time, one tied after a retry and a miss, drawn the way the ring on
+// the results draws them. (Not called tight and loose any more: those are levels now.)
+const Y = 18;
+const lay = (x0: number, x1: number) => {
+  let d = '';
+  for (let x = x0 + 4; x < x1 - 2; x += 7) d += `M${x - 2.6} ${Y - 3.2}L${x + 2.6} ${Y + 3.2}`;
+  return d;
+};
+const fray = (x: number, dir: number) => ([[-3.4, -6.5, 0.75], [-1.2, -2.2, 1], [1.2, 2.6, 0.9], [3.4, 6.9, 0.65]] as const)
+  .map(([o0, o1, k]) => `M${x} ${Y + o0}L${(x + dir * 13 * k).toFixed(1)} ${Y + o1}`).join('');
+const ROPE = `<svg class="knot-legend" viewBox="0 0 264 44" role="img" aria-label="A solid knot for the first try, an open one after a retry, and a miss where the rope is cut and frays">`
+  + `<path class="rope" d="M4 ${Y}H178M216 ${Y}H260"/><path class="twist" d="${lay(4, 178)}${lay(216, 260)}"/>`
+  + `<path class="fray" d="${fray(178, 1)}${fray(216, -1)}"/>`
+  + `<circle class="knot tight" cx="56" cy="${Y}" r="7.5"/><circle class="knot loose" cx="124" cy="${Y}" r="6.8"/>`
+  + `<text x="56" y="42">first try · 1</text><text x="124" y="42">retry · ½</text><text x="197" y="42">miss · 0</text></svg>`;
+// The badge for The Gordian Knot at 100%: a gold medal, a laurel wreath (Alexander's world) round a globe.
+const MEDAL = (() => {
+  const g = (n: number) => +n.toFixed(2), D = Math.PI / 180, R = 38;
+  let leaves = '', stems = '';
+  for (const side of [-1, 1]) {
+    const pt = (a: number) => [60 + side * R * Math.sin(a * D), 62 - R * Math.cos(a * D)];
+    const up = (a: number) => Math.atan2(-Math.sin(a * D), -side * Math.cos(a * D)) / D; // along the branch, upwards
+    const [x0, y0] = pt(172), [x1, y1] = pt(38);
+    stems += `<path d="M${g(x0)} ${g(y0)}A${R} ${R} 0 0 ${side > 0 ? 0 : 1} ${g(x1)} ${g(y1)}"/>`;
+    for (let i = 0; i < 7; i++) {
+      const a = 160 - i * 19.5, [x, y] = pt(a), t = up(a), nx = side * Math.sin(a * D), ny = -Math.cos(a * D);
+      for (const off of [-1, 1]) {
+        const cx = g(x + off * 3.6 * nx + 1.2 * Math.cos(t * D)), cy = g(y + off * 3.6 * ny + 1.2 * Math.sin(t * D));
+        leaves += `<ellipse cx="${cx}" cy="${cy}" rx="5.2" ry="2.2" transform="rotate(${g(t - off * side * 32)} ${cx} ${cy})"/>`;
+      }
+    }
+    const [tx, ty] = pt(32);
+    leaves += `<ellipse cx="${g(tx)}" cy="${g(ty)}" rx="4.6" ry="2" transform="rotate(${g(up(32))} ${g(tx)} ${g(ty)})"/>`;
+  }
+  return `<svg class="medal" viewBox="0 0 120 120" aria-hidden="true"><defs>`
+    + `<linearGradient id="m-face" x1="0.2" y1="0" x2="0.8" y2="1"><stop offset="0" stop-color="#fff2bf"/><stop offset="0.5" stop-color="#efbb42"/><stop offset="1" stop-color="#b57d16"/></linearGradient>`
+    + `<linearGradient id="m-rim" x1="1" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f8d36a"/><stop offset="1" stop-color="#94620b"/></linearGradient></defs>`
+    + `<circle cx="60" cy="60" r="57" fill="url(#m-rim)"/><circle cx="60" cy="60" r="51" fill="url(#m-face)"/>`
+    + `<g fill="none" stroke="#8a5c0c" stroke-width="1.6" stroke-linecap="round">${stems}</g><g fill="#8a5c0c">${leaves}</g>`
+    + `<g fill="none" stroke="#7a520a" stroke-width="2.8" stroke-linecap="round"><circle cx="60" cy="58" r="17.5"/><path d="M60 40.5c-6.6 6.2-6.6 28.8 0 35M60 40.5c6.6 6.2 6.6 28.8 0 35M42.5 58h35"/></g>`
+    + `<circle class="shine" cx="60" cy="60" r="51" pathLength="100"/></svg>`;
+})();
+// The home globe in a loop of rope, as in the logo: in units where the globe's box is 0-100, the rope runs round it at
+// radius 57.4, leaves the ring 24 degrees either side of the bottom and the two ends cross under it. Short slanted
+// lines across it, like the ring on the results, make it a rope.
+const R = 57.4, PHI = (24 * Math.PI) / 180;
+const pr = [50 + R * Math.sin(PHI), 50 + R * Math.cos(PHI)], pl = [100 - pr[0], pr[1]];
+const dir = [-Math.cos(PHI), Math.sin(PHI)], reach = ((pr[0] - 50) / Math.cos(PHI)) * 2.2;
+const endL = [pr[0] + dir[0] * reach, pr[1] + dir[1] * reach], endR = [100 - endL[0], endL[1]];
+const cross = pr[1] + (pr[0] - 50) * Math.tan(PHI); // where the two ends cross, under the middle of the globe
+const f = (n: number) => n.toFixed(2);
+const over = `M${f(50 - 7 * Math.cos(PHI))} ${f(cross - 7 * Math.sin(PHI))}L${f(50 + 7 * Math.cos(PHI))} ${f(cross + 7 * Math.sin(PHI))}`;
+const twistAt = (x: number, y: number, nx: number, ny: number) => // across the rope at (x, y), slanted along it
+  `M${f(x - nx * 2.2 + ny * 1.3)} ${f(y - ny * 2.2 - nx * 1.3)}L${f(x + nx * 2.2 - ny * 1.3)} ${f(y + ny * 2.2 + nx * 1.3)}`;
+let twists = '';
+for (let a = PHI + 0.04; a < 2 * Math.PI - PHI - 0.03; a += 4.4 / R) { // round the ring: a = 0 is the bottom
+  twists += twistAt(50 + R * Math.sin(a), 50 + R * Math.cos(a), Math.sin(a), Math.cos(a));
+}
+for (const [s, e] of [[pr, endL], [pl, endR]]) { // down each end
+  const len = Math.hypot(e[0] - s[0], e[1] - s[1]), ux = (e[0] - s[0]) / len, uy = (e[1] - s[1]) / len;
+  for (let d = 3; d < len - 2.5; d += 4.4) twists += twistAt(s[0] + ux * d, s[1] + uy * d, -uy, ux);
+}
+let overTwists = '';
+for (let d = -6.6; d < 7; d += 4.4) overTwists += twistAt(50 + d * Math.cos(PHI), cross + d * Math.sin(PHI), -Math.sin(PHI), Math.cos(PHI));
+const GLOBE_ROPE = `<svg class="globe-rope" viewBox="-10.5 -10.5 121 140" aria-hidden="true">`
+  + `<path class="rope" pathLength="1" d="M${f(endL[0])} ${f(endL[1])}L${f(pr[0])} ${f(pr[1])}A${R} ${R} 0 1 0 ${f(pl[0])} ${f(pl[1])}L${f(endR[0])} ${f(endR[1])}"/>`
+  + `<path class="twist" d="${twists}"/>`
+  // where the ends cross, the second passes over the first: drawn again on a dark edge, which shows the gap
+  + `<g class="over"><path class="gap" d="${over}"/><path class="top" d="${over}"/><path class="twist" d="${overTwists}"/></g></svg>`;
+// ⓘ: a few words, only for whoever asks for them (the button shows the box it controls).
+const INFO = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" /><path d="M12 11v5.5M12 7.6v.2" /></svg>';
+---
+<Base title="Globoknot" description="A geography quiz: countries, capitals, flags, languages, mountains and rivers. Pick what you want, type your answers; typos are forgiven.">
+  <main class="wrap">
+    <section id="start" class="screen start">
+      <canvas id="sky" class="sky" aria-hidden="true"></canvas>
+      <div class="globe-box">
+        <canvas id="globe" class="globe" aria-label="A globe: drag to turn it, pinch or scroll to zoom, point at a country to see its name"></canvas>
+        <Fragment set:html={GLOBE_ROPE} />
+      </div>
+      <h1 class="hero">Our world <em>in a knot.</em></h1>
+      <!-- A country's sheet: tap a country on the globe (scripts/sheet.ts). -->
+      <aside id="country-sheets" class="cs-stack" aria-label="Countries" hidden>
+        <nav class="cs-tabs" aria-label="Open countries" hidden></nav>
+        <div class="cs-row"></div>
+      </aside>
+      <!-- The level, and under it what, where and how many in one grey line that opens the configuration. -->
+      <div id="home-level" class="seg levels home-levels" role="group" aria-label="Level"></div>
+      <button id="config" class="config-line" type="button" aria-haspopup="dialog" aria-label="Questions: what, where and how many">
+        <span id="config-what" class="config-what" aria-hidden="true"></span>
+        <span id="config-rest" class="config-rest"></span>
+        <svg class="chev" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 10 5 5 5-5" /></svg>
+      </button>
+      <button id="play" class="btn-play" type="button" disabled>
+        <span id="play-label">Play</span>
+        <small id="play-sub" hidden></small>
+      </button>
+      <button id="not-now" class="not-now" type="button" hidden>Not now</button>
+      <div class="start-row">
+        <button id="daily" class="btn-soft" type="button" disabled>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5" width="16" height="15" rx="3" /><path d="M4 10h16M9 3v4M15 3v4" /></svg>
+          <span>Daily</span><small id="daily-sub"></small>
+          <span id="daily-rope" class="daily-rope" hidden></span>
+        </button>
+        <button id="practice" class="btn-soft" type="button" disabled>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.6-5.9" /><path d="M20 4.5v4h-4" /><circle cx="12" cy="12" r="2.2" /></svg>
+          <span>Practice</span>
+        </button>
+      </div>
+    </section>
+
+    <section id="quiz" class="screen quiz" hidden>
+      <!-- Wide screens only: the round so far, a rope of knots down the left side. -->
+      <aside class="rail left" aria-hidden="true"><ol id="trail" class="trail"></ol></aside>
+      <!-- The right side stays free for an advertisement later (160x600 or 300x600), away from the answer box and
+           the buttons. When there is one, it goes here:
+      <aside class="rail right" aria-label="Advertisement"></aside> -->
+      <div class="bar">
+        <button id="quit" class="icon-btn" type="button" aria-label="Stop and see the answers" title="Stop" set:html={X} />
+        <div id="beads" class="beads" aria-hidden="true"></div>
+        <span id="clock" class="clock" aria-label="Time">0:00</span>
+      </div>
+      <div id="card" class="card">
+        <div id="tags" class="tags" aria-hidden="true"></div>
+        <div id="media" class="media" data-kind="none">
+          <svg id="map" class="map" role="img" aria-label="Map"></svg>
+          <img id="flag" class="flag" alt="A flag to name" title="Tap to enlarge" />
+          <blockquote id="sample" class="sample" dir="auto"></blockquote>
+        </div>
+        <h2 id="prompt" class="prompt"></h2>
+        <div id="timer" class="timer" aria-hidden="true"><div class="track"><i></i></div><b id="count" class="count"></b></div>
+        <div class="respond">
+          <form id="answer-form" class="answer" autocomplete="off">
+            <input id="answer" type="text" autocapitalize="words" autocorrect="off" spellcheck="false" enterkeyhint="go" aria-label="Your answer" />
+            <button class="go" type="submit" aria-label="Answer">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h13M13 6l6 6-6 6" /></svg>
+            </button>
+          </form>
+          <div id="choices" class="choices" hidden></div>
+          <div id="verdict" class="verdict" hidden aria-live="polite">
+            <span class="mark" aria-hidden="true"></span>
+            <span class="said"><s id="typed"></s><strong id="right"></strong></span>
+            <button id="next" class="next" type="button">Next <kbd>Enter</kbd></button>
+          </div>
+        </div>
+      </div>
+      <div class="under">
+        <button id="skip" class="ghost" type="button">Skip <kbd aria-label="right arrow">&rarr;</kbd></button>
+      </div>
+    </section>
+
+    <section id="results" class="screen results" hidden>
+      <p id="results-title" class="results-title" hidden>The Gordian Knot</p>
+      <div class="score">
+        <svg id="ring" class="ring" viewBox="0 0 220 220" aria-hidden="true"></svg>
+        <div class="score-in">
+          <b id="pct">0%</b>
+          <span id="rank"></span>
+        </div>
+      </div>
+      <p id="summary" class="summary"></p>
+      <!-- Three small numbers instead of words: the longest run of right answers, the fastest right answer, the time. -->
+      <dl id="stats" class="stats">
+        <div><dt>Best run</dt><dd id="stat-run">0</dd></div>
+        <div><dt>Fastest</dt><dd id="stat-fast">–</dd></div>
+        <div><dt>Time</dt><dd id="stat-time">0:00</dd></div>
+      </dl>
+      <p id="results-note" class="results-note" hidden></p>
+      <p id="versus" class="versus" hidden></p>
+      <p id="best" class="best" hidden></p>
+      <p id="next-level" class="next-level" hidden><span id="next-why">Too easy?</span> <button id="next-go" class="link" type="button"></button></p>
+      <!-- A great Monkey's fist round opens Atlas, the hidden fourth level: it waits in the configuration, not on the home screen. -->
+      <div id="unlock" class="unlock" hidden>
+        <b>Atlas is open.</b>
+        <span>The hidden level: lesser-known places, always typed. It waits in the configuration, with The Gordian Knot under it.</span>
+        <button id="unlock-go" class="link" type="button">Try Atlas</button>
+      </div>
+      <!-- The Gordian Knot at 100%, every answer right the first time: a badge like no other. -->
+      <div id="untied" class="alexander" hidden>
+        <Fragment set:html={MEDAL} />
+        <div><b>Better than Alexander</b><span>He cut the Gordian Knot. You untied it.</span><small id="untied-time"></small></div>
+      </div>
+      <div class="actions">
+        <button id="again" class="btn primary" type="button">New round</button>
+        <button id="share" class="btn" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="18" cy="5.5" r="2.5" /><circle cx="6" cy="12" r="2.5" /><circle cx="18" cy="18.5" r="2.5" /><path d="m8.2 10.8 7.6-4.1M8.2 13.2l7.6 4.1" /></svg>Share</button>
+        <button id="home" class="btn" type="button">Home</button>
+      </div>
+      <p id="share-note" class="share-note" role="status" hidden></p>
+      <h2 class="answers-title">Answers</h2>
+      <ol id="answers" class="answers"></ol>
+    </section>
+
+    <!-- Practice: one set, filled in at once (James, 16 Nov 2026). Each answer typed finds its place, in any order. No
+         time limit and no clock: the time shows at the end. -->
+    <section id="fill" class="screen fill" hidden>
+      <div class="bar">
+        <button id="fill-quit" class="icon-btn" type="button" aria-label="Leave Practice" title="Leave" set:html={X} />
+        <span id="fill-title" class="fill-title"></span>
+        <span id="fill-count" class="fill-count"></span>
+      </div>
+      <div class="fill-top">
+        <form id="fill-form" class="answer" autocomplete="off">
+          <input id="fill-input" type="text" autocapitalize="words" autocorrect="off" spellcheck="false" enterkeyhint="go" aria-label="Your answer" />
+          <button class="go" type="submit" aria-label="Answer">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h13M13 6l6 6-6 6" /></svg>
+          </button>
+        </form>
+        <div class="fill-progress" aria-hidden="true"><i></i></div>
+        <div class="fill-under">
+          <p id="fill-last" class="fill-last" aria-live="polite"></p>
+          <button id="fill-skip" class="ghost" type="button" title="Skip (→)">Skip</button>
+          <button id="fill-give" class="ghost" type="button">Give up</button>
+        </div>
+        <div id="fill-end" class="fill-end" hidden>
+          <p class="fill-score"><b id="fill-score"></b> <span id="fill-time"></span></p>
+          <p id="fill-best" class="fill-best"></p>
+          <div class="actions">
+            <button id="fill-again" class="btn primary" type="button">Again</button>
+            <button id="fill-home" class="btn" type="button">Home</button>
+          </div>
+        </div>
+      </div>
+      <div id="fill-board" class="fill-board"></div>
+    </section>
+  </main>
+  <p id="toast" class="toast" role="status" hidden></p>
+  <script is:inline id="audio-files" type="application/json" set:html={JSON.stringify(AUDIO_FILES)} />
+  <script is:inline id="photos" type="application/json" set:html={JSON.stringify(PHOTOS)} />
+
+  <dialog id="review" class="review" aria-labelledby="review-title">
+    <div class="review-in">
+      <header class="review-head">
+        <span id="review-n" class="review-n"></span>
+        <h2 id="review-title" class="review-title"></h2>
+        <button class="icon-btn close" type="button" aria-label="Close" set:html={X} />
+      </header>
+      <div id="review-media" class="media" data-kind="none">
+        <svg id="review-map" class="map" role="img" aria-label="Map"></svg>
+        <blockquote id="review-sample" class="sample" dir="auto"></blockquote>
+      </div>
+      <p id="review-answer" class="review-answer"></p>
+      <!-- What the question was about: a country (its flag, capital, languages, highest point, rivers and neighbours),
+           or a river, a language or a mountain. -->
+      <section id="review-card" class="facts" aria-label="More about it" hidden></section>
+      <footer class="review-foot">
+        <button id="review-prev" class="btn" type="button"><span aria-hidden="true">&larr;</span> Previous</button>
+        <button id="review-next" class="btn" type="button">Next <span aria-hidden="true">&rarr;</span></button>
+      </footer>
+    </div>
+  </dialog>
+
+  <!-- Leaving a round asks first (James, 16 Nov 2026): Esc a second time or Leave goes; Enter or Resume stays. The keys
+       are not written on the buttons (James, 16 Nov 2026: "remove the Enter/Esc labels, but keep the shortcuts"). -->
+  <dialog id="leave" class="leave" aria-labelledby="leave-title" aria-describedby="leave-why">
+    <div class="leave-in">
+      <h2 id="leave-title">Leave this round?</h2>
+      <p id="leave-why">Your answers so far won’t count.</p>
+      <div class="leave-actions">
+        <button id="leave-stay" class="btn primary" type="button" autofocus>Resume</button>
+        <button id="leave-go" class="btn" type="button">Leave</button>
+      </div>
+    </div>
+  </dialog>
+
+  <dialog id="menu" class="sheet" aria-labelledby="menu-title">
+    <div class="sheet-in">
+      <header class="sheet-head">
+        <h2 id="menu-title">Configuration</h2>
+        <button class="icon-btn close" type="button" aria-label="Close" set:html={X} />
+      </header>
+      <div class="sheet-body">
+        <section>
+          <h3>Level <button class="info" type="button" aria-label="What the levels mean" aria-expanded="false" aria-controls="level-about" set:html={INFO} /></h3>
+          <div id="menu-level" class="seg levels" role="group" aria-label="Level"></div>
+          <dl id="level-about" class="info-text level-about" hidden></dl>
+          <p id="menu-level-hint" class="hint" aria-live="polite" hidden></p>
+        </section>
+        <section class="fixed-by-all">
+          <h3>Answers</h3>
+          <div id="menu-answers" class="seg modes" role="group" aria-label="Answers"></div>
+        </section>
+        <section class="fixed-by-all">
+          <h3>What</h3>
+          <div id="menu-what" class="groups"></div>
+        </section>
+        <section class="fixed-by-all">
+          <h3>Where</h3>
+          <div id="menu-where" class="groups"></div>
+        </section>
+        <section>
+          <h3>Questions <button class="info" type="button" aria-label="Why these numbers" aria-expanded="false" aria-controls="size-about" set:html={INFO} /></h3>
+          <div id="menu-size" class="seg sizes" role="group" aria-label="Number of questions"></div>
+          <p id="size-about" class="info-text" hidden>Fibonacci numbers: each is the two before it added up (8 + 13 = 21), about 1.6 times the last.</p>
+        </section>
+      </div>
+      <footer class="sheet-foot">
+        <button id="menu-play" class="btn primary wide" type="button">Play</button>
+      </footer>
+    </div>
+  </dialog>
+
+  <dialog id="practice-sheet" class="sheet" aria-labelledby="practice-title">
+    <div class="sheet-in">
+      <header class="sheet-head">
+        <h2 id="practice-title">Practice <button class="info" type="button" aria-label="What Practice is" aria-expanded="false" aria-controls="practice-about" set:html={INFO} /></h2>
+        <button class="icon-btn close" type="button" aria-label="Close" set:html={X} />
+      </header>
+      <div class="sheet-body">
+        <p id="practice-about" class="info-text" hidden>A whole set on one screen. Type the answers in any order: each one finds its place. No time limit; your time shows at the end.</p>
+        <section>
+          <h3>What</h3>
+          <div id="practice-what" class="pills" role="group" aria-label="What"></div>
+        </section>
+        <section>
+          <h3>Where</h3>
+          <div id="practice-where" class="pills" role="group" aria-label="Where"></div>
+        </section>
+      </div>
+      <footer class="sheet-foot">
+        <button id="practice-play" class="btn primary wide" type="button">Start<small></small></button>
+      </footer>
+    </div>
+  </dialog>
+
+  <dialog id="settings" class="sheet" aria-labelledby="settings-title">
+    <div class="sheet-in">
+      <header class="sheet-head">
+        <h2 id="settings-title">Settings</h2>
+        <button class="icon-btn close" type="button" aria-label="Close" set:html={X} />
+      </header>
+      <div class="sheet-body">
+        <!-- Three volumes: everything, the effects, and the music (shown once there is music in the build). -->
+        <div class="setting volume">
+          <span>Volume</span>
+          <input id="set-master" type="range" min="0" max="100" step="5" aria-label="Volume" />
+        </div>
+        <div class="setting volume">
+          <span>Effects</span>
+          <input id="set-effects" type="range" min="0" max="100" step="5" aria-label="Effects" />
+        </div>
+        <div id="set-music-row" class="setting volume" hidden>
+          <span>Music</span>
+          <input id="set-music" type="range" min="0" max="100" step="5" aria-label="Music" />
+        </div>
+        <div class="setting">
+          <span>Auto-submit <button class="info" type="button" aria-label="What Auto-submit does" aria-expanded="false" aria-controls="auto-about" set:html={INFO} /></span>
+          <button id="set-auto" class="switch" type="button" role="switch" aria-checked="true" aria-label="Auto-submit"><i></i></button>
+          <p id="auto-about" class="info-text" hidden>A right answer is sent as soon as it is typed, without Enter.</p>
+        </div>
+        <div class="setting">
+          <span>Theme</span>
+          <div id="set-theme" class="seg small" role="group" aria-label="Theme"></div>
+        </div>
+        <div class="setting">
+          <span>Colour</span>
+          <div id="set-accent" class="swatches" role="group" aria-label="Accent colour"></div>
+        </div>
+      </div>
+    </div>
+  </dialog>
+
+  <dialog id="about" class="sheet" aria-labelledby="about-title">
+    <div class="sheet-in">
+      <header class="sheet-head">
+        <h2 id="about-title">About</h2>
+        <button class="icon-btn close" type="button" aria-label="Close" set:html={X} />
+      </header>
+      <div class="sheet-body about">
+        <p class="lead">A geography quiz on checked facts.</p>
+        <!-- The numbers first, counted from the facts themselves once they load (these are the counts at the time of writing). -->
+        <div class="numbers">
+          <div class="big"><b id="n-facts">1,417</b><span>checked facts</span></div>
+          <div><b id="n-countries">194</b><span>countries</span></div>
+          <div><b id="n-capitals">198</b><span>capitals</span></div>
+          <div><b id="n-languages">129</b><span>languages</span></div>
+          <div><b id="n-peaks">165</b><span>mountains</span></div>
+          <div><b id="n-rivers">83</b><span>rivers</span></div>
+          <div><b id="n-questions">2,022</b><span>questions</span></div>
+        </div>
+        <h3>How a fact gets in</h3>
+        <ol class="steps">
+          <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5.5A1.5 1.5 0 0 1 5.5 4H11v13H5.5A1.5 1.5 0 0 1 4 15.5zM20 5.5A1.5 1.5 0 0 0 18.5 4H13v13h5.5a1.5 1.5 0 0 0 1.5-1.5z" /><path d="M6.5 8h2M6.5 11h2M15.5 8h2M15.5 11h2M12 17v3" /></svg><span>Two independent sources are read.</span></li>
+          <li><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5" /><path d="M8 12.5l2.5 2.5L16 9.5" /></svg><span>They agree: the fact is in.</span></li>
+          <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9a2.1 2.1 0 0 0-3-3L5 17z" /><path d="M14 8l2 2M13 20h7" /></svg><span>They don't: a person decides, and writes down why.</span></li>
+        </ol>
+        <h3>How to play</h3>
+        <ul class="how">
+          <li><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="7" width="18" height="10" rx="3" /><path d="m14 11 2 2 2-2" /></svg><span>Pick a knot: Overhand, Bowline or Monkey's fist. Tap the grey line under it to change what, where and how many.</span></li>
+          <li><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="6" width="18" height="12" rx="2" /><path d="M7 10h1M11 10h1M15 10h1M8 14h8" /></svg><span>Type the answer or pick one of four. Small typos are fixed for you.</span></li>
+          <li><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="13" r="8" /><path d="M12 9v4l2.5 2M10 3h4" /></svg><span>20 seconds a question. Wrong? Try again until the time runs out.</span></li>
+          <li><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5" width="16" height="15" rx="3" /><path d="M4 10h16M9 3v4M15 3v4" /><path d="M8 17l2.5-2.5 2 1.5 3.5-3.5" /></svg><span>The Daily: eight questions, the same for everyone, from easy to very hard.</span></li>
+          <li class="knots"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12h4.5M16.5 12H21" /><circle cx="12" cy="12" r="4.5" /></svg><span>Every answer ties a knot. All right the first time, and the rope closes into a ring.<Fragment set:html={ROPE} /></span></li>
+        </ul>
+        <p class="keys"><kbd>Enter</kbd> answer · <kbd>&rarr;</kbd> skip · <kbd>1</kbd>–<kbd>4</kbd> pick · <kbd>Esc</kbd> stop</p>
+        <h3>Sources</h3>
+        <ul class="sources">
+          <li><a href="https://github.com/mledoze/countries">mledoze/countries</a> <span>ODbL 1.0</span></li>
+          <li><a href="https://www.cia.gov/the-world-factbook/">CIA World Factbook</a> <span>public domain</span></li>
+          <li><a href="https://github.com/datasets/country-codes">UN country codes</a> <span>ODC-PDDL</span></li>
+          <li><a href="https://www.naturalearthdata.com/">Natural Earth</a>: maps, peaks, rivers, city lights <span>public domain</span></li>
+          <li><a href="https://www.ohchr.org/en/human-rights/universal-declaration/universal-declaration-human-rights/about-universal-declaration-human-rights-translation-project">Universal Declaration of Human Rights</a>: language texts (OHCHR translations)</li>
+          <li><a href="https://github.com/lipis/flag-icons">flag-icons</a> <span>MIT</span></li>
+        </ul>
+        <p class="fine">Data edition <span id="edition">…</span></p>
+      </div>
+    </div>
+  </dialog>
+</Base>
+
+<script>
+  import '../scripts/app.ts';
+</script>

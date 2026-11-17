@@ -1,33 +1,165 @@
-id,name,add_aliases,remove_aliases,note
-USA,,USA|US|America|United States of America,,
-GBR,,UK|Britain,,
-ARE,,UAE,,
-COD,,DRC|Congo-Kinshasa|Democratic Republic of Congo,Congo,Congo alone means the Republic of the Congo
-COG,Republic of the Congo,Congo|Congo-Brazzaville,,
-KOR,,,Korea,ambiguous between North and South
-PRK,,,Korea,ambiguous between North and South
-CIV,,Cote dIvoire,,
-VAT,,Holy See,,
-MNG.ulan-bator,Ulaanbaatar,Ulan Bator,,
-MDA.chisinau,,Chisinau|Kishinev,,
-UKR.kyiv,,Kiev,,
-SMR.city-of-san-marino,San Marino,City of San Marino,,
-USA.washington-dc,Washington D.C.,Washington|Washington DC,,
-IND.new-delhi,,Delhi,,
-MMR.naypyidaw,,Nay Pyi Taw|Naypyitaw,,
-KIR.south-tarawa,,Tarawa,,
-BRA.brasilia,,Brasilia,,
-COL.bogota,,Bogota,,
-ron,Romanian,Moldovan|Moldavian,,
-pes,Persian,Farsi|Dari Persian,,
-ber,Tamazight,Berber|Amazigh,,
-nau,Nauruan,,,
-div,Dhivehi,Maldivian,,
-ssw,Swazi,siSwati|Swati,,
-nya,Chewa,Chichewa|Nyanja,,
-mya,Burmese,Myanmar,,
-slv,Slovene,Slovenian,,
-zho,Chinese,Mandarin|Standard Chinese,,
-msa,Malay,Bahasa Melayu|Bahasa Malaysia,,
-fil,Filipino,Tagalog,,
-sfs,South African Sign Language,SASL,,
+id,name,add_aliases,remove_aliases,context_aliases,note
+USA,,USA|US|America|United States of America,,,
+GBR,,UK|Britain,,,
+ARE,,UAE,,,
+COD,,DRC|Congo-Kinshasa|Democratic Republic of Congo|Zaire,Congo,Congo,Congo alone means the Republic of the Congo; it still counts when DR Congo is the answer; former name (1971-97)
+COG,Republic of the Congo,Congo|Congo-Brazzaville,,,
+KOR,,,Korea,Korea,ambiguous between North and South; it still counts when South Korea is the answer
+PRK,,,Korea,,ambiguous between North and South
+CIV,,Cote dIvoire,,,
+VAT,,Holy See,,,
+MNG.ulan-bator,Ulaanbaatar,Ulan Bator|Urga,,,former name (until 1924)
+MDA.chisinau,,Chisinau|Kishinev,,,
+UKR.kyiv,,Kiev,,,
+SMR.city-of-san-marino,San Marino,City of San Marino,,,
+USA.washington-dc,Washington D.C.,Washington|Washington DC,,,
+IND.new-delhi,,Delhi,,,
+MMR.naypyidaw,,Nay Pyi Taw|Naypyitaw,,,
+KIR.south-tarawa,,Tarawa,,,
+BRA.brasilia,,Brasilia,,,
+COL.bogota,,Bogota|Santa Fe de Bogotá|Santafé de Bogotá,,,former names
+ron,Romanian,Moldovan|Moldavian,,,
+pes,Persian,Farsi|Dari Persian,,,
+ber,Tamazight,Berber|Amazigh,,,
+nau,Nauruan,,,,
+div,Dhivehi,Maldivian,,,
+ssw,Swazi,siSwati|Swati,,,
+nya,Chewa,Chichewa|Nyanja,,,
+mya,Burmese,Myanmar,,,
+slv,Slovene,Slovenian,,,
+zho,Chinese,Mandarin|Standard Chinese,,,
+msa,Malay,Bahasa Melayu|Bahasa Malaysia,,,
+fil,Filipino,Tagalog,,,
+sfs,South African Sign Language,SASL,,,
+KWT.kuwait-city,,Kuwait,,,also called simply Kuwait
+PAN.panama-city,,Panama,,,also called simply Panama (Ciudad de Panama)
+GTM.guatemala-city,,Guatemala,,,also called simply Guatemala (Ciudad de Guatemala)
+VAT.vatican-city,,Vatican,,,
+CAF,,CAR,,,common short form
+PNG,,PNG,,,common short form
+NZL,,NZ,,,common short form
+SAU,,KSA,,,common short form
+LKA,,Ceylon,,,former name (until 1972)
+IRN,,Persia,,,former name in English (until 1935)
+THA,,Siam,,,"former name (until 1939, and 1945-49)"
+BEN,,Dahomey,,,former name (until 1975)
+BFA,,Upper Volta,,,former name (until 1984)
+ZWE,,Rhodesia|Southern Rhodesia,,,former names (until 1979-80)
+ZMB,,Northern Rhodesia,,,former name (until 1964)
+BWA,,Bechuanaland,,,former name (until 1966)
+GHA,,Gold Coast,,,former name (until 1957)
+KHM,,Kampuchea,,,former name (1975-89)
+VUT,,New Hebrides,,,former name (until 1980)
+KIR,,Gilbert Islands,,,former name (until 1979)
+TUV,,Ellice Islands,,,former name (until 1978)
+MWI,,Nyasaland,,,former name (until 1964)
+LSO,,Basutoland,,,former name (until 1966)
+NAM,,South West Africa,,,former name (until 1990)
+BLZ,,British Honduras,,,former name (until 1973)
+GUY,,British Guiana,,,former name (until 1966)
+SUR,,Dutch Guiana,,,former name (until 1975)
+DJI,,French Somaliland,,,former name (until 1967)
+MLI,,French Sudan,,,former name (until 1960)
+WSM,,Western Samoa,,,former name (until 1997)
+TZA,,Tanganyika,,,the mainland before the union with Zanzibar (1964)
+BLR,,Byelorussia|Belorussia,,,former names in English
+MDA,,Moldavia,,,former name in English
+KGZ,,Kirghizia,,,former name in English
+DEU,,Deutschland,,,own name
+ESP,,España,,,own name
+ITA,,Italia,,,own name
+AUT,,Österreich,,,own name
+CHE,,Schweiz|Suisse|Svizzera|Helvetia,,,own names
+SWE,,Sverige,,,own name
+NOR,,Norge|Noreg,,,own names
+FIN,,Suomi,,,own name
+DNK,,Danmark,,,own name
+POL,,Polska,,,own name
+HUN,,Magyarország,,,own name
+HRV,,Hrvatska,,,own name
+GRC,,Hellas,,,own name
+BEL,,België|Belgique|Belgien,,,own names
+ALB,,Shqipëria,,,own name
+SRB,,Srbija,,,own name
+EGY,,Misr,,,own name
+MAR,,Maroc,,,own name (French)
+BRA,,Brasil,,,own name
+IND,,Bharat,,,own name
+GEO,,Sakartvelo,,,own name
+ARM,,Hayastan,,,own name
+EST,,Eesti,,,own name
+LVA,,Latvija,,,own name
+LTU,,Lietuva,,,own name
+SVN,,Slovenija,,,own name
+SVK,,Slovensko,,,own name
+LUX,,Lëtzebuerg,,,own name
+AUT.vienna,,Wien,,,own name
+BEL.brussels,,Bruxelles|Brussel,,,own names
+BGD.dhaka,,Dacca,,,former spelling
+BWA.gaborone,,Gaberones,,,former name
+CHN.beijing,,Peking|Peiping,,,former names in English
+CZE.prague,,Praha,,,own name
+DNK.copenhagen,,København,,,own name
+EGY.cairo,,Al-Qahira,,,own name
+GRC.athens,,Athina,,,own name
+IDN.jakarta,,Batavia|Djakarta,,,former names
+IRN.tehran,,Teheran,,,former spelling
+ITA.rome,,Roma,,,own name
+JPN.tokyo,,Edo|Tokio,,,"former name, and an older spelling"
+KAZ.astana,,Nur-Sultan|Akmola|Aqmola|Tselinograd,,,former names (Nur-Sultan 2019-22)
+KGZ.bishkek,,Frunze,,,former name (1926-91)
+LTU.vilnius,,Vilna|Wilno,,,former names
+MDG.antananarivo,,Tananarive,,,former name
+MEX.mexico-city,,Ciudad de México|CDMX,,,own name
+MOZ.maputo,,Lourenço Marques,,,former name (until 1976)
+NOR.oslo,,Christiania|Kristiania,,,former names (until 1925)
+POL.warsaw,,Warszawa,,,own name
+PRT.lisbon,,Lisboa,,,own name
+ROU.bucharest,,București,,,own name
+RUS.moscow,,Moskva,,,own name
+SRB.belgrade,,Beograd,,,own name
+SVK.bratislava,,Pressburg|Pozsony,,,former names
+SVN.ljubljana,,Laibach,,,former name
+HRV.zagreb,,Agram,,,former name
+EST.tallinn,,Reval,,,former name
+TCD.ndjamena,,Fort-Lamy,,,former name (until 1973)
+TJK.dushanbe,,Stalinabad,,,former name (1929-61)
+TKM.ashgabat,,Ashkhabad|Ashgabad|Poltoratsk,,,former names and spellings
+TUR.ankara,,Angora,,,former name
+ZWE.harare,,Salisbury,,,former name (until 1982)
+COD.kinshasa,,Léopoldville,,,former name (until 1966)
+SOM.mogadishu,,Muqdisho|Mogadiscio,,,"own name, and the Italian one"
+ETH.addis-ababa,,Addis Abeba|Finfinne,,,"other spelling, and the Oromo name"
+GMB.banjul,,Bathurst,,,former name (until 1973)
+ARM.yerevan,,Erevan|Erivan,,,other spellings
+GEO.tbilisi,,Tiflis,,,former name
+UZB.tashkent,,Toshkent,,,own name
+LAO.vientiane,,Viangchan,,,own name
+VNM.hanoi,,Ha Noi,,,own name
+THA.bangkok,,Krung Thep,,,own name
+MYS.kuala-lumpur,,KL,,,common short form
+PHL.manila,,Maynila,,,own name
+LKA.sri-jayewardenepura-kotte,,Kotte|Sri Jayawardenepura Kotte|Sri Jayawardenepura,,,short name and the other spelling
+NPL.kathmandu,,Katmandu,,,other spelling
+BTN.thimphu,,Thimpu,,,other spelling
+LBN.beirut,,Beyrouth,,,French name
+OMN.muscat,,Masqat,,,own name
+NAM.windhoek,,Windhuk,,,German name
+ZAF.pretoria,,Tshwane,,,the municipality it is in
+ERI.asmara,,Asmera,,,other spelling
+DJI.djibouti,,Djibouti City,,,"the city, not the country"
+LBY.tripoli,,Tarabulus,,,own name
+DZA.algiers,,Alger,,,French name
+CUB.havana,,La Habana|Habana,,,own name
+DOM.santo-domingo,,Ciudad Trujillo,,,former name (1936-61)
+CAN.ottawa,,Bytown,,,former name (until 1855)
+VUT.port-vila,,Vila,,,short name
+LUX.luxembourg,,Luxembourg City,,,"the city, not the country"
+CHE.bern,,Berne,,,French and older English name
+FIN.helsinki,,Helsingfors,,,Swedish name
+IRL.dublin,,Baile Átha Cliath,,,Irish name
+CYP.nicosia,,Lefkosia,,,Greek name
+ALB.tirana,,Tiranë,,,own name
+MNE.podgorica,,Titograd,,,former name (1946-92)
+YEM.sanaa,,Sanaa,,,without the apostrophe
+TON.nukualofa,,Nukualofa,,,without the apostrophe

@@ -64,3 +64,43 @@ borders:
     regions or dependencies (French Guiana, Greenland, Gibraltar) do not count. Borders through
     disputed territory (Kashmir, Western Sahara) are excluded.
   forward: "Neighbours of {s}?"
+
+spoken_language:
+  from: country
+  to: language
+  many: true
+  complete: false
+  answers_only: true
+  map: administrative
+  definition: >
+    A language that is not official but that 5% or more of the people speak (the Factbook's shares; where it gives
+    no shares, the first three it lists). Used only to accept answers ("Spanish: name a country" accepts the United
+    States), never to ask a question, so one source is enough: it can only make the game more lenient.
+  forward: "{s}: a language spoken?"
+
+highest_point:
+  from: country
+  to: peak
+  many: false
+  complete: false
+  map: natural
+  definition: >
+    The highest point of the country's territory, as the Factbook names it, with a position from Natural Earth or a
+    decision. A peak on a border can be the highest point of two countries (Everest: Nepal and China). Where the
+    summit is across the border (Monaco on Mont Agel), the peak does not count. Tiny countries whose highest point is
+    unnamed or not a peak have none.
+  forward: "{s}: highest point?"
+  reverse: "{o}: country?"
+
+flows_through:
+  from: river
+  to: country
+  many: true
+  complete: false
+  map: natural
+  definition: >
+    The river's course passes through the country or along its border, per the Factbook's major rivers and Natural
+    Earth's course (at least 15 km inside the country's outline). Lakes and reservoirs on the course count; a
+    tributary's countries do not. Approved when both sources agree; a country only one source names is still accepted
+    as an answer but never shown as THE answer.
+  forward: "{s}: country?"

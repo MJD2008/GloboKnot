@@ -1,0 +1,3 @@
+# Preview: hidden from search engines until launch.
+User-agent: *
+Disallow: /
