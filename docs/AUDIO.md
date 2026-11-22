@@ -79,7 +79,7 @@ How James's effects were fitted (`scripts/audio/make_audio.py`):
 | `wrong` | the first 0.5 s | -5 dBFS |
 | `start` | the first 1.3 s, fading out | -6 dBFS |
 | `low` | the first 1.6 s | -9 dBFS (it was the loudest) |
-| `open` | the first 1.25 s of 3.4 s, fading out, so it never trails over the next tap | -10 dBFS |
+| `open` | only its first paper sound, 0.36 s of 3.4 s (the file has nine, one after another), fading out | -10 dBFS |
 | `select` | all of it | -12 dBFS (heard on every press) |
 
 Pitch: the game changes the pitch of some slots, so make them in a key where that still sounds good.

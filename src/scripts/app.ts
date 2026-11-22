@@ -212,7 +212,7 @@ async function load() {
     globe.chainNear = chainNear;
     globe.countryAt = countryAt;
     globe.onTap = hit => { if (hit.id) countrySheets?.open(hit.id); };
-    globe.onZoom = zoomed => { if (!screens.start.hidden) sound.scene(zoomed ? 'globe' : 'home'); };
+    globe.onZoom = zoomed => { if (!screens.start.hidden) sound.scene(zoomed ? 'globe' : 'home'); countrySheets?.relayout(); };
     globe.detail = () => world?.detail ?? null;
     globe.shapeOf = num => world?.shape(num) ?? null;
     paintTied();
@@ -1354,6 +1354,7 @@ ui.flag.addEventListener('click', () => ui.media.classList.toggle('big'));
 ui.daily.addEventListener('click', () => start(DAILY, true));
 $('#open-settings').addEventListener('click', () => open(ui.settings));
 $('#open-about').addEventListener('click', () => open(ui.about));
+$('#credits-line').addEventListener('click', () => { open(ui.about); ui.about.querySelector('.sources')?.scrollIntoView({ block: 'start' }); });
 $('#menu-play').addEventListener('click', () => start(selection));
 ui.form.addEventListener('submit', e => { e.preventDefault(); flash(ui.form.querySelector('.go')); if (state.locked) next(); else answer(ui.input.value); });
 ui.input.addEventListener('input', () => autoSubmit());
@@ -1423,8 +1424,12 @@ ui.card.addEventListener('click', e => {
 document.addEventListener('keydown', e => {
   if (document.querySelector('dialog[open]')) return;
   if (!screens.fill.hidden && e.key === 'Escape') { e.preventDefault(); fill?.leave(); return; }
-  // On the home screen, Esc closes the country sheet in front, then puts a grown globe back into its rope.
-  if (!screens.start.hidden && e.key === 'Escape' && (countrySheets?.back() || globe?.back())) { e.preventDefault(); return; }
+  // On the home screen, Esc brings everything back (James, 22 Nov 2026): every country sheet closes and a grown globe
+  // goes back into its rope, at once.
+  if (!screens.start.hidden && e.key === 'Escape') {
+    const sheets = countrySheets?.back() ?? false, grown = globe?.back() ?? false;
+    if (sheets || grown) { e.preventDefault(); return; }
+  }
   if (screens.quiz.hidden) return;
   // Esc stops the round, as the X button does, once it is confirmed (a second Esc). → skips, but only with nothing
   // typed, so it still moves the cursor through a typed answer; after an answer, → and Enter both go on.

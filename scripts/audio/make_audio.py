@@ -22,7 +22,7 @@ FX = {
     'wrong': ('soundEffect_incorrectAnswer.wav', 0.60, 0.12, -5, 'mp3'),
     'start': ('soundEffect_Background_gameStarted.wav', 1.60, 0.40, -6, 'mp3'),
     'low': ('soundEffect_Background_lowScore.wav', 1.60, 0.30, -9, 'mp3'),
-    'open': ('soundEffect_openIndex&openExtraDetails.wav', 1.25, 0.30, -10, 'mp3'),
+    'open': ('soundEffect_openIndex&openExtraDetails.wav', 0.36, 0.14, -10, 'mp3'),  # the first of its paper sounds only
     'select': ('soundEffect_Select(anything).wav', 1.00, 0.003, -12, 'wav'),
 }
 MUSIC_LUFS = -20

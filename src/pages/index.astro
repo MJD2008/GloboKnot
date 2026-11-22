@@ -106,10 +106,10 @@ const INFO = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12
         <canvas id="globe" class="globe" aria-label="A globe: drag to turn it, pinch or scroll to zoom, point at a country to see its name"></canvas>
         <Fragment set:html={GLOBE_ROPE} />
       </div>
-      <h1 class="hero">Our world <em>in a knot.</em></h1>
+      <!-- No tagline on screen (James, 22 Nov 2026): the globe takes its room. The heading stays for screen readers. -->
+      <h1 class="sr-only">Globoknot, a geography quiz</h1>
       <!-- A country's sheet: tap a country on the globe (scripts/sheet.ts). -->
       <aside id="country-sheets" class="cs-stack" aria-label="Countries" hidden>
-        <nav class="cs-tabs" aria-label="Open countries" hidden></nav>
         <div class="cs-row"></div>
       </aside>
       <!-- The level, and under it what, where and how many in one grey line that opens the configuration. -->
@@ -135,6 +135,9 @@ const INFO = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12
           <span>Practice</span>
         </button>
       </div>
+      <!-- The credits that must be seen (James, 22 Nov 2026: "in fine print in grey at the bottom"): the country data's
+           licence (ODbL asks for it), the maps, and the photos (each is also credited under it). The rest is in About. -->
+      <button id="credits-line" class="credits-line" type="button" aria-haspopup="dialog">Country data: mledoze/countries (ODbL) · Maps: Natural Earth · Photos: Wikimedia Commons</button>
     </section>
 
     <section id="quiz" class="screen quiz" hidden>
@@ -428,6 +431,7 @@ const INFO = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12
           <li><a href="https://www.naturalearthdata.com/">Natural Earth</a>: maps, peaks, rivers, city lights <span>public domain</span></li>
           <li><a href="https://www.ohchr.org/en/human-rights/universal-declaration/universal-declaration-human-rights/about-universal-declaration-human-rights-translation-project">Universal Declaration of Human Rights</a>: language texts (OHCHR translations)</li>
           <li><a href="https://github.com/lipis/flag-icons">flag-icons</a> <span>MIT</span></li>
+          <li><a href="https://commons.wikimedia.org/">Wikimedia Commons</a>: the photos on the country sheets, each credited under it <span>CC0, CC BY, CC BY-SA</span></li>
         </ul>
         <p class="fine">Data edition <span id="edition">…</span></p>
       </div>

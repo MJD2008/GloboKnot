@@ -75,19 +75,32 @@ export type Theme = 'light' | 'dark';
 /** Seconds per question, the same for everyone: 20 since James's notes of 14 Nov 2026 (it was 15). (A choice of time may
  *  come back as an option for multiplayer rooms.) */
 export const TIME = 20;
-/** Each theme has its own colour: blue in Light, orange in Dark, unless the player picks another. */
+/** Each theme has its own colour: blue in Light, orange in Dark, unless the player picks another. (A first visit gets
+ *  one of the five at random instead: see below.) */
 export const PRESETS: Record<Theme, Accent> = { light: 'cobalt', dark: 'coral' };
 export interface Settings {
-  theme: Theme;      // Light by default; the page never switches by itself
+  theme: Theme;      // on a first visit, the device's own (light or dark); after that, the page never switches by itself
   accents: Record<Theme, Accent>;
   auto: boolean;     // send a typed answer as soon as it is exactly right
 }
 const SET_KEY = 'gk-settings';
 type SavedSettings = Partial<Settings> & { theme?: string; accent?: Accent; time?: number }; // time: a setting until v3 C
 const savedSettings = load<SavedSettings>(SET_KEY, {});
+/** A first visit (nothing saved yet): the colour is one of the five at random, the same in both themes, and the theme
+ *  is the device's own, so a phone in dark mode gets Dark in Settings too (James, 22 Nov 2026). Both are saved at once,
+ *  so the colour stays the same on the next visit. */
+const firstVisit = (() => { try { return localStorage.getItem(SET_KEY) === null; } catch { return true; } })();
+function randomAccent(): Accent {
+  const all = Object.keys(ACCENTS) as Accent[];
+  return all[Math.floor(Math.random() * all.length)];
+}
+function deviceDark(): boolean {
+  try { return matchMedia('(prefers-color-scheme: dark)').matches; } catch { return false; }
+}
+const firstAccent = firstVisit ? randomAccent() : null;
 export const settings: Settings = {
-  theme: savedSettings.theme === 'dark' ? 'dark' : 'light', // 'auto' (before v3) becomes Light
-  accents: { ...PRESETS, ...savedSettings.accents },
+  theme: savedSettings.theme === 'dark' || (firstVisit && deviceDark()) ? 'dark' : 'light', // 'auto' (before v3) becomes Light
+  accents: firstAccent ? { light: firstAccent, dark: firstAccent } : { ...PRESETS, ...savedSettings.accents },
   auto: savedSettings.auto ?? true,
 };
 // Before v3 there was one colour for both themes, coral by default: a colour picked on purpose is kept for both.
@@ -95,6 +108,7 @@ if (!savedSettings.accents && savedSettings.accent && savedSettings.accent !== '
   settings.accents = { light: savedSettings.accent, dark: savedSettings.accent };
 }
 for (const t of ['light', 'dark'] as const) if (!(settings.accents[t] in ACCENTS)) settings.accents[t] = PRESETS[t];
+if (firstVisit) save(SET_KEY, settings);
 
 export function saveSettings() {
   save(SET_KEY, settings);
