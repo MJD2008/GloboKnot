@@ -10,6 +10,7 @@
 import type { Knowledge, City, Country, Peak, River } from './kb';
 import type { MapLabel, SheetMap, WorldMap } from './map';
 import { sound } from './sound';
+import { backdrop } from './backdrop';
 
 interface Extra { r?: string[]; p?: [name: string, m: number, lat: number, lng: number][] }
 interface SheetData { rivers: Record<string, { n: string; c: [number, number][][] }>; countries: Record<string, Extra> }
@@ -26,6 +27,8 @@ export interface Sheets {
   relayout(): void;
 }
 const X = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg>';
+/** A framed landscape: the photo as the background. */
+const FRAME = '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2" /><path d="m3.5 16.5 5-5 4 4 2.5-2.5 5.5 5.5" /><circle cx="16" cy="9.2" r="1.3" /></svg>';
 const esc = (s: string) => s.replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]!);
 const fmt = (n: number) => n.toLocaleString('en-GB');
 
@@ -102,7 +105,18 @@ export function initSheets(root: HTMLElement, o: {
     fig.querySelectorAll('.cs-slide').forEach((d, j) => d.classList.toggle('on', j === i));
     const id = fig.closest<HTMLElement>('.cs')!.dataset.id!;
     fig.querySelector('figcaption')!.innerHTML = caption(o.photos[id]?.[i]);
+    markBackdrop(fig);
   }
+  /** The photo in view: is it the background? Its button says so (pressed), and what a press would do. */
+  function markBackdrop(fig: HTMLElement) {
+    const b = fig.querySelector<HTMLElement>('.cs-bg'), id = fig.closest<HTMLElement>('.cs')?.dataset.id;
+    if (!b || !id) return;
+    const p = o.photos[id]?.[shown(fig)], on = !!p && backdrop.is(p.src);
+    b.setAttribute('aria-pressed', String(on));
+    b.title = on ? 'Back to the night sky' : 'Use as background';
+    b.setAttribute('aria-label', b.title);
+  }
+  backdrop.onChange(() => root.querySelectorAll<HTMLElement>('.cs-photo[data-n]').forEach(markBackdrop));
   /** Which photo is in view. */
   function shown(fig: HTMLElement): number {
     const strip = fig.querySelector<HTMLElement>('.cs-strip')!, n = Number(fig.dataset.n);
@@ -131,7 +145,8 @@ export function initSheets(root: HTMLElement, o: {
   setInterval(() => {
     if (document.hidden || root.hidden || still()) return;
     for (const fig of root.querySelectorAll<HTMLElement>('.cs-photo[data-n]')) {
-      if (Number(fig.dataset.n) < 2 || fig.querySelector('.dragging')) continue;
+      // not while dragged, nor once its photo was made the background (it stays on that one until clicked on)
+      if (Number(fig.dataset.n) < 2 || fig.querySelector('.dragging') || fig.dataset.hold) continue;
       const wait = Number(fig.dataset.wait ?? 0) + 1;
       fig.dataset.wait = String(wait);
       if (wait >= STAY) photoTo(fig, shown(fig) + 1);
@@ -154,6 +169,7 @@ export function initSheets(root: HTMLElement, o: {
       ? `<figure class="cs-photo" data-n="${list.length}">
           <div class="cs-strip" tabindex="-1" title="${list.length > 1 ? 'Next photo' : ''}">${list.map((p, i) => `<div class="cs-slide${i ? '' : ' on'}"><img src="${url(p.src)}" alt="${esc(p.place || c.name)}" ${i ? 'loading="lazy" ' : ''}draggable="false" /></div>`).join('')}</div>
           ${list.length > 1 ? `<span class="cs-dots" aria-hidden="true">${list.map((_, i) => `<i${i ? '' : ' class="on"'}></i>`).join('')}</span>` : ''}
+          <button class="cs-bg" type="button" aria-pressed="false" title="Use as background" aria-label="Use as background">${FRAME}</button>
           <figcaption>${caption(list[0])}</figcaption>
         </figure>`
       // In the preview only: where a photo goes, and its file name.
@@ -167,6 +183,8 @@ export function initSheets(root: HTMLElement, o: {
       ${pic}
       <div class="cs-map-box"><svg class="map cs-map" role="img" aria-label="Map of ${esc(c.name)}" viewBox="0 0 640 400"></svg></div>
       <dl class="cs-facts">${facts(id, dataNow?.countries[id])}</dl>`;
+    const fig = el.querySelector<HTMLElement>('.cs-photo[data-n]');
+    if (fig) markBackdrop(fig);
     return el;
   }
 
@@ -234,11 +252,24 @@ export function initSheets(root: HTMLElement, o: {
 
   root.addEventListener('click', e => {
     const t = e.target as Element;
+    // The photo in view as the background, or (the same one again) back to the night sky; the photos stop there.
+    const bg = t.closest<HTMLElement>('.cs-bg');
+    if (bg) {
+      const fig = bg.closest<HTMLElement>('.cs-photo')!, id = bg.closest<HTMLElement>('.cs')!.dataset.id!;
+      const p = o.photos[id]?.[shown(fig)];
+      if (!p) return;
+      const off = backdrop.is(p.src);
+      backdrop.set(off ? null : { id, src: p.src });
+      if (off) delete fig.dataset.hold; else fig.dataset.hold = '1';
+      sound.select();
+      return;
+    }
     // A click or a tap on the photo: the next one (James, 22 Nov 2026: "a simple click should do it"); not after a drag.
     const strip = t.closest<HTMLElement>('.cs-strip');
     if (strip) {
       if (dragged) { dragged = false; return; }
       const fig = strip.parentElement!;
+      delete fig.dataset.hold;
       if (Number(fig.dataset.n) > 1) photoTo(fig, shown(fig) + 1);
       return;
     }

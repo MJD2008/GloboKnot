@@ -24,6 +24,11 @@ FX = {
     'low': ('soundEffect_Background_lowScore.wav', 1.60, 0.30, -9, 'mp3'),
     'open': ('soundEffect_openIndex&openExtraDetails.wav', 0.36, 0.14, -10, 'mp3'),  # the first of its paper sounds only
     'select': ('soundEffect_Select(anything).wav', 1.00, 0.003, -12, 'wav'),
+    # 22 Nov 2026, late: The Gordian Knot stopped or finished; something earned (after the stop sound, never over it);
+    # every question of The Gordian Knot right, while the name is asked for
+    'gordian-stop': ('soundEffect_Background_stopOrFinishGordianKnot.mp3', 2.60, 0.30, -4, 'mp3'),
+    'unlock': ('soundEffect_Background_newUnlock(gordion)_playShortlyAfterButNotDuringStopSE.wav', 2.70, 0.40, -8, 'mp3'),
+    'celebrate': ('GordianKnotFullCompleteCelebrationNoisinsertEnterNameBox.wav', 19.10, 1.20, -6, 'mp3'),
 }
 MUSIC_LUFS = -20
 
@@ -51,7 +56,7 @@ def loudness(path, chain=''):
 
 
 for f in os.listdir(OUT):
-    if re.match(r'^(music-[a-z]+|correct|wrong|start|low|open|select)\.(mp3|wav|ogg|m4a)$', f): os.remove(os.path.join(OUT, f))
+    if re.match(r'^(music-[a-z]+|correct|wrong|start|low|open|select|gordian-stop|unlock|celebrate)\.(mp3|wav|ogg|m4a)$', f): os.remove(os.path.join(OUT, f))
 
 report = {}
 for slot, name in MUSIC.items():

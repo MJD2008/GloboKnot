@@ -34,6 +34,8 @@ export interface FillDeps {
   /** Leaving with answers found asks first (the same card as a round); `then` leaves. */
   askLeave: (then: () => void) => void;
   home: () => void;
+  /** A Practice ended (all found, or given up). */
+  done?: () => void;
 }
 
 export function initFill(root: HTMLElement, d: FillDeps) {
@@ -389,6 +391,7 @@ export function initFill(root: HTMLElement, d: FillDeps) {
     ui.best.textContent = !n ? '' : better(now, prev) ? (prev ? 'New best!' : 'First run') : `Best ${bestLabel(prev!)}`;
     root.classList.toggle('all-found', n === items.length);
     sound.done(n / items.length);
+    d.done?.();
     (document.activeElement as HTMLElement | null)?.blur();
   }
 

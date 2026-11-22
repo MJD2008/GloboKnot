@@ -53,13 +53,36 @@ export const selection: Selection & { level: Level } = {
 export const saveSelection = () => save(SEL_KEY, { ...selection, ...(trial ? { size: DEFAULT_SIZE, first: true } : {}), v: 6 });
 /** A level picks its own question types and answers (anything the player had changed is replaced). Atlas is all of
  *  it: every question type it asks, about the whole world, typed; only the count can change (James, 16 Nov 2026). All
- *  (The Gordian Knot) only exists under Atlas. */
+ *  stays All from one level to another: under Atlas it is The Gordian Knot (22 Nov 2026). */
 export function setLevel(l: Level) {
   selection.level = l;
   selection.kinds = [...LEVELS[l].kinds];
   delete selection.answers;
   if (l === 'impossible') selection.places = [];
-  else if (selection.size === 0) selection.size = DEFAULT_SIZE;
+}
+
+// ---------- rewards (James, 22 Nov 2026). Each appears in its own place once earned and never before (no greyed-out
+// options), stays for good, and earning one never opens another. Atlas keeps its own flag (stats.atlas).
+//   music        Sound Collector, a round in each part of the day: which music plays, in Settings
+//   crimson      The Gordian Knot begun: a crimson colour
+//   effects      The Gordian Knot ended with a quarter of all its questions right: its effects, anywhere
+//   multicolour  The Gordian Knot untied, every question right: a multicolour theme (and the leaderboard)
+export type Reward = 'music' | 'crimson' | 'effects' | 'multicolour';
+const REWARDS_KEY = 'gk-rewards';
+const rewards = load<Partial<Record<Reward, string>>>(REWARDS_KEY, {});
+export const earned = (r: Reward) => !!rewards[r];
+/** Earns a reward: true the first time only. */
+export function earn(r: Reward): boolean {
+  if (rewards[r]) return false;
+  rewards[r] = today();
+  save(REWARDS_KEY, rewards);
+  return true;
+}
+/** Sound Collector: notes the part of the day a round was played in; true when that completes all four, once. */
+export function collectPart(part: string): boolean {
+  const parts = new Set(stats.parts ?? []);
+  if (!parts.has(part)) { parts.add(part); stats.parts = [...parts].sort(); saveStats(); }
+  return parts.size >= 4 && earn('music');
 }
 
 // ---------- settings
@@ -69,8 +92,16 @@ export const ACCENTS = {
   cobalt: { label: 'Cobalt', light: '#2f63ff', deep: '#1f4fe0', dark: '#6b8fff' },
   violet: { label: 'Violet', light: '#7a4dff', deep: '#6236f0', dark: '#a184ff' },
   lagoon: { label: 'Lagoon', light: '#0aa3a3', deep: '#088a8a', dark: '#2cc7c7' },
+  // Earned in The Gordian Knot: crimson for trying it, plain; multicolour for untying it, its hue always turning
+  // (--hue, global.css). Only in Settings once earned, and never picked at random.
+  crimson: { label: 'Crimson', light: '#c8102e', deep: '#a50d26', dark: '#ff4565' },
+  multicolour: { label: 'Multicolour', light: 'hsl(var(--hue) 78% 48%)', deep: 'hsl(var(--hue) 80% 40%)', dark: 'hsl(var(--hue) 92% 66%)' },
 } as const;
 export type Accent = keyof typeof ACCENTS;
+/** The colours that are earned, and by what. */
+export const ACCENT_REWARD: Partial<Record<Accent, Reward>> = { crimson: 'crimson', multicolour: 'multicolour' };
+/** The colours to pick from: the five, and the earned ones once earned. */
+export const accentsOpen = () => (Object.keys(ACCENTS) as Accent[]).filter(a => !ACCENT_REWARD[a] || earned(ACCENT_REWARD[a]!));
 export type Theme = 'light' | 'dark';
 /** Seconds per question, the same for everyone: 20 since James's notes of 14 Nov 2026 (it was 15). (A choice of time may
  *  come back as an option for multiplayer rooms.) */
@@ -82,6 +113,9 @@ export interface Settings {
   theme: Theme;      // on a first visit, the device's own (light or dark); after that, the page never switches by itself
   accents: Record<Theme, Accent>;
   auto: boolean;     // send a typed answer as soon as it is exactly right
+  /** The Gordian Knot's effects anywhere, once earned (a quarter of it right): its texture (embers) and its animation
+   *  (the logo on fire, Play charged). On from the moment they are earned; either can be switched off. */
+  fx?: { texture: boolean; animation: boolean };
 }
 const SET_KEY = 'gk-settings';
 type SavedSettings = Partial<Settings> & { theme?: string; accent?: Accent; time?: number }; // time: a setting until v3 C
@@ -91,7 +125,7 @@ const savedSettings = load<SavedSettings>(SET_KEY, {});
  *  so the colour stays the same on the next visit. */
 const firstVisit = (() => { try { return localStorage.getItem(SET_KEY) === null; } catch { return true; } })();
 function randomAccent(): Accent {
-  const all = Object.keys(ACCENTS) as Accent[];
+  const all = (Object.keys(ACCENTS) as Accent[]).filter(a => !ACCENT_REWARD[a]);
   return all[Math.floor(Math.random() * all.length)];
 }
 function deviceDark(): boolean {
@@ -102,12 +136,13 @@ export const settings: Settings = {
   theme: savedSettings.theme === 'dark' || (firstVisit && deviceDark()) ? 'dark' : 'light', // 'auto' (before v3) becomes Light
   accents: firstAccent ? { light: firstAccent, dark: firstAccent } : { ...PRESETS, ...savedSettings.accents },
   auto: savedSettings.auto ?? true,
+  ...(savedSettings.fx ? { fx: savedSettings.fx } : {}),
 };
 // Before v3 there was one colour for both themes, coral by default: a colour picked on purpose is kept for both.
 if (!savedSettings.accents && savedSettings.accent && savedSettings.accent !== 'coral' && savedSettings.accent in ACCENTS) {
   settings.accents = { light: savedSettings.accent, dark: savedSettings.accent };
 }
-for (const t of ['light', 'dark'] as const) if (!(settings.accents[t] in ACCENTS)) settings.accents[t] = PRESETS[t];
+for (const t of ['light', 'dark'] as const) if (!accentsOpen().includes(settings.accents[t])) settings.accents[t] = PRESETS[t];
 if (firstVisit) save(SET_KEY, settings);
 
 export function saveSettings() {
@@ -120,11 +155,16 @@ export function saveSettings() {
 export function applySettings() {
   const root = document.documentElement;
   root.dataset.theme = settings.theme;
-  const a = ACCENTS[settings.accents[settings.theme]];
+  const id = settings.accents[settings.theme], a = ACCENTS[id];
   root.style.setProperty('--a-light', a.light);
   root.style.setProperty('--a-deep', a.deep);
   root.style.setProperty('--a-dark', a.dark);
+  root.classList.toggle('multicolour', id === 'multicolour');
+  root.classList.toggle('fx-texture', fxOn('texture'));
+  root.classList.toggle('fx-animation', fxOn('animation'));
 }
+/** One of The Gordian Knot's effects, earned and switched on. */
+export const fxOn = (k: 'texture' | 'animation') => earned('effects') && (settings.fx?.[k] ?? true);
 
 // ---------- progress: rounds played, Atlas (the hidden fourth level, with The Gordian Knot under it) and the record
 // in The Gordian Knot (every question in the game at once).
@@ -138,6 +178,8 @@ export interface Best { pct: number; ms: number }
 export interface Stats {
   rounds: number; gordianSeen: boolean; record?: Best; practice?: Record<string, Best>; gordian?: Record<string, Best>;
   atlas?: boolean; untied?: { ms: number; day: string }; v?: number; low?: { level: Level; n: number };
+  /** Sound Collector: the parts of the day (morning, afternoon, evening, night) a round has been played in. */
+  parts?: string[];
 }
 const STATS_KEY = 'gk-stats';
 export const stats: Stats = load<Stats>(STATS_KEY, { rounds: 0, gordianSeen: false });
@@ -157,7 +199,7 @@ if (stats.gordian) {
   delete stats.gordian;
   saveStats();
 }
-if (selection.size === 0 && (!atlasOpen() || selection.level !== 'impossible')) selection.size = DEFAULT_SIZE;
+if (selection.size === 0 && selection.level === 'impossible' && !atlasOpen()) selection.size = DEFAULT_SIZE;
 
 // ---------- a first round that lands (experiment, 14 Nov 2026): a new player's first round is short, so it ends
 // before it can drag: 8 questions instead of 13.

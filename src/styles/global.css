@@ -29,7 +29,7 @@
   --globe-shadow: rgba(40, 80, 120, 0.18);
   --shadow-sm: 0 1px 2px rgba(20, 22, 30, 0.05);
   --shadow: 0 1px 2px rgba(20, 22, 30, 0.05), 0 10px 30px rgba(20, 22, 30, 0.07);
-  --radius: 16px;
+  --radius: 10px;
   --spring: cubic-bezier(0.3, 1.8, 0.5, 1); /* a press springs back up, a little past where it was */
   --tie: #a87500; /* the gold of a tied country (Tie the world), deeper on a light page */
   --icon: #8a9099;
@@ -180,12 +180,12 @@ body.home .logo circle { fill: var(--glow, var(--accent)); }
 }
 .tools { margin-left: auto; display: flex; gap: 2px; }
 /* About sits right next to the name, a little smaller than the tools on the right. */
-.about-btn { width: 34px; height: 34px; margin-left: -6px; border-radius: 10px; }
+.about-btn { width: 34px; height: 34px; margin-left: -6px; border-radius: 6px; }
 .about-btn svg { width: 19px; height: 19px; }
 .icon-btn {
   width: 42px;
   height: 42px;
-  border-radius: 12px;
+  border-radius: 7px;
   border: 1px solid transparent;
   background: transparent;
   display: grid;
@@ -278,7 +278,7 @@ body.home .logo circle { fill: var(--glow, var(--accent)); }
   z-index: 5;
   transform: translate(-50%, calc(-100% - 16px));
   padding: 5px 11px;
-  border-radius: 9px;
+  border-radius: 6px;
   background: rgba(8, 12, 22, 0.9);
   box-shadow: 0 0 0 1px rgba(160, 190, 240, 0.25), 0 6px 18px rgba(0, 0, 0, 0.4);
   color: #fff;
@@ -301,11 +301,12 @@ body.home .logo circle { fill: var(--glow, var(--accent)); }
   width: 100%;
   max-width: 560px;
   min-height: 44px;
-  margin: 0 auto 14px;
+  margin: 0 auto 17px;
   padding: 8px 10px 8px 14px;
-  border-radius: 12px;
+  border-radius: 7px;
   border: 1px solid var(--line);
   background: rgba(22, 29, 42, 0.6);
+  position: relative;
   color: var(--muted);
   font-weight: 600;
   font-size: 0.92rem;
@@ -314,6 +315,8 @@ body.home .logo circle { fill: var(--glow, var(--accent)); }
   transition: border-color 0.15s, color 0.15s;
 }
 .config-line:hover { border-color: var(--line-strong); color: var(--ink); }
+/* A thin grey line between what is picked and Play (James, 22 Nov 2026: "more visual separation"). */
+.config-line::after { content: ''; position: absolute; left: 6%; right: 6%; bottom: -10px; height: 1px; background: rgba(170, 182, 204, 0.2); pointer-events: none; }
 .config-what { display: flex; gap: 5px; flex: none; }
 .config-what span { display: grid; }
 .config-what svg { width: 18px; height: 18px; fill: none; stroke: var(--glow); stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
@@ -336,7 +339,7 @@ body.home .logo circle { fill: var(--glow, var(--accent)); }
   min-height: 76px;
   padding: 12px 16px;
   border: 0;
-  border-radius: 20px;
+  border-radius: 12px;
   background: var(--accent);
   color: var(--accent-ink);
   cursor: pointer;
@@ -363,7 +366,7 @@ body.globe-big .credits-line { text-shadow: 0 0 3px rgba(4, 8, 18, 0.9); }
   gap: 8px;
   min-height: 52px;
   padding: 10px 14px;
-  border-radius: 16px;
+  border-radius: 10px;
   border: 1px solid var(--line);
   background: var(--surface);
   font-weight: 700;
@@ -442,7 +445,7 @@ body[data-lv] .beads, body[data-lv] .ring, .beads i[class*="lv-"] { --accent: va
   position: relative;
   background: var(--surface);
   border: 1px solid var(--line);
-  border-radius: 22px;
+  border-radius: 14px;
   box-shadow: var(--shadow);
   padding: 10px;
   transition: border-color 0.2s, box-shadow 0.2s, filter 0.2s ease-out, opacity 0.2s ease-out;
@@ -504,7 +507,7 @@ body[data-lv] .beads, body[data-lv] .ring, .beads i[class*="lv-"] { --accent: va
   margin-top: -12px;
   display: grid;
   place-items: center;
-  border-radius: 12px;
+  border-radius: 7px;
   background: var(--surface);
   color: var(--bad);
   font-weight: 800;
@@ -515,7 +518,7 @@ body[data-lv] .beads, body[data-lv] .ring, .beads i[class*="lv-"] { --accent: va
 .timer.beat .track { animation: beat 1s ease-out; }
 .timer.beat .count { animation: beat-num 1s ease-out; }
 
-.media { position: relative; border-radius: 14px; overflow: hidden; background: var(--space); }
+.media { position: relative; border-radius: 9px; overflow: hidden; background: var(--space); }
 .media[data-kind="none"] { display: none; }
 .media > * { display: none; }
 .media[data-kind="map"] .map,
@@ -539,7 +542,7 @@ body[data-lv] .beads, body[data-lv] .ring, .beads i[class*="lv-"] { --accent: va
   width: 34px;
   height: 34px;
   padding: 0;
-  border-radius: 10px;
+  border-radius: 6px;
   border: 1px solid var(--line);
   background: color-mix(in srgb, var(--surface) 88%, transparent);
   box-shadow: var(--shadow-sm);
@@ -609,7 +612,7 @@ body[data-lv] .beads, body[data-lv] .ring, .beads i[class*="lv-"] { --accent: va
   font-size: 1.25rem;
   font-weight: 600;
   padding: 12px 16px;
-  border-radius: 14px;
+  border-radius: 9px;
   border: 2px solid var(--line);
   background: var(--bg);
   color: var(--ink);
@@ -623,7 +626,7 @@ body[data-lv] .beads, body[data-lv] .ring, .beads i[class*="lv-"] { --accent: va
 .go {
   flex: none;
   width: 56px;
-  border-radius: 14px;
+  border-radius: 9px;
   border: 0;
   background: var(--ink);
   color: var(--bg);
@@ -642,7 +645,7 @@ body[data-lv] .beads, body[data-lv] .ring, .beads i[class*="lv-"] { --accent: va
   align-items: center;
   gap: 10px;
   padding: 8px 8px 8px 14px;
-  border-radius: 14px;
+  border-radius: 9px;
   border: 2px solid var(--ok);
   background: var(--ok-soft);
   animation: rise 0.18s ease-out;
@@ -691,7 +694,7 @@ body[data-lv] .beads, body[data-lv] .ring, .beads i[class*="lv-"] { --accent: va
   gap: 10px;
   padding: 12px 14px;
   min-height: 56px;
-  border-radius: 14px;
+  border-radius: 9px;
   border: 2px solid var(--line);
   background: var(--bg);
   cursor: pointer;
@@ -749,7 +752,7 @@ body[data-lv] .beads, body[data-lv] .ring, .beads i[class*="lv-"] { --accent: va
 .results-title { margin: 0 0 10px; font: 500 15px/1 'Pixelify Sans', ui-monospace, monospace; text-transform: uppercase; letter-spacing: 0.1em; color: var(--accent); }
 /* Three small numbers under the score: best run, fastest answer, time. */
 .stats { display: flex; justify-content: center; gap: 10px; margin: 0 auto 20px; padding: 0; max-width: 420px; }
-.stats div { flex: 1; display: flex; flex-direction: column-reverse; align-items: center; gap: 2px; padding: 10px 6px; border-radius: 14px; background: var(--surface); box-shadow: 0 0 0 1px var(--line); }
+.stats div { flex: 1; display: flex; flex-direction: column-reverse; align-items: center; gap: 2px; padding: 10px 6px; border-radius: 9px; background: var(--surface); box-shadow: 0 0 0 1px var(--line); }
 .stats dd { margin: 0; font-size: 1.35rem; font-weight: 800; letter-spacing: -0.02em; line-height: 1.1; font-variant-numeric: tabular-nums; }
 .stats dt { color: var(--muted); font-size: 0.78rem; font-weight: 650; text-transform: uppercase; letter-spacing: 0.06em; }
 /* After a great round: the next level, one tap away. */
@@ -764,12 +767,12 @@ body[data-lv] .beads, body[data-lv] .ring, .beads i[class*="lv-"] { --accent: va
 .next-level .link[class*="lv-"], .unlock { --accent: var(--lv); }
 .unlock { --lv: var(--lv-impossible); }
 .summary { color: var(--muted); font-weight: 650; font-size: 1.05rem; margin: 10px 0 14px; font-variant-numeric: tabular-nums; }
-.versus, .best { margin: -8px auto 18px; width: fit-content; max-width: 100%; padding: 8px 14px; border-radius: 12px; font-weight: 700; background: var(--surface); box-shadow: 0 0 0 1px var(--line); }
+.versus, .best { margin: -8px auto 18px; width: fit-content; max-width: 100%; padding: 8px 14px; border-radius: 7px; font-weight: 700; background: var(--surface); box-shadow: 0 0 0 1px var(--line); }
 .versus.won { color: var(--ok); box-shadow: 0 0 0 1.5px var(--ok); }
 .versus.lost { color: var(--bad); }
 .best { color: var(--accent); }
 /* The Gordian Knot shows itself once, after a few rounds. */
-.unlock { display: grid; gap: 2px; margin: -6px auto 18px; max-width: 420px; padding: 12px 16px; border-radius: 14px; background: var(--surface); box-shadow: 0 0 0 1.5px var(--accent), var(--shadow-sm); animation: rise 0.5s ease-out 1.2s both; }
+.unlock { display: grid; gap: 2px; margin: -6px auto 18px; max-width: 420px; padding: 12px 16px; border-radius: 9px; background: var(--surface); box-shadow: 0 0 0 1.5px var(--accent), var(--shadow-sm); animation: rise 0.5s ease-out 1.2s both; }
 .unlock b { font: 500 14px/1.2 'Pixelify Sans', ui-monospace, monospace; text-transform: uppercase; letter-spacing: 0.06em; color: var(--accent); }
 .unlock span { color: var(--muted); font-weight: 600; font-size: 0.95rem; }
 .unlock em { font-style: normal; color: var(--ink); }
@@ -777,7 +780,7 @@ body[data-lv] .beads, body[data-lv] .ring, .beads i[class*="lv-"] { --accent: va
 .unlock .link::after { content: ' →'; }
 .unlock .link:hover { background: var(--accent); color: #fff; }
 /* Better than Alexander: The Gordian Knot untied, every answer right the first time. Gold, and nothing else like it. */
-.alexander { display: flex; align-items: center; gap: 14px; margin: -6px auto 18px; max-width: 420px; padding: 12px 18px 12px 12px; border-radius: 18px; text-align: left;
+.alexander { display: flex; align-items: center; gap: 14px; margin: -6px auto 18px; max-width: 420px; padding: 12px 18px 12px 12px; border-radius: 11px; text-align: left;
   background: linear-gradient(135deg, #fff9e2, #f6e0a0); color: #5c3f07; box-shadow: 0 0 0 1.5px #d9a62e, 0 10px 28px rgba(180, 125, 20, 0.28); animation: rise 0.5s ease-out 1.2s both; }
 :root[data-theme="dark"] .alexander { background: linear-gradient(135deg, #3b2b09, #221804); color: #ffe7a6; }
 .alexander b { display: block; font: 500 15px/1.25 'Pixelify Sans', ui-monospace, monospace; text-transform: uppercase; letter-spacing: 0.06em; }
@@ -797,10 +800,10 @@ body.untied .logo .rope { stroke: #e3b341; }
 /* Phones: New round across the width, Share and Home under it. */
 @media (max-width: 520px) { .actions { display: grid; grid-template-columns: 1fr 1fr; max-width: 400px; margin: 0 auto; } .actions #again { grid-column: 1 / -1; } }
 .share-note { margin: 12px auto 0; max-width: 460px; color: var(--muted); font-weight: 650; animation: rise 0.25s ease-out; }
-.share-note textarea { width: 100%; resize: none; padding: 10px 12px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); font: inherit; font-size: 0.9rem; }
+.share-note textarea { width: 100%; resize: none; padding: 10px 12px; border-radius: 7px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); font: inherit; font-size: 0.9rem; }
 .btn {
   padding: 13px 22px;
-  border-radius: 14px;
+  border-radius: 9px;
   border: 1px solid var(--line);
   background: var(--surface);
   font-weight: 700;
@@ -814,7 +817,7 @@ body.untied .logo .rope { stroke: #e3b341; }
 .btn.wide { width: 100%; display: flex; flex-direction: column; align-items: center; gap: 1px; }
 .btn.wide small { font-weight: 600; font-size: 0.82rem; opacity: 0.9; }
 .answers-title { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin: 32px 0 6px; text-align: left; }
-.answers li { cursor: pointer; border-radius: 8px; transition: background 0.15s; }
+.answers li { cursor: pointer; border-radius: 5px; transition: background 0.15s; }
 .answers li:hover { background: var(--surface); }
 .answers li:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
 .answers { list-style: none; padding: 0; margin: 0; text-align: left; border-top: 1px solid var(--line); }
@@ -861,7 +864,7 @@ body.untied .logo .rope { stroke: #e3b341; }
 .fill-best { margin: 0 0 12px; color: var(--muted); font-weight: 600; min-height: 1.5em; }
 .fill-board { position: relative; }
 .fill[data-layout="map"] .fill-board, .fill[data-layout="rivers"] .fill-board { height: clamp(300px, calc(100dvh - 250px), 780px); }
-.fill-map { width: 100%; height: 100%; aspect-ratio: auto; touch-action: none; border-radius: 18px; border: 1px solid var(--line); background: var(--ocean); }
+.fill-map { width: 100%; height: 100%; aspect-ratio: auto; touch-action: none; border-radius: 11px; border: 1px solid var(--line); background: var(--ocean); }
 .fill-map .land { fill: color-mix(in srgb, var(--land) 72%, var(--border)); }
 .fill-map .land.set { fill: var(--land); transition: fill 0.25s; }
 .fill-map .land.set.found { fill: color-mix(in srgb, var(--ok) 40%, var(--land)); stroke: var(--ok); }
@@ -896,7 +899,7 @@ body.untied .logo .rope { stroke: #e3b341; }
 .fill-cards { list-style: none; margin: 8px 0 0; padding: 0; display: grid; gap: 6px; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); }
 .fill-cards.flags { grid-template-columns: repeat(auto-fill, minmax(104px, 1fr)); gap: 8px; }
 .fill-cards.texts { grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 8px; }
-.fill-card { display: flex; align-items: center; gap: 10px; min-height: 42px; padding: 8px 12px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface);
+.fill-card { display: flex; align-items: center; gap: 10px; min-height: 42px; padding: 8px 12px; border: 1px solid var(--line); border-radius: 7px; background: var(--surface);
   transition: background-color 0.2s, border-color 0.2s; }
 .fill-card .clue { flex: 1; min-width: 0; font-weight: 600; }
 .fill-card .slot { flex: 1; min-width: 0; min-height: 1.4em; border-bottom: 1.5px dashed var(--line-strong); font-weight: 750; text-align: right; color: var(--ok); }
@@ -967,12 +970,12 @@ body.untied .logo .rope { stroke: #e3b341; }
 }
 
 /* ---------- an answer, looked at again: a big map with the countries around named (or the text), and a card */
-.review { width: min(720px, calc(100% - 20px)); max-width: none; max-height: calc(100% - 20px); padding: 0; border: 0; border-radius: 18px; background: var(--surface); color: var(--ink); box-shadow: var(--shadow); }
+.review { width: min(720px, calc(100% - 20px)); max-width: none; max-height: calc(100% - 20px); padding: 0; border: 0; border-radius: 11px; background: var(--surface); color: var(--ink); box-shadow: var(--shadow); }
 .review[open] { animation: pop 0.2s ease-out; }
 .review::backdrop { background: rgba(10, 14, 20, 0.45); animation: fadein 0.2s; }
 /* Leave this round? A small card in the middle, Resume first (Enter), Leave under it (Esc). Behind it the question
    is blurred and faded (body.paused, James, 16 Nov 2026: "the question behind it subtly hidden"). */
-.leave { width: min(340px, calc(100% - 32px)); max-width: none; padding: 0; border: 0; border-radius: 18px; background: var(--surface); color: var(--ink); box-shadow: var(--shadow); }
+.leave { width: min(340px, calc(100% - 32px)); max-width: none; padding: 0; border: 0; border-radius: 11px; background: var(--surface); color: var(--ink); box-shadow: var(--shadow); }
 .leave[open] { animation: pop 0.16s ease-out; }
 .leave::backdrop { background: rgba(10, 14, 20, 0.5); animation: fadein 0.15s; }
 .leave-in { display: grid; gap: 6px; padding: 24px 20px 20px; text-align: center; }
@@ -1063,7 +1066,7 @@ body.paused .card, body.paused .fill-board { filter: blur(14px) saturate(0.6); o
   width: 22px;
   height: 22px;
   margin: 0;
-  border-radius: 7px;
+  border-radius: 5px;
   border: 2px solid var(--line-strong);
   background: var(--surface);
   display: grid;
@@ -1075,7 +1078,7 @@ body.paused .card, body.paused .fill-board { filter: blur(14px) saturate(0.6); o
 .check input:checked, .check input:indeterminate { background: var(--accent); border-color: var(--accent); }
 .check input:checked::after { opacity: 1; }
 .check input:indeterminate::after { opacity: 1; width: 10px; height: 0; border-width: 0 0 2.5px 0; transform: none; }
-.expand { width: 40px; height: 40px; border: 0; background: none; color: var(--icon); display: grid; place-items: center; cursor: pointer; border-radius: 10px; }
+.expand { width: 40px; height: 40px; border: 0; background: none; color: var(--icon); display: grid; place-items: center; cursor: pointer; border-radius: 6px; }
 .expand:hover { background: var(--bg); color: var(--ink); }
 .expand svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; transition: transform 0.15s; }
 .expand[aria-expanded="true"] svg { transform: rotate(90deg); }
@@ -1091,13 +1094,13 @@ body.paused .card, body.paused .fill-board { filter: blur(14px) saturate(0.6); o
 .check.locked { cursor: not-allowed; }
 .check input:disabled { cursor: not-allowed; opacity: 0.6; }
 
-.seg { display: inline-flex; background: var(--bg); border: 1px solid var(--line); border-radius: 12px; padding: 3px; gap: 3px; }
+.seg { display: inline-flex; background: var(--bg); border: 1px solid var(--line); border-radius: 7px; padding: 3px; gap: 3px; }
 .seg button {
   border: 0;
   background: transparent;
   min-width: 56px;
   padding: 8px 14px;
-  border-radius: 9px;
+  border-radius: 6px;
   font-weight: 700;
   cursor: pointer;
   color: var(--muted);
@@ -1112,7 +1115,7 @@ body.paused .card, body.paused .fill-board { filter: blur(14px) saturate(0.6); o
 .sizes .custom input {
   width: 4.8em;
   border: 0;
-  border-radius: 9px;
+  border-radius: 6px;
   background: transparent;
   font: inherit;
   font-weight: 700;
@@ -1134,7 +1137,7 @@ body.paused .card, body.paused .fill-board { filter: blur(14px) saturate(0.6); o
 .info svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; }
 .info:hover, .info[aria-expanded="true"] { color: var(--accent); }
 h3 .info { margin-top: -6px; margin-bottom: -6px; }
-.info-text { margin: 8px 0 0; padding: 10px 12px; border-radius: 12px; background: var(--bg); box-shadow: 0 0 0 1px var(--line); color: var(--muted); font-size: 0.88rem; font-weight: 550; line-height: 1.45; animation: rise 0.2s ease-out; }
+.info-text { margin: 8px 0 0; padding: 10px 12px; border-radius: 7px; background: var(--bg); box-shadow: 0 0 0 1px var(--line); color: var(--muted); font-size: 0.88rem; font-weight: 550; line-height: 1.45; animation: rise 0.2s ease-out; }
 .setting .info-text { flex-basis: 100%; margin: 0; }
 .level-about { display: grid; gap: 6px; }
 .level-about div { display: grid; grid-template-columns: 6.2em 1fr; gap: 8px; }
@@ -1155,8 +1158,9 @@ h3 .info { margin-top: -6px; margin-bottom: -6px; }
   #menu-level .lv { flex-direction: column; gap: 1px; padding-block: 6px; }
 }
 @media (max-width: 370px) { .home-levels .lv { flex-direction: column; gap: 1px; padding-block: 6px; } }
-.sizes .all { color: var(--crimson); }
-.sizes .all[aria-pressed="true"] { background: var(--crimson); color: #fff; }
+/* All is there under every level; only under Atlas is it The Gordian Knot, in crimson. */
+.sizes .all.gordian { color: var(--crimson); }
+.sizes .all.gordian[aria-pressed="true"] { background: var(--crimson); color: #fff; }
 .sizes .all.new::after { background: var(--crimson); }
 /* "Choose" is marked as the easier way to answer, with a small tag on its top edge. */
 .modes button { position: relative; }
@@ -1171,6 +1175,10 @@ h3 .info { margin-top: -6px; margin-bottom: -6px; }
 .hint .link { border: 0; background: none; padding: 0 2px; margin-left: 4px; font: inherit; font-weight: 700; color: var(--ink); text-decoration: underline; text-underline-offset: 2px; cursor: pointer; }
 
 .setting { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 0; border-bottom: 1px solid var(--line); font-weight: 650; flex-wrap: wrap; }
+/* The music choice (Sound Collector): six short ones, on a line of their own under the name on a narrow screen. */
+.setting.pick .seg { flex-wrap: wrap; justify-content: flex-end; }
+@media (max-width: 480px) { .setting.pick .seg { flex: 1 1 100%; justify-content: stretch; } .setting.pick .seg button { flex: 1 1 auto; } }
+.results-note .gain b { color: var(--accent); }
 .setting small { display: block; color: var(--muted); font-weight: 550; font-size: 0.8rem; }
 /* The volumes: a track filled with the accent up to the thumb. */
 .setting.volume input { flex: 0 1 58%; min-width: 150px; height: 28px; margin: 0; background: none; cursor: pointer; -webkit-appearance: none; appearance: none; --fill: 100%; }
@@ -1191,7 +1199,7 @@ h3 .info { margin-top: -6px; margin-bottom: -6px; }
 .about .lead { font-size: 1.05rem; font-weight: 650; margin: 14px 0 12px; }
 /* About opens with the numbers: the checked facts big, then what they are about. */
 .numbers { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
-.numbers div { display: flex; flex-direction: column; padding: 10px 12px; border-radius: 14px; background: var(--bg); box-shadow: 0 0 0 1px var(--line); min-width: 0; }
+.numbers div { display: flex; flex-direction: column; padding: 10px 12px; border-radius: 9px; background: var(--bg); box-shadow: 0 0 0 1px var(--line); min-width: 0; }
 .numbers b { font-size: 1.35rem; font-weight: 800; letter-spacing: -0.02em; line-height: 1.15; font-variant-numeric: tabular-nums; }
 .numbers span { color: var(--muted); font-size: 0.8rem; font-weight: 650; }
 .numbers .big { grid-column: 1 / -1; flex-direction: row; align-items: baseline; gap: 10px; padding: 14px 16px; background: var(--accent); color: var(--accent-ink); box-shadow: none; }
@@ -1432,10 +1440,10 @@ body.cs-open .start { left: var(--cs-shift, 0px); }
 .cs-dots i.on { background: #fff; }
 .cs-photo figcaption { min-height: 22px; padding: 4px 14px 0; color: var(--muted); font-size: 0.72rem; line-height: 1.35; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .cs-photo figcaption a { color: inherit; text-decoration: underline; text-decoration-color: rgba(255, 255, 255, 0.25); }
-.cs-photo.empty { display: grid; place-items: center; margin: 0 14px; border: 1.5px dashed rgba(255, 255, 255, 0.16); border-radius: 12px; color: var(--muted); font-size: 0.78rem; background: none; }
+.cs-photo.empty { display: grid; place-items: center; margin: 0 14px; border: 1.5px dashed rgba(255, 255, 255, 0.16); border-radius: 7px; color: var(--muted); font-size: 0.78rem; background: none; }
 .cs-photo.empty code { font-size: 0.74rem; color: var(--ink); }
 .cs-map-box { padding: 10px 14px 0; }
-.cs-map { border-radius: 12px; touch-action: auto; }
+.cs-map { border-radius: 7px; touch-action: auto; }
 .cs-map .hl { fill: color-mix(in srgb, var(--target) 45%, var(--land)); stroke: #eafff2; stroke-width: 1.1; }
 .cs-map .nb { cursor: pointer; transition: fill 0.15s; }
 .cs-map .nb:hover { fill: color-mix(in srgb, var(--land) 75%, #ffffff); }
@@ -1490,3 +1498,82 @@ body.cs-open .start { left: var(--cs-shift, 0px); }
 .sparks g { animation: zap 0.26s steps(5, end) forwards; }
 @keyframes zap { 0%, 20% { opacity: 1; } 40% { opacity: 0.4; } 60% { opacity: 1; } 80% { opacity: 0.6; } 100% { opacity: 0; } }
 @media (prefers-reduced-motion: reduce) { .charged { animation: none; filter: drop-shadow(0 0 8px rgba(255, 45, 80, 0.5)); } }
+
+
+/* ---------- Rewards from The Gordian Knot (James, 22 Nov 2026): crimson for trying it (a plain colour, in prefs.ts),
+   its texture and animation anywhere for a quarter of it right (Settings: Texture, Animation), multicolour for all of
+   it. Each shows only once earned. */
+
+/* Multicolour: the accent's hue turns through the spectrum, once every 72 s. It steps every half second rather than
+   every frame, so the page is restyled twice a second, not sixty times; a step of 2.5 degrees is too small to see. */
+@property --hue { syntax: '<number>'; inherits: true; initial-value: 210; }
+:root.multicolour { animation: hue-turn 72s steps(144) infinite; }
+@keyframes hue-turn { from { --hue: 0; } to { --hue: 360; } }
+:root.multicolour :is(#play, #menu-play):not(.gordian) {
+  background-image: linear-gradient(115deg, hsl(calc(var(--hue) - 40) 85% 55%), hsl(var(--hue) 85% 52%) 50%, hsl(calc(var(--hue) + 60) 85% 55%));
+}
+@media (prefers-reduced-motion: reduce) { :root.multicolour { animation: none; } }
+
+/* The logo on fire: during The Gordian Knot (its round and its results), and anywhere with Animation earned and on.
+   The flames are drawn on a canvas behind the logo (fire.ts); the word glows like a coal while it burns. */
+.brand { position: relative; isolation: isolate; }
+.brand .fire { position: absolute; left: -14px; bottom: -10px; z-index: -1; pointer-events: none; }
+:is(body.gordian:not(.home), :root.fx-animation body) .brand > span { color: #fff3d6; text-shadow: 0 1px 2px rgba(60, 6, 10, 0.9), 0 0 8px rgba(255, 120, 40, 0.7); animation: coal 2.6s ease-in-out infinite; }
+:root:not([data-theme="dark"]) :is(body.gordian:not(.home), :root.fx-animation body:not(.home)) .brand > span { color: #8a0d20; text-shadow: 0 0 5px rgba(255, 150, 50, 0.6); animation: none; }
+@keyframes coal { 50% { text-shadow: 0 1px 2px rgba(60, 6, 10, 0.9), 0 0 12px rgba(255, 160, 60, 0.95); } }
+@media (prefers-reduced-motion: reduce) { .brand > span { animation: none !important; } }
+
+/* Texture: embers. A fine grain over everything, and a low warm glow along the bottom of the screen, in the accent
+   (crimson in The Gordian Knot). During The Gordian Knot, and anywhere with Texture earned and on. */
+:is(body.gordian:not(.home), :root.fx-texture body)::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+  background:
+    radial-gradient(120% 38% at 50% 104%, color-mix(in srgb, var(--accent) 34%, transparent), transparent 70%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 0.55 0 0 0 0 0.25 0 0 0 0.55 0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");
+  opacity: 0.16;
+  mix-blend-mode: overlay;
+}
+:root[data-theme="dark"] :is(body.gordian:not(.home), :root.fx-texture body)::after, :root.fx-texture body.home::after { opacity: 0.22; mix-blend-mode: screen; }
+
+/* ---------- a country's photo as the background (backdrop.ts) */
+/* Behind everything, the page's own colour under it. On the home screen it takes the night sky's place, darkened
+   towards the edges and the bottom so the menu reads on it; in a round and on the results, a faint blurred tint. */
+.backdrop { position: fixed; inset: 0; z-index: -2; overflow: hidden; pointer-events: none; }
+.backdrop i { position: absolute; inset: -20px; background: center / cover no-repeat; opacity: 0; filter: blur(1.5px); transition: opacity 0.9s ease; }
+.backdrop i.on { opacity: 1; }
+.backdrop::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(to bottom, rgba(4, 6, 12, 0.18), rgba(4, 6, 12, 0.5) 62%, rgba(4, 6, 12, 0.78)),
+    radial-gradient(110% 85% at 50% 38%, rgba(4, 6, 12, 0.2), rgba(4, 6, 12, 0.72));
+}
+body:not(.home) .backdrop i { filter: blur(14px) saturate(1.1); }
+body:not(.home) .backdrop::after { background: color-mix(in srgb, var(--bg) 88%, transparent); }
+:root.has-backdrop .sky { display: none; }
+/* The button on a sheet's photo: the photo in view as the background; pressed while it is. */
+.cs-bg {
+  position: absolute;
+  right: 8px;
+  bottom: 34px;
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(8, 12, 20, 0.55);
+  color: #fff;
+  cursor: pointer;
+  opacity: 0.85;
+  transition: opacity 0.15s, background-color 0.15s;
+}
+.cs-bg:hover { opacity: 1; background: rgba(8, 12, 20, 0.8); }
+.cs-bg[aria-pressed="true"] { opacity: 1; background: var(--accent); color: var(--accent-ink, #fff); }
+.cs-bg svg { width: 17px; height: 17px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }

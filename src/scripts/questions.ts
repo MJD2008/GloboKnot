@@ -446,6 +446,9 @@ export function isCustom(sel: Selection): boolean {
 /** The Gordian Knot: All under Atlas. Every question in the game, typed, whatever else was picked (so no flag to
  *  pick: each flag is asked the other way round, to be named). */
 export const GORDIAN: Selection = { kinds: LEVELS.impossible.kinds, places: [], size: 0, level: 'impossible', answers: 'type' };
+/** All, under Atlas: The Gordian Knot. All under another level is every question that selection can ask (James, 22 Nov
+ *  2026: "Keep an All option available at all times. Only when Atlas is selected should the All text turn red"). */
+export const isGordian = (s: Pick<Selection, 'size' | 'level'>) => s.size === 0 && s.level === 'impossible';
 /** The Daily climbs: two questions from each level, Overhand first and Atlas last, each asked the way its level
  *  asks (picked from four far-apart options at the start, typed at the end). Everyone gets a few; the best are still
  *  tested. Built by dailyRound; as a selection it is every category in the whole world. */
