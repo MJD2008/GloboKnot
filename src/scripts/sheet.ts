@@ -1,5 +1,5 @@
 // A country's sheet (James, 16 Nov 2026): tap a country on the home globe and a sheet about it opens beside the globe,
-// which picks the country out in green. On it: James's photo of the country (public/photos, docs/PHOTOS.md; none yet),
+// which picks the country out in green. On it: photos of the country, swiped through (public/photos, docs/PHOTOS.md),
 // a map with the capital, the major rivers and the notable peaks named and the neighbours around it, and the facts:
 // capital, languages, highest point, peaks, rivers, neighbours. The rivers and peaks beyond the knowledge base come from
 // public/data/sheets.json (scripts/build-sheets.mjs), loaded with the first sheet.
@@ -8,10 +8,12 @@
 // shows one, with a tab for each sheet open. × or Esc closes the one in front.
 import type { Knowledge, City, Country, Peak, River } from './kb';
 import type { MapLabel, SheetMap, WorldMap } from './map';
+import { sound } from './sound';
 
 interface Extra { r?: string[]; p?: [name: string, m: number, lat: number, lng: number][] }
 interface SheetData { rivers: Record<string, { n: string; c: [number, number][][] }>; countries: Record<string, Extra> }
-export interface Photo { src: string; credit?: string }
+/** A photo of a country: what it shows ("Paris"), who took it and under which licence, and where that is written. */
+export interface Photo { src: string; place?: string; credit?: string; link?: string }
 
 export interface Sheets {
   /** Opens a country's sheet in front (or brings it to the front). */
@@ -28,7 +30,7 @@ const fmt = (n: number) => n.toLocaleString('en-GB');
 
 export function initSheets(root: HTMLElement, o: {
   kb: Knowledge; world: WorldMap; url: (path: string) => string; loadRivers: () => Promise<void>;
-  photos: Record<string, Photo>;
+  photos: Record<string, Photo[]>;
   /** The sheet in front changed (null: none open): the globe picks its country out, and turns to it. */
   onFront: (id: string | null) => void;
 }): Sheets {
@@ -77,6 +79,26 @@ export function initSheets(root: HTMLElement, o: {
     return rows.map(([k, v]) => `<div><dt>${k}</dt><dd>${v}</dd></div>`).join('');
   }
 
+  /** "Paris · Jane Doe, CC BY-SA 4.0", the credit linked to the photo's page (its licence is there). */
+  function caption(p: Photo | undefined): string {
+    if (!p) return '';
+    const credit = p.credit ? (p.link ? `<a href="${esc(p.link)}" target="_blank" rel="noopener">${esc(p.credit)}</a>` : esc(p.credit)) : '';
+    return [p.place ? esc(p.place) : '', credit].filter(Boolean).join(' · ');
+  }
+
+  /** The photo in view changed (swiped, or an arrow): its dot, its caption, and which arrows still lead somewhere. */
+  function photoAt(fig: HTMLElement) {
+    const strip = fig.querySelector<HTMLElement>('.cs-strip')!, n = Number(fig.dataset.n);
+    const i = Math.max(0, Math.min(n - 1, Math.round(strip.scrollLeft / Math.max(1, strip.clientWidth))));
+    if (fig.dataset.i === String(i)) return;
+    fig.dataset.i = String(i);
+    fig.querySelectorAll('.cs-dots i').forEach((d, j) => d.classList.toggle('on', j === i));
+    const id = fig.closest<HTMLElement>('.cs')!.dataset.id!;
+    fig.querySelector('figcaption')!.innerHTML = caption(o.photos[id]?.[i]);
+    fig.querySelector<HTMLElement>('.cs-go.prev')!.hidden = i === 0;
+    fig.querySelector<HTMLElement>('.cs-go.next')!.hidden = i === n - 1;
+  }
+
   function riversOf(extra: Extra | undefined): { id: string; name: string }[] {
     return (extra?.r ?? []).map(r => ({ id: r, name: kb.get<River>(r)?.name ?? dataNow?.rivers[r]?.n ?? '' })).filter(r => r.name);
   }
@@ -88,10 +110,17 @@ export function initSheets(root: HTMLElement, o: {
     el.dataset.id = id;
     el.tabIndex = -1;
     el.setAttribute('aria-labelledby', `sheet-${id}`);
-    const photo = o.photos[id];
-    const pic = photo
-      ? `<figure class="cs-photo"><img src="${url(photo.src)}" alt="${esc(c.name)}" loading="lazy" />${photo.credit ? `<figcaption>${esc(photo.credit)}</figcaption>` : ''}</figure>`
-      // In the preview only: where James's photo goes, and its file name.
+    const list = o.photos[id] ?? [];
+    const arrow = (d: string) => `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="${d}" /></svg>`;
+    const pic = list.length
+      ? `<figure class="cs-photo" data-n="${list.length}">
+          <div class="cs-strip" tabindex="-1">${list.map((p, i) => `<img src="${url(p.src)}" alt="${esc(p.place || c.name)}" ${i ? 'loading="lazy" ' : ''}draggable="false" />`).join('')}</div>
+          ${list.length > 1 ? `<button class="cs-go prev" type="button" aria-label="Previous photo" hidden>${arrow('M15 5l-7 7 7 7')}</button>
+          <button class="cs-go next" type="button" aria-label="Next photo">${arrow('M9 5l7 7-7 7')}</button>
+          <span class="cs-dots" aria-hidden="true">${list.map((_, i) => `<i${i ? '' : ' class="on"'}></i>`).join('')}</span>` : ''}
+          <figcaption>${caption(list[0])}</figcaption>
+        </figure>`
+      // In the preview only: where a photo goes, and its file name.
       : preview ? `<figure class="cs-photo empty"><span>Photo: <code>public/photos/${id.toLowerCase()}.jpg</code></span></figure>` : '';
     el.innerHTML = `
       <header class="cs-head">
@@ -157,6 +186,7 @@ export function initSheets(root: HTMLElement, o: {
       const el = panel(id);
       panels.set(id, el);
       row.append(el);
+      sound.open();
     }
     while (order.length > MAX_OPEN) close(order[0], false);
     // The one in front is the right-most.
@@ -177,6 +207,12 @@ export function initSheets(root: HTMLElement, o: {
 
   root.addEventListener('click', e => {
     const t = e.target as Element;
+    const go = t.closest<HTMLElement>('.cs-go');
+    if (go) {
+      const strip = go.parentElement!.querySelector<HTMLElement>('.cs-strip')!;
+      strip.scrollBy({ left: (go.classList.contains('next') ? 1 : -1) * strip.clientWidth, behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+      return;
+    }
     const x = t.closest<HTMLElement>('.cs-x');
     if (x) { close(x.closest<HTMLElement>('.cs')!.dataset.id!); return; }
     const keys = e.detail === 0; // Enter or Space on a button, not a pointer
@@ -185,6 +221,10 @@ export function initSheets(root: HTMLElement, o: {
     const to = t.closest<Element>('[data-open], .cs-map [data-k]');
     if (to) open((to as HTMLElement).dataset.open ?? to.getAttribute('data-k')!, keys);
   });
+  root.addEventListener('scroll', e => {
+    const t = e.target as HTMLElement;
+    if (t.classList?.contains('cs-strip')) photoAt(t.parentElement!);
+  }, true);
   addEventListener('resize', () => { if (order.length) layout(); });
 
   return {

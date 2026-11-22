@@ -6,16 +6,23 @@ import { readFileSync, readdirSync } from 'node:fs';
 const AUDIO_FILES = (() => {
   try { return readdirSync('public/audio').filter(n => /\.(mp3|m4a|ogg|wav)$/i.test(n)).sort(); } catch { return []; }
 })();
-// James's photos of the countries (docs/PHOTOS.md): every image in public/photos named by the country's code (fra.jpg),
-// with a line under it from public/photos/credits.json if he writes one. Listed into the page like the sounds.
+// Photos of the countries (docs/PHOTOS.md): every image in public/photos named by the country's code, one (fra.jpg)
+// or several (fra-1.webp, fra-2.webp...), shown in that order; a line under each from public/photos/credits.json
+// (keyed by the file name without its extension: "fra-1", or "fra"). Listed into the page like the sounds.
+type Credit = string | { place?: string; credit?: string; link?: string };
 const PHOTOS = (() => {
   try {
-    let credits: Record<string, string> = {};
+    let credits: Record<string, Credit> = {};
     try { credits = JSON.parse(readFileSync('public/photos/credits.json', 'utf8')); } catch { /* none */ }
-    return Object.fromEntries(readdirSync('public/photos').filter(n => /^[a-z]{3}\.(jpe?g|webp|png|avif)$/i.test(n)).sort().map(n => {
-      const id = n.slice(0, 3).toUpperCase(), credit = credits[id.toLowerCase()] ?? credits[id];
-      return [id, credit ? { src: `photos/${n}`, credit } : { src: `photos/${n}` }];
-    }));
+    const out: Record<string, { src: string; place?: string; credit?: string; link?: string }[]> = {};
+    const names = readdirSync('public/photos').filter(n => /^[a-z]{3}(-\d+)?\.(jpe?g|webp|png|avif)$/i.test(n))
+      .sort((a, b) => a.localeCompare(b, 'en', { numeric: true }));
+    for (const n of names) {
+      const stem = n.replace(/\.\w+$/, '').toLowerCase(), id = n.slice(0, 3).toUpperCase();
+      const c = credits[stem];
+      (out[id] ??= []).push({ src: `photos/${n}`, ...(typeof c === 'string' ? { credit: c } : c ?? {}) });
+    }
+    return out;
   } catch { return {}; }
 })();
 const X = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg>';

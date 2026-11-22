@@ -133,6 +133,9 @@ export class Globe {
   countryAt: ((p: LonLat) => Hit | null) | null = null;
   /** A tap or a click on a country: its sheet opens. */
   onTap: ((hit: Hit) => void) | null = null;
+  /** The globe grew out of its rope (true), or went back into it (false): the music comes down from space. */
+  onZoom: ((zoomed: boolean) => void) | null = null;
+  private wasZoomed = false;
   /** A tap waiting to see whether a second one follows: a double tap zooms, and opens no sheet. */
   private tapWait = 0;
   /** The quiz's map, once it has loaded: drawn when zoomed in. */
@@ -399,6 +402,7 @@ export class Globe {
     zin.disabled = this.zoomTo >= max * 0.999;
     zout.disabled = home.hidden = this.zoomTo <= 1;
     document.body.classList.toggle('globe-big', this.zoomTo > 1);
+    if (this.wasZoomed !== this.zoomTo > 1) { this.wasZoomed = this.zoomTo > 1; this.onZoom?.(this.wasZoomed); }
     this.setBig(this.zoom > 1 || this.zoomTo > 1);
     this.dirty = true;
     this.redraw();

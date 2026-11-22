@@ -9,6 +9,7 @@
 import { CONTINENTS, type Knowledge } from './kb';
 import { ANSWERS, CATS, GORDIAN, LEVELS, LEVEL_IDS, TEMPLATES, answersOf, available, canAsk, isCustom, levelOf, type Answers, type Cat, type Level } from './questions';
 import { ATLAS_AT, MAX_SIZE, SIZES, atlasOpen, clampSize, endTrial, saveSelection, saveStats, selection, setLevel, stats } from './prefs';
+import { charge } from './spark';
 
 export const ICONS: Record<Cat | 'world', string> = {
   locations: '<path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2zM9 4v14M15 6v14"/>',
@@ -271,6 +272,11 @@ export function initMenu(kb: Knowledge, root: HTMLElement, onChange: () => void)
     all.classList.toggle('new', !stats.gordianSeen);
     const preset = selection.size === 0 || (SIZES as readonly number[]).includes(selection.size);
     for (const b of sizes.querySelectorAll<HTMLButtonElement>('[data-size]')) b.setAttribute('aria-pressed', String(Number(b.dataset.size) === selection.size));
+    // The Gordian Knot picked: All and the Play under it in crimson, with a heartbeat and sparks (spark.ts).
+    const gordian = !all.hidden && selection.size === 0, go = root.querySelector<HTMLButtonElement>('#menu-play')!;
+    charge(all, gordian);
+    go.classList.toggle('gordian', gordian);
+    charge(go, gordian);
     custom.closest('.custom')!.classList.toggle('on', !preset);
     if (!typing) custom.value = preset ? '' : String(selection.size);
   }

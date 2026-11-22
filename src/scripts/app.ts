@@ -20,6 +20,7 @@ import { ALL_KINDS, ANSWERS, CATS, DAILY, GORDIAN, LEVELS, LEVEL_IDS, available,
 import { flash } from './press';
 import { zoomable, type Zoom } from './zoom';
 import { sound } from './sound';
+import { charge } from './spark';
 
 const $ = <T extends HTMLElement = HTMLElement>(sel: string) => document.querySelector(sel) as T;
 const url = (path: string) => new URL(path, document.baseURI).href;
@@ -211,6 +212,7 @@ async function load() {
     globe.chainNear = chainNear;
     globe.countryAt = countryAt;
     globe.onTap = hit => { if (hit.id) countrySheets?.open(hit.id); };
+    globe.onZoom = zoomed => { if (!screens.start.hidden) sound.scene(zoomed ? 'globe' : 'home'); };
     globe.detail = () => world?.detail ?? null;
     globe.shapeOf = num => world?.shape(num) ?? null;
     paintTied();
@@ -255,7 +257,7 @@ function countryAt(p: [number, number]) {
 }
 
 /** James's photos of the countries, listed into the page when it is built (docs/PHOTOS.md). */
-function photoList(): Record<string, Photo> {
+function photoList(): Record<string, Photo[]> {
   try { return JSON.parse(document.getElementById('photos')?.textContent || '{}'); } catch { return {}; }
 }
 
@@ -305,6 +307,9 @@ function paintHome() {
   ui.playSub.innerHTML = challenge ? [`Beat ${challenge.pct}%`, challenge.level ? levelTag(challenge.level) : '', `${challenge.items.length} questions`].filter(Boolean).join(' · ')
     : selection.size === 0 ? 'The Gordian Knot' : '';
   ui.playSub.hidden = !ui.playSub.innerHTML;
+  // The Gordian Knot picked: Play in its crimson, beating, with sparks (spark.ts).
+  ui.play.classList.toggle('gordian', !challenge && selection.size === 0);
+  charge(ui.play, !challenge && selection.size === 0);
   ui.notNow.hidden = !challenge;
   paintDaily();
   paintTied();
@@ -387,7 +392,9 @@ function show(name: keyof typeof screens) {
   if (lv) document.body.dataset.lv = lv; else delete document.body.dataset.lv;
   themeColor();
   if (name === 'start') { globe?.play(); sky.play(); paintHome(); } else { globe?.pause(); sky.pause(); countrySheets?.closeAll(); }
-  sound.scene(name === 'quiz' || name === 'fill' ? 'music-quiz' : 'music-home');
+  // The music: space on the home screen (the day's own once the globe is grown), the day's in a round and on its
+  // results, The Gordian Knot's own in it.
+  sound.scene(name === 'start' ? (globe?.zoomed ? 'globe' : 'home') : name === 'results' ? 'results' : name === 'quiz' && state.gordian ? 'gordian' : 'round');
   if (name !== 'results') clearKnotSounds();
   window.scrollTo({ top: 0 });
 }
@@ -402,7 +409,7 @@ function open(d: HTMLDialogElement) {
   if (d === ui.menu) menu?.paint();
   if (d === ui.practiceSheet) practiceSheet?.paint();
   if (d === ui.settings) paintSettings();
-  if (!d.open) d.showModal();
+  if (!d.open) { d.showModal(); sound.open(); }
 }
 for (const d of sheets) {
   d.addEventListener('click', e => {
@@ -416,6 +423,7 @@ for (const d of sheets) {
 function startPractice(p: Practice) {
   if (!fill) return;
   ui.practiceSheet.close();
+  sound.start();
   show('fill');
   void fill.start(p);
 }
@@ -453,6 +461,7 @@ async function start(sel: Selection, daily = false, ch: Challenge | null = null)
   ui.beads.classList.toggle('lots', state.round.length > 30); // too many to show apart: one rope, coloured as it goes
   ui.clock.hidden = state.round.length <= 20; // long rounds also count: "12/50"
   clearInterval(state.clock);
+  sound.start();
   show('quiz');
   ask();
 }
@@ -1123,7 +1132,7 @@ function openReview(j: number) {
   paintCard(q);
   ui.reviewPrev.disabled = j === 0;
   ui.reviewNext.disabled = j === state.results.length - 1;
-  if (!ui.review.open) ui.review.showModal();
+  if (!ui.review.open) { ui.review.showModal(); sound.open(); }
   // The map is drawn once the dialog shows, so the names on it can be sized for the width it is shown at.
   if (v.map) {
     world.render(ui.reviewMap, v.map);
@@ -1437,7 +1446,7 @@ document.addEventListener('keydown', e => {
 });
 
 paintHome();
-sound.scene('music-home');
+sound.scene('home');
 // The Gordian Knot's heartbeat at the edges of the screen gets its sound, beat for beat, while a question is open.
 document.body.addEventListener('animationiteration', e => {
   if (e.animationName === 'heartbeat' && !screens.quiz.hidden) sound.heartbeat();

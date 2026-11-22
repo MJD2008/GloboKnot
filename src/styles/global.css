@@ -1433,9 +1433,23 @@ body.cs-open .start { left: var(--cs-shift, 0px); }
 .cs-name { flex: 1; min-width: 0; }
 .cs-name h2 { margin: 0; font-size: 1.15rem; font-weight: 800; letter-spacing: -0.01em; line-height: 1.2; overflow-wrap: anywhere; }
 .cs-name small { display: block; color: var(--muted); font-weight: 600; font-size: 0.82rem; }
-.cs-photo { margin: 0; aspect-ratio: 16 / 9; overflow: hidden; background: #0d1422; }
-.cs-photo img { display: block; width: 100%; height: 100%; object-fit: cover; }
-.cs-photo figcaption { padding: 4px 14px 0; color: var(--muted); font-size: 0.72rem; }
+/* Photos: a strip to swipe through (or the arrows), one dot per photo, the one in view credited underneath. */
+.cs-photo { position: relative; margin: 0; }
+.cs-strip { display: flex; aspect-ratio: 16 / 9; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; overscroll-behavior-x: contain; background: #0d1422; }
+.cs-strip::-webkit-scrollbar { display: none; }
+.cs-strip img { flex: 0 0 100%; width: 100%; height: 100%; object-fit: cover; scroll-snap-align: start; user-select: none; }
+.cs-go { position: absolute; top: calc((100% - 22px) / 2); transform: translateY(-50%); display: grid; place-items: center; width: 32px; height: 32px; padding: 0; border: 0; border-radius: 50%; background: rgba(8, 12, 20, 0.55); color: #fff; cursor: pointer; opacity: 0; transition: opacity 0.15s; }
+.cs-go svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+.cs-go.prev { left: 8px; }
+.cs-go.next { right: 8px; }
+.cs-go[hidden] { display: none; }
+.cs-photo:hover .cs-go, .cs-go:focus-visible { opacity: 1; }
+@media (hover: none) { .cs-go { display: none; } }
+.cs-dots { position: absolute; left: 0; right: 0; bottom: 30px; display: flex; justify-content: center; gap: 5px; pointer-events: none; }
+.cs-dots i { width: 6px; height: 6px; border-radius: 50%; background: rgba(255, 255, 255, 0.45); box-shadow: 0 0 2px rgba(0, 0, 0, 0.6); }
+.cs-dots i.on { background: #fff; }
+.cs-photo figcaption { min-height: 22px; padding: 4px 14px 0; color: var(--muted); font-size: 0.72rem; line-height: 1.35; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cs-photo figcaption a { color: inherit; text-decoration: underline; text-decoration-color: rgba(255, 255, 255, 0.25); }
 .cs-photo.empty { display: grid; place-items: center; margin: 0 14px; border: 1.5px dashed rgba(255, 255, 255, 0.16); border-radius: 12px; color: var(--muted); font-size: 0.78rem; background: none; }
 .cs-photo.empty code { font-size: 0.74rem; color: var(--ink); }
 .cs-map-box { padding: 10px 14px 0; }
@@ -1474,3 +1488,25 @@ body.cs-open .start { left: var(--cs-shift, 0px); }
   @keyframes cs-up { from { opacity: 0; transform: translateY(32px); } }
 }
 @media (prefers-reduced-motion: reduce) { .cs { animation: none; } .start { transition: none; } }
+
+/* ---------- The Gordian Knot picked (Atlas, All): Play turns crimson, and it and All beat like the round's heart
+   (lub-dub, every 1.3 s) while small sparks leap off their edges (spark.ts). James, 22 Nov 2026: "Could the red colour
+   when you select atlas + all, also make a heartbeat and/or have electric effects bulging out where possible?" */
+:is(#play, #menu-play).gordian { --accent: var(--crimson); --accent-deep: var(--crimson-deep); }
+.charged { position: relative; --beat: 0.05; animation: charged 1.3s ease-out infinite; }
+:is(#play, #menu-play).charged { --beat: 0.018; }
+@keyframes charged {
+  0%, 55%, 100% { scale: 1; filter: drop-shadow(0 0 0 rgba(255, 45, 80, 0)); }
+  8% { scale: calc(1 + var(--beat)); filter: drop-shadow(0 0 12px rgba(255, 45, 80, 0.75)); }
+  20% { scale: calc(1 + var(--beat) * 0.2); filter: drop-shadow(0 0 4px rgba(255, 45, 80, 0.3)); }
+  30% { scale: calc(1 + var(--beat) * 0.6); filter: drop-shadow(0 0 9px rgba(255, 45, 80, 0.55)); }
+}
+.sparks { --spark-core: #fff0f3; --spark-glow: rgba(255, 55, 90, 0.8); position: absolute; left: -40px; top: -40px; width: calc(100% + 80px); height: calc(100% + 80px); overflow: visible; pointer-events: none; z-index: 1; }
+/* On a light page (the configuration in the Light theme) the spark is crimson itself, its glow paler. */
+:root:not([data-theme="dark"]) dialog .sparks { --spark-core: #e8103c; --spark-glow: rgba(255, 70, 105, 0.45); }
+.sparks path { fill: none; stroke-linecap: round; stroke-linejoin: round; }
+.sparks .glow { stroke: var(--spark-glow); stroke-width: 7; filter: blur(2.6px); }
+.sparks .core { stroke: var(--spark-core); stroke-width: 2; }
+.sparks g { animation: zap 0.26s steps(5, end) forwards; }
+@keyframes zap { 0%, 20% { opacity: 1; } 40% { opacity: 0.4; } 60% { opacity: 1; } 80% { opacity: 0.6; } 100% { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .charged { animation: none; filter: drop-shadow(0 0 8px rgba(255, 45, 80, 0.5)); } }
