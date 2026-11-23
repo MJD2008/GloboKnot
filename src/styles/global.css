@@ -1472,7 +1472,11 @@ body:is(.cs-open, .globe-big) .start { left: var(--cs-shift, 0px); }
 .cs-photo.empty { display: grid; place-items: center; margin: 0 14px; border: 1.5px dashed rgba(255, 255, 255, 0.16); border-radius: 7px; color: var(--muted); font-size: 0.78rem; background: none; }
 .cs-photo.empty code { font-size: 0.74rem; color: var(--ink); }
 /* A line about the country under its photos, and one fact after the map (a spark in place of a word). */
-.cs-about { margin: 8px 14px 0; font-size: 0.9rem; line-height: 1.45; font-weight: 550; color: color-mix(in srgb, var(--ink) 86%, var(--muted)); text-wrap: pretty; }
+.cs-about { margin: 8px 14px 0; font-size: 0.9rem; line-height: 1.5; font-weight: 480; color: color-mix(in srgb, var(--ink) 84%, var(--muted)); text-wrap: pretty; }
+/* The lead sentence on its own, then the rest in short paragraphs (sheet.ts, paragraphs.ts). */
+.cs-about p { margin: 0; }
+.cs-about p + p { margin-top: 9px; }
+.cs-about p:first-child { font-weight: 600; color: var(--ink); }
 .cs-fact { display: flex; gap: 9px; align-items: flex-start; margin: 12px 14px 2px; padding: 9px 12px; border-radius: 8px; border: 1px solid color-mix(in srgb, var(--target) 24%, transparent); background: color-mix(in srgb, var(--target) 9%, transparent); font-size: 0.88rem; line-height: 1.45; font-weight: 600; text-wrap: pretty; }
 .cs-fact svg { flex: none; width: 15px; height: 15px; margin-top: 2px; fill: var(--target); }
 .cs-about[hidden], .cs-fact[hidden] { display: none; }

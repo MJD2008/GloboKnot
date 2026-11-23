@@ -14,6 +14,7 @@ import type { Knowledge, City, Country, Peak, River } from './kb';
 import type { MapLabel, SheetMap, WorldMap } from './map';
 import { sound } from './sound';
 import { backdrop } from './backdrop';
+import { paragraphs } from './paragraphs';
 
 interface Extra { r?: string[]; p?: [name: string, m: number, lat: number, lng: number][]; a?: string; f?: string }
 interface SheetData { rivers: Record<string, { n: string; c: [number, number][][] }>; countries: Record<string, Extra> }
@@ -197,7 +198,7 @@ export function initSheets(root: HTMLElement, o: {
         <button class="icon-btn cs-x" type="button" aria-label="Close ${esc(c.name)}" title="Close">${X}</button>
       </header>
       ${pic}
-      <p class="cs-about" hidden></p>
+      <div class="cs-about" hidden></div>
       <div class="cs-map-box"><svg class="map cs-map" role="img" aria-label="Map of ${esc(c.name)}" viewBox="0 0 640 400"></svg></div>
       <p class="cs-fact" hidden>${SPARK}<span class="sr-only">Fact: </span><span></span></p>
       <dl class="cs-facts">${facts(id, dataNow?.countries[id])}</dl>`;
@@ -207,10 +208,10 @@ export function initSheets(root: HTMLElement, o: {
     return el;
   }
 
-  /** The line about the country and its fact, once loaded. */
+  /** The description of the country, in short paragraphs, and its fact, once loaded. */
   function texts(el: HTMLElement, extra: Extra | undefined) {
     const about = el.querySelector<HTMLElement>('.cs-about')!, fact = el.querySelector<HTMLElement>('.cs-fact')!;
-    about.textContent = extra?.a ?? '';
+    about.replaceChildren(...paragraphs(extra?.a ?? '').map(t => Object.assign(document.createElement('p'), { textContent: t })));
     about.hidden = !extra?.a;
     fact.lastElementChild!.textContent = extra?.f ?? '';
     fact.hidden = !extra?.f;
