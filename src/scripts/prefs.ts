@@ -94,7 +94,7 @@ export const ACCENTS = {
   lagoon: { label: 'Lagoon', light: '#0aa3a3', deep: '#088a8a', dark: '#2cc7c7' },
   // Earned in The Gordian Knot: crimson for trying it, plain; multicolour for untying it, its hue always turning
   // (--hue, global.css). Only in Settings once earned, and never picked at random.
-  crimson: { label: 'Crimson', light: '#c8102e', deep: '#a50d26', dark: '#ff4565' },
+  crimson: { label: 'Crimson', light: '#b5121e', deep: '#920e17', dark: '#e2303a' }, // darker, no pink (23 Nov 2026)
   multicolour: { label: 'Multicolour', light: 'hsl(var(--hue) 78% 48%)', deep: 'hsl(var(--hue) 80% 40%)', dark: 'hsl(var(--hue) 92% 66%)' },
 } as const;
 export type Accent = keyof typeof ACCENTS;
@@ -168,8 +168,9 @@ export const fxOn = (k: 'texture' | 'animation') => earned('effects') && (settin
 
 // ---------- progress: rounds played, Atlas (the hidden fourth level, with The Gordian Knot under it) and the record
 // in The Gordian Knot (every question in the game at once).
-/** Atlas opens after a Monkey's fist round of the level's own questions (8 or more) scored this well: a Clove hitch or better. */
-export const ATLAS_AT = 75;
+/** Atlas opens after a round of a level's own questions scored this well, whatever its count (James, 23 Nov 2026; it was
+ *  75% on Monkey's fist until then): half of a Monkey's fist round, or a whole Bowline round. */
+export const ATLAS_AT: Partial<Record<Level, number>> = { hard: 50, medium: 100 };
 export interface Best { pct: number; ms: number }
 /** `practice`: the best run per practice (question type, region and answers: see practice.ts). `atlas`: Atlas is open.
  *  `untied`: The Gordian Knot at 100%, every question right the first time (a badge of its own: Better than Alexander,
@@ -243,3 +244,45 @@ export function tie(country: string, cat: Cat): 'new' | 'gold' | null {
   return !had ? 'new' : tied[country].length === GOLD_AT ? 'gold' : null;
 }
 export const saveTied = () => save(TIED_KEY, tied);
+
+// ---------- new unlocks (James, 23 Nov 2026): what was unlocked is highlighted where it lives (Settings, or the
+// configuration for Atlas) the first time it is seen there (unlocks.ts). `gk-seen`: what has been seen, by day.
+export type Unlock = Reward | 'atlas';
+export const UNLOCK_IDS: Unlock[] = ['atlas', 'music', 'crimson', 'effects', 'multicolour'];
+export const unlocked = (u: Unlock) => (u === 'atlas' ? atlasOpen() : earned(u));
+const SEEN_KEY = 'gk-seen';
+const seenSaved = (() => { try { return localStorage.getItem(SEEN_KEY) !== null; } catch { return false; } })();
+const seen = load<Partial<Record<Unlock, string>>>(SEEN_KEY, {});
+// Before 23 Nov 2026 nothing was highlighted: whatever was open by then counts as seen.
+if (!seenSaved) { for (const u of UNLOCK_IDS) if (unlocked(u)) seen[u] = today(); save(SEEN_KEY, seen); }
+/** Unlocked and not yet seen where it lives. */
+export const isNew = (u: Unlock) => unlocked(u) && !seen[u];
+export function markSeen(us: Unlock[]) {
+  const fresh = us.filter(u => !seen[u]);
+  for (const u of fresh) seen[u] = today();
+  if (fresh.length) save(SEEN_KEY, seen);
+}
+/** Unlocks one at once (the preview's tools): true when it was still locked. */
+export function unlockNow(u: Unlock): boolean {
+  if (u !== 'atlas') return earn(u);
+  if (stats.atlas) return false;
+  stats.atlas = true;
+  saveStats();
+  return true;
+}
+/** Locks one again (the preview's tools), new once more when it comes back. A colour no longer open goes back to the
+ *  theme's own; a locked Atlas hands the level back to Monkey's fist. */
+export function relock(u: Unlock) {
+  if (u === 'atlas') {
+    stats.atlas = false;
+    saveStats();
+    if (selection.level === 'impossible') { setLevel('hard'); if (selection.size === 0) selection.size = DEFAULT_SIZE; saveSelection(); }
+  } else {
+    delete rewards[u];
+    save(REWARDS_KEY, rewards);
+    for (const t of ['light', 'dark'] as const) if (!accentsOpen().includes(settings.accents[t])) settings.accents[t] = PRESETS[t];
+    save(SET_KEY, settings);
+  }
+  delete seen[u];
+  save(SEEN_KEY, seen);
+}

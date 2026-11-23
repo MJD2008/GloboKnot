@@ -7,8 +7,9 @@
 // loaded with the first sheet.
 // A neighbour (its name, or its shape on the map) opens its own sheet, and the first stays open ("without closing the
 // original one"): a wide screen shows the last two side by side, sliding the menu over to make room; a narrower one
-// shows one. No tabs for the ones before (James, 22 Nov 2026: they cluttered the screen): only the sheets that fit stay
-// open. × closes one; Esc closes them all and puts the globe back (app.ts).
+// shows one, at the right from 900 px wide (James, 23 Nov 2026: "to the right, like it originally was"; it came up from
+// the bottom under 1100 px), from the bottom on a phone. No tabs for the ones before (James, 22 Nov 2026: they cluttered
+// the screen): only the sheets that fit stay open. × closes one; Esc closes them all and puts the globe back (app.ts).
 import type { Knowledge, City, Country, Peak, River } from './kb';
 import type { MapLabel, SheetMap, WorldMap } from './map';
 import { sound } from './sound';
@@ -61,19 +62,29 @@ export function initSheets(root: HTMLElement, o: {
     return data;
   }
 
-  /** How many sheets fit side by side, and how far the menu slides over for them (wide screens only). */
-  function room(): { n: number; shift: number } {
-    const w = innerWidth, col = Math.min(720, w), panel = 340, gap = 12;
-    if (w < 1100) return { n: 1, shift: 0 };
-    const n = w - 2 * panel - 3 * gap >= col ? 2 : 1;
-    const right = w - n * panel - (n + 1) * gap; // the free space ends here
-    let shift = Math.min(0, right - (w + col) / 2);
-    // With the globe grown over the screen, the menu goes to the left edge, out of the way (James, 22 Nov 2026).
-    if (document.body.classList.contains('globe-big')) {
-      const menu = document.querySelector<HTMLElement>('#play')?.offsetWidth ?? col;
-      shift = Math.min(shift, 24 - (w - menu) / 2);
-    }
-    return { n, shift };
+  /** From this wide, the sheets stand in a column at the right; narrower (a phone), one comes up from the bottom. */
+  const SIDE = 900;
+  /** How many sheets fit side by side, how far the menu slides over for them, and how wide it may be: narrower beside a
+   *  sheet on a screen too small for both. While the globe is grown the menu waits at the left edge, sheet or not, until
+   *  the globe is back (James, 23 Nov 2026: "moved to the left until you un-zoom, or press esc"). */
+  function room(): { n: number; shift: number; menu: number; side: number } {
+    const w = innerWidth, panel = 340, gap = 12, full = Math.min(560, w - 32);
+    if (w < SIDE) return { n: 1, shift: 0, menu: 0, side: 0 }; // the menu as it is
+    const n = w - 2 * panel - 3 * gap >= 720 ? 2 : 1;
+    const right = order.length ? w - n * panel - (n + 1) * gap : w; // the free space ends here
+    const menu = Math.max(320, Math.min(full, right - 24 - gap));
+    const edge = 24 - (w - menu) / 2; // the shift that puts the menu at the left edge
+    const shift = document.body.classList.contains('globe-big') ? edge : Math.max(edge, Math.min(0, right - gap - (w + menu) / 2));
+    const open = Math.min(order.length, n); // the sheets open now, at the right
+    return { n, shift, menu, side: open ? open * panel + (open + 1) * gap : 0 };
+  }
+  const start = document.querySelector<HTMLElement>('#start');
+  /** The menu where room() puts it (`menu` 0: its own width), and how much of the right the sheets take (`side`: the
+   *  globe's zoom buttons keep clear of them while it is grown). */
+  function place({ shift, menu, side }: { shift: number; menu: number; side: number }) {
+    document.body.style.setProperty('--cs-shift', `${Math.round(shift)}px`);
+    document.body.style.setProperty('--cs-side', `${Math.round(side)}px`);
+    if (menu) start?.style.setProperty('--menu-w', `${Math.round(menu)}px`); else start?.style.removeProperty('--menu-w');
   }
 
   function facts(id: string, extra: Extra | undefined): string {
@@ -99,7 +110,7 @@ export function initSheets(root: HTMLElement, o: {
     return [p.place ? esc(p.place) : '', credit].filter(Boolean).join(' · ');
   }
 
-  /** The photo in view changed (by itself, a click, a swipe or a drag): its dot, its caption, and its slow drift. */
+  /** The photo in view changed (by itself, a click, a swipe or a drag): its dot and its caption. */
   function photoAt(fig: HTMLElement) {
     const i = shown(fig);
     if (fig.dataset.i === String(i)) return;
@@ -144,7 +155,8 @@ export function initSheets(root: HTMLElement, o: {
   }
   const still = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
   // The photos move on by themselves (James, 22 Nov 2026: "a slowly moving carousel that switches image every few
-  // seconds, which you can click to speed up"): each stays about 5 s, drifting slowly. Not with reduced motion.
+  // seconds, which you can click to speed up"): each stays about 5 s, without zooming (23 Nov 2026). Not with reduced
+  // motion.
   const STAY = 10; // half-second ticks
   setInterval(() => {
     if (document.hidden || root.hidden || still()) return;
@@ -229,12 +241,12 @@ export function initSheets(root: HTMLElement, o: {
 
   /** Keeps the sheets that fit (the oldest go), and slides the menu over on a wide screen. */
   function layout() {
-    const { n, shift } = room();
+    const { n } = room();
     while (order.length > n) close(order[0], false);
     for (const [id, el] of panels) el.classList.toggle('front', id === order.at(-1));
     root.hidden = !order.length;
     document.body.classList.toggle('cs-open', !!order.length);
-    document.body.style.setProperty('--cs-shift', order.length ? `${shift}px` : '0px');
+    place(room());
     for (const id of order) void draw(id);
     o.onFront(order.at(-1) ?? null);
   }
@@ -331,7 +343,7 @@ export function initSheets(root: HTMLElement, o: {
   };
   root.addEventListener('pointerup', drop);
   root.addEventListener('pointercancel', drop);
-  addEventListener('resize', () => { if (order.length) layout(); });
+  addEventListener('resize', () => { if (order.length) layout(); else place(room()); });
 
   return {
     open,
@@ -345,6 +357,6 @@ export function initSheets(root: HTMLElement, o: {
       for (const id of [...order]) close(id, false);
       layout();
     },
-    relayout() { if (order.length) layout(); },
+    relayout() { if (order.length) layout(); else place(room()); },
   };
 }

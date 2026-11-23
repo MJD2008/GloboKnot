@@ -1,29 +1,38 @@
 // The logo on fire (James, 22 Nov 2026: "When playing the Gordian Knot, make the Globoknot logo in the top-left corner
-// appear to be on fire"; kept anywhere by those who earned The Gordian Knot's animation). Small flames rise off the
-// mark and the word: sparks of light born along the bottom of the logo, rising, swelling and cooling from white-yellow
-// through orange to red as they fade, drawn on a little canvas behind it. Added together on a dark page they burn
-// bright; on a light page they are drawn plainly, so they still show. With less motion asked for: a still glow (CSS).
+// appear to be on fire"; kept anywhere by those who earned The Gordian Knot's animation). Since 23 Nov 2026 only the
+// globe burns ("only come out of the globe ... little flames coming out of the globe", in the red of the page): small
+// tongues of flame born on the globe's rim, mostly its upper half, rising and fading from a light red through the
+// page's crimson to a deep red, drawn on a little canvas behind the mark. Never yellow or orange: drawn over each other
+// plainly (not added up, which would turn them yellow). With less motion asked for: nothing moves (a still glow, CSS).
 
-const W_PAD = 14, H = 60; // px of canvas round the logo: to each side, and in all (the flames rise above it)
-const BELOW = 10;         // px of it below the logo: the hottest part of the fire sits under the word, not on it
+const PAD = 16;   // px of canvas to each side of the mark
+const RISE = 22;  // px of canvas above it, for the flames to rise into
 
-interface Flame { x: number; y: number; vx: number; vy: number; age: number; life: number; size: number; ember: boolean }
+interface Flame { x: number; y: number; vx: number; vy: number; age: number; life: number; size: number }
 
-/** Sprites from hot to cool: a soft round light in each colour, drawn once. */
-function sprites(dark: boolean): HTMLCanvasElement[] {
-  const steps = 12, out: HTMLCanvasElement[] = [];
+type RGB = [number, number, number];
+/** "#d0202c" (or "rgb(...)") as numbers; the page's crimson when it can't be read. */
+function rgbOf(css: string): RGB {
+  const hex = css.trim().match(/^#([0-9a-f]{6})$/i);
+  if (hex) return [0, 2, 4].map(i => parseInt(hex[1].slice(i, i + 2), 16)) as RGB;
+  const rgb = css.match(/(\d+)\D+(\d+)\D+(\d+)/);
+  return rgb ? [Number(rgb[1]), Number(rgb[2]), Number(rgb[3])] : [208, 32, 44];
+}
+const mix = (a: RGB, b: RGB, t: number): RGB => a.map((v, i) => Math.round(v + (b[i] - v) * t)) as RGB;
+
+/** Sprites from just born to dying: a soft round light, from a lighter red through the crimson to a deep red. */
+function sprites(red: RGB): HTMLCanvasElement[] {
+  const steps = 10, out: HTMLCanvasElement[] = [];
+  const stops: RGB[] = [mix(red, [255, 236, 232], 0.35), red, mix(red, [40, 0, 4], 0.55)];
   for (let i = 0; i < steps; i++) {
-    const t = i / (steps - 1);
-    // white-yellow, yellow, orange, red, dark red
-    const stops: [number, number, number][] = [[255, 246, 205], [255, 205, 70], [255, 128, 32], [222, 40, 40], [140, 12, 24]];
-    const k = t * (stops.length - 1), j = Math.min(stops.length - 2, Math.floor(k)), f = k - j;
-    const [r, g, b] = stops[j].map((v, n) => Math.round(v + (stops[j + 1][n] - v) * f));
+    const k = (i / (steps - 1)) * (stops.length - 1), j = Math.min(stops.length - 2, Math.floor(k));
+    const [r, g, b] = mix(stops[j], stops[j + 1], k - j);
     const c = document.createElement('canvas');
     c.width = c.height = 32;
     const x = c.getContext('2d')!;
     const grad = x.createRadialGradient(16, 16, 0, 16, 16, 16);
-    grad.addColorStop(0, `rgba(${r},${g},${b},${dark ? 0.75 : 0.9})`);
-    grad.addColorStop(0.4, `rgba(${r},${g},${b},${dark ? 0.32 : 0.45})`);
+    grad.addColorStop(0, `rgba(${r},${g},${b},0.95)`);
+    grad.addColorStop(0.45, `rgba(${r},${g},${b},0.55)`);
     grad.addColorStop(1, `rgba(${r},${g},${b},0)`);
     x.fillStyle = grad;
     x.fillRect(0, 0, 32, 32);
@@ -33,6 +42,8 @@ function sprites(dark: boolean): HTMLCanvasElement[] {
 }
 
 export function initFire(brand: HTMLElement) {
+  const mark = brand.querySelector<SVGSVGElement>('.logo');
+  if (!mark) return;
   const canvas = document.createElement('canvas');
   canvas.className = 'fire';
   canvas.setAttribute('aria-hidden', 'true');
@@ -40,37 +51,45 @@ export function initFire(brand: HTMLElement) {
   const ctx = canvas.getContext('2d');
   if (!ctx) return;
   const still = matchMedia('(prefers-reduced-motion: reduce)');
-  let flames: Flame[] = [], raf = 0, last = 0, w = 0, dpr = 1, dark = true, looks: HTMLCanvasElement[] = [];
+  let flames: Flame[] = [], raf = 0, last = 0, w = 0, h = 0, dpr = 1, red = '', looks: HTMLCanvasElement[] = [];
+  // the globe in the mark (Base.astro: a circle at 16,14 of r 8.4 in a 32-wide box), in canvas px
+  let cx = 0, cy = 0, r = 0;
 
   const burning = () => {
-    const b = document.body.classList, r = document.documentElement.classList;
-    return (b.contains('gordian') && !b.contains('home')) || r.contains('fx-animation');
+    const b = document.body.classList, root = document.documentElement.classList;
+    return (b.contains('gordian') && !b.contains('home')) || root.contains('fx-animation');
   };
   function size() {
     dpr = Math.min(2, window.devicePixelRatio || 1);
-    w = brand.offsetWidth + 2 * W_PAD;
+    const box = mark!.getBoundingClientRect(), at = brand.getBoundingClientRect();
+    const k = box.width / 32;
+    w = Math.round(box.width + 2 * PAD);
+    h = Math.round(box.height + RISE);
     canvas.width = Math.round(w * dpr);
-    canvas.height = Math.round(H * dpr);
+    canvas.height = Math.round(h * dpr);
     canvas.style.width = `${w}px`;
-    canvas.style.height = `${H}px`;
+    canvas.style.height = `${h}px`;
+    canvas.style.left = `${Math.round(box.left - at.left - PAD)}px`;
+    canvas.style.top = `${Math.round(box.top - at.top - RISE)}px`;
+    cx = PAD + 16 * k;
+    cy = RISE + 14 * k;
+    r = 8.4 * k;
   }
   function look() {
-    const nowDark = document.body.classList.contains('home') || document.documentElement.dataset.theme === 'dark';
-    if (nowDark !== dark || !looks.length) { dark = nowDark; looks = sprites(dark); }
+    const now = getComputedStyle(brand).getPropertyValue('--crimson');
+    if (now !== red || !looks.length) { red = now; looks = sprites(rgbOf(now)); }
   }
-  /** New flames along the bottom edge of the logo, in a few clusters that drift, so the fire has tongues. */
-  const roots = [0.06, 0.2, 0.34, 0.48, 0.62, 0.76, 0.9].map(x => ({ x, phase: Math.random() * 6 }));
-  function spawn(dt: number, t: number) {
-    const base = H - BELOW + 3, n = Math.round(dt * 120 + Math.random());
+  /** New flames on the globe's rim: mostly over its top, a few down its sides, leaning outwards as they rise. */
+  function spawn(dt: number) {
+    const n = Math.round(dt * 85 + Math.random() * 0.6);
     for (let i = 0; i < n; i++) {
-      const ember = Math.random() < 0.05;
-      const r = roots[Math.floor(Math.random() * roots.length)];
-      const x = W_PAD + (r.x + Math.sin(t / 700 + r.phase) * 0.03) * (w - 2 * W_PAD) + (Math.random() - 0.5) * 10;
+      // an angle round the rim: 0 at the top, ±π/2 at the sides; most near the top
+      const a = (Math.random() - 0.5) * Math.PI * 1.35 * Math.sqrt(Math.random());
+      const sx = cx + Math.sin(a) * r * 0.92, sy = cy - Math.cos(a) * r * 0.92;
       flames.push({
-        x, y: base - Math.random() * 4,
-        vx: (Math.random() - 0.5) * 8, vy: -(36 + Math.random() * 30) * (ember ? 1.3 : 1),
-        age: 0, life: ember ? 1.2 + Math.random() * 0.6 : 0.55 + Math.random() * 0.4,
-        size: ember ? 2.4 : 4 + Math.random() * 4.5, ember,
+        x: sx, y: sy,
+        vx: Math.sin(a) * (6 + Math.random() * 6), vy: -(16 + Math.random() * 16) * (0.6 + 0.4 * Math.cos(a)),
+        age: 0, life: 0.42 + Math.random() * 0.45, size: 2 + Math.random() * 2.6 * (0.6 + 0.4 * Math.cos(a)),
       });
     }
   }
@@ -79,23 +98,22 @@ export function initFire(brand: HTMLElement) {
     if (!burning() || document.hidden) { stop(); return; }
     const dt = Math.min(0.05, last ? (t - last) / 1000 : 0.016);
     last = t;
-    spawn(dt, t);
+    spawn(dt);
     ctx!.setTransform(dpr, 0, 0, dpr, 0, 0);
-    ctx!.clearRect(0, 0, w, H);
-    ctx!.globalCompositeOperation = dark ? 'lighter' : 'source-over';
-    const sway = Math.sin(t / 380) * 6;
+    ctx!.clearRect(0, 0, w, h);
+    ctx!.globalCompositeOperation = 'source-over';
+    const sway = Math.sin(t / 300) * 3;
     flames = flames.filter(f => (f.age += dt) < f.life);
     for (const f of flames) {
       const k = f.age / f.life;
-      f.x += (f.vx + sway * (1 - k)) * dt;
+      f.x += (f.vx + sway * k) * dt;
       f.y += f.vy * dt;
-      const s = f.ember ? f.size : f.size * (1 - k * 0.65);
-      const img = looks[Math.min(looks.length - 1, Math.floor((f.ember ? 0.3 + k * 0.4 : k ** 0.8) * looks.length))];
-      // in quickly, bright for half its life, then out
-      ctx!.globalAlpha = f.ember ? 1 - k : k < 0.1 ? k / 0.1 : k < 0.5 ? 1 : 1 - (k - 0.5) / 0.5;
+      const s = f.size * (1 - k * 0.55);
+      const img = looks[Math.min(looks.length - 1, Math.floor(k ** 0.85 * looks.length))];
+      // in quickly, then out
+      ctx!.globalAlpha = k < 0.12 ? k / 0.12 : 1 - (k - 0.12) / 0.88;
       // a tongue: taller than wide
-      if (f.ember) ctx!.drawImage(img, f.x - s, f.y - s, s * 2, s * 2);
-      else ctx!.drawImage(img, f.x - s * 0.7, f.y - s * 1.7, s * 1.4, s * 3.4);
+      ctx!.drawImage(img, f.x - s * 0.75, f.y - s * 1.9, s * 1.5, s * 3.6);
     }
     ctx!.globalAlpha = 1;
     raf = requestAnimationFrame(frame);

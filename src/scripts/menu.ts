@@ -4,7 +4,7 @@
 // question types), where (the whole world, continents or single countries) and how many questions. Every change is
 // kept at once; Play starts it. Something always stays selected: the last ticked box can't be unticked until another
 // one is ticked. Atlas, the hidden fourth level, is only here (not on the home screen), locked until a Monkey's fist round
-// of 75% or more. Atlas is everything, typed: every question type it asks (no flag to pick), the whole world, so only the
+// of 50% or more or a Bowline round of 100% (James, 23 Nov 2026). Atlas is everything, typed: every question type it asks (no flag to pick), the whole world, so only the
 // count can change (James, 16 Nov 2026). All is there under every level (22 Nov 2026): every question the selection can
 // ask; under Atlas it is The Gordian Knot, every question in the game, in crimson.
 import { CONTINENTS, type Knowledge } from './kb';
@@ -36,7 +36,7 @@ export const levelIcon = (l: Level | 'locked') => `<svg class="lv-icon" viewBox=
 /** A level's name with its knot, in its colour: on the results, a challenge and the configuration line. */
 export const levelTag = (l: Level) => `<span class="lv-tag lv-${l}">${levelIcon(l)}${LEVELS[l].label}</span>`;
 /** Atlas stays shut until a Monkey's fist round of the level's own questions scores this well; then it is in the configuration. */
-export const ATLAS_LOCKED = `Score ${ATLAS_AT}% or more in a ${LEVELS.hard.label} round to open Atlas.`;
+export const ATLAS_LOCKED = `Score ${ATLAS_AT.hard}% or more in a ${LEVELS.hard.label} round, or ${ATLAS_AT.medium}% in a ${LEVELS.medium.label} round, to open Atlas.`;
 const CHEVRON = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg>';
 
 const esc = (s: string) => s.replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]!);
@@ -199,7 +199,7 @@ export function initMenu(kb: Knowledge, root: HTMLElement, onChange: () => void)
 
   function paintLevel() {
     for (const b of levels.querySelectorAll<HTMLButtonElement>('button')) b.setAttribute('aria-pressed', String(b.dataset.level === selection.level));
-    // Atlas is shut until a great Monkey's fist round: a padlock, and a tap says how to open it.
+    // Atlas is shut until a good Monkey's fist round or a perfect Bowline round: a padlock, and a tap says how to open it.
     const shut = !atlasOpen() && selection.level !== 'impossible';
     if (atlas.classList.contains('locked') !== shut) {
       atlas.classList.toggle('locked', shut);

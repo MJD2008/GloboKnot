@@ -428,10 +428,14 @@ export class Globe {
     this.redraw();
   }
 
-  /** Where the globe in its rope is on the screen (css px). */
+  /** Where the globe in its rope is on the screen (css px), with the menu in its place: when the menu steps aside
+   *  (sheet.ts: to the left while the globe is grown, James 23 Nov 2026, or for a sheet), the grown globe stays put. */
   private measure() {
     const b = this.canvas.getBoundingClientRect();
-    if (b.width) this.homeAt = { x: b.left + b.width / 2, y: b.top + b.height / 2, r: b.width / 2 - 2 };
+    if (!b.width) return;
+    const start = this.canvas.closest<HTMLElement>('.start');
+    const aside = start ? parseFloat(getComputedStyle(start).left) || 0 : 0;
+    this.homeAt = { x: b.left - aside + b.width / 2, y: b.top + b.height / 2, r: b.width / 2 - 2 };
   }
 
   /** Grown, the globe is drawn on the layer over the whole screen; back at its size, in its rope again. */

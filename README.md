@@ -25,8 +25,8 @@ green, gold, orange and crimson, with a knot drawn beside its name. A level pick
 to answer, which the player can still change in the configuration, and decides how well known the places asked about
 are. Atlas is everything, typed: every question type it asks, about the whole world, and only the count can change
 (James, 16 Nov: "Atlas mode is locked in with everything, and in type mode"). Atlas is not on the home screen: it waits in the configuration
-behind a padlock until a Monkey's fist round of the level's own questions, 8 or more, scores 75% or more (whoever played
-three rounds before 14 Nov keeps it open). The ids stay `easy`, `medium`, `hard` and `impossible`: saved selections
+behind a padlock until a round of the level's own questions scores 50% or more on Monkey's fist or 100% on Bowline, whatever
+the count (James, 23 Nov; it was 75% on Monkey's fist before; whoever played three rounds before 14 Nov keeps it open). The ids stay `easy`, `medium`, `hard` and `impossible`: saved selections
 and links use them.
 
 | Level | Question types | Answers | Places |

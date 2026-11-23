@@ -1,7 +1,8 @@
 # Globoknot photos: a few per country
 
-Tap a country on the home globe and its sheet opens: photos at the top, then a map and the facts. There are up to
-three photos per country, to swipe through (or the arrows on a computer), with a dot for each. Under the one in view:
+Tap a country on the home globe and its sheet opens: photos at the top, then a line about the country, a map, one
+interesting fact and the facts. There are up to three photos per country, with a dot for each: they glide on by
+themselves every few seconds, and a click, a tap or a swipe brings the next. Under the one in view:
 what it shows and who took it, under which licence, linked to the photo's page on Wikimedia Commons, where its full
 licence and history are. A country without a photo shows its sheet without one (the private preview shows a dashed
 box with the file name where the photo goes). Photos after the first load only when swiped to.

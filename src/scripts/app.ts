@@ -15,13 +15,15 @@ import { initFill } from './fill';
 import { initPractice } from './practice';
 import { initSheets, type Photo, type Sheets } from './sheet';
 import type { Practice } from './sets';
-import { ACCENTS, ATLAS_AT, GOLD_AT, TIME, accentsOpen, type Reward, applySettings, atlasOpen, better, collectPart, dailyResult, dailyRope, earn, earned, endTrial, fxOn, nextDailyIn, saveDaily, saveSelection, saveSettings, saveStats, saveTied, selection, setLevel, settings, stats, tie, tied, today, type Accent, type Theme } from './prefs';
+import { ACCENTS, ATLAS_AT, GOLD_AT, TIME, accentsOpen, type Reward, applySettings, atlasOpen, better, collectPart, dailyResult, dailyRope, earn, earned, endTrial, fxOn, nextDailyIn, saveDaily, saveSelection, saveSettings, saveStats, saveTied, selection, setLevel, settings, stats, tie, tied, today, type Accent, type Theme, type Unlock } from './prefs';
 import { ALL_KINDS, ANSWERS, CATS, DAILY, GORDIAN, LEVELS, LEVEL_IDS, available, buildRound, codeOf, dailyRound, isCustom, isGordian, levelAsk, rebuildRound, remember, levelOf, type Answers, type Ask, type Level, type Pool, type Question, type Selection, type Tempt } from './questions';
 import { flash } from './press';
 import { zoomable, type Zoom } from './zoom';
 import { PICKS, dayPart, sound, type Pick } from './sound';
 import { charge } from './spark';
 import { initFire } from './fire';
+import { initUnlocks } from './unlocks';
+import { initPreviewTools } from './preview-tools';
 import { backdrop, initBackdrop } from './backdrop';
 import { board as fetchBoard, gordianEnd, gordianStart, initLive, keepUntied, myId, rename as renameOnBoard, untied } from './online';
 import { NAME_MAX } from './board-name';
@@ -77,14 +79,13 @@ const ui = {
   nextLevel: $('#next-level'),
   nextGo: $<HTMLButtonElement>('#next-go'),
   nextWhy: $('#next-why'),
-  unlockGo: $<HTMLButtonElement>('#unlock-go'),
   untied: $('#untied'),
   untiedTime: $('#untied-time'),
   master: $('#master'),
   resultsTitle: $('#results-title'),
   versus: $('#versus'),
   best: $('#best'),
-  unlock: $('#unlock'),
+  unlockPop: $<HTMLButtonElement>('#unlock-pop'),
   share: $<HTMLButtonElement>('#share'),
   shareNote: $('#share-note'),
   summary: $('#summary'),
@@ -443,7 +444,27 @@ function open(d: HTMLDialogElement) {
   if (d === ui.settings) paintSettings();
   if (d === ui.about) void paintBoard();
   if (!d.open) { d.showModal(); sound.open(); }
+  // Something unlocked and not yet seen: lit up where it lives, the first time (unlocks.ts).
+  if (d === ui.settings) unlocks.shown('settings', ui.settings);
+  if (d === ui.menu) unlocks.shown('config', ui.menu);
 }
+/** New unlocks: a popup at the top; "New unlock!" opens Settings (or the configuration, for Atlas). */
+const unlocks = initUnlocks(ui.unlockPop, where => open(where === 'settings' ? ui.settings : ui.menu));
+// The preview's badge opens tools to unlock things by hand, to try them out (James, 23 Nov 2026). Not at launch.
+const previewBadge = document.querySelector<HTMLButtonElement>('#preview-tools');
+if (previewBadge) initPreviewTools(previewBadge, {
+  announce: list => unlocks.announce(list, 0.35),
+  refresh: () => {
+    applySettings();
+    themeColor();
+    sky.readAccent();
+    menu?.paint();
+    paintTied();
+    globe?.refresh();
+    if (!screens.start.hidden) paintHome();
+  },
+  countries: () => kb?.countries.map(c => c.id) ?? [],
+});
 for (const d of sheets) {
   d.addEventListener('click', e => {
     // A click on the backdrop (the dialog box itself, outside its panel) or a close button closes it.
@@ -788,10 +809,7 @@ function quit() {
   if (!state.results.length) {
     // Nothing answered: home at once. The Gordian Knot still ends with its sound, and a first try still earns crimson.
     if (state.gordian) sound.gordianStop();
-    if (state.won.length) {
-      sound.unlock(state.gordian ? 1.9 : 1.1);
-      toast(state.won.map(r => GAIN_TEXT[r]).join(' · '), 4200);
-    }
+    unlocks.announce(state.won, state.gordian ? 1.9 : 1.1);
     show('start');
     return;
   }
@@ -947,24 +965,14 @@ function levelUp(): Level | null {
 
 /** The end of a round. A stopped round (Esc or Stop) shows the answers so far and nothing else: no score, no knot,
  *  no record, nothing to share, and it doesn't count towards what opens up after a few rounds. */
-/** Rewards earned, each as a line under the results: its name, and where to find it. */
-const GAIN_NOTES: Record<Reward, string> = {
-  music: '<b>Sound Collector</b> · Choose the music in Settings',
-  crimson: '<b>First encounter</b> · Crimson, in Settings',
-  effects: '<b>Initiate</b> · Texture and animation, in Settings',
-  multicolour: '<b>Master</b> · Multicolour, in Settings',
-};
-const GAIN_TEXT = Object.fromEntries(Object.entries(GAIN_NOTES).map(([k, v]) => [k, v.replace(/<\/?b>/g, '')])) as Record<Reward, string>;
 /** A Practice ended: it counts for Sound Collector too. */
 function practiced() {
-  if (!collectPart(dayPart())) return;
-  sound.unlock(1.1);
-  toast('Sound Collector · Choose the music in Settings', 4200);
+  if (collectPart(dayPart())) unlocks.announce(['music'], 1.1);
 }
 
 function end(stopped = false) {
-  /** What this round earned (an empty string: said elsewhere, as Atlas is). */
-  const gains: string[] = [];
+  /** What this round unlocked besides The Gordian Knot's rewards (state.won): said by the popup (unlocks.ts). */
+  const fresh: Unlock[] = [];
   clearInterval(state.clock);
   cancelAnimationFrame(state.low);
   const ms = performance.now() - state.started;
@@ -988,7 +996,7 @@ function end(stopped = false) {
   const lv = state.level ?? state.challenge?.level;
   ui.resultsTitle.innerHTML = stopped ? 'Stopped' : state.gordian ? 'The Gordian Knot' : state.daily ? 'Daily' : lv ? levelTag(lv) : '';
   ui.resultsTitle.hidden = !ui.resultsTitle.innerHTML;
-  ui.versus.hidden = ui.best.hidden = ui.unlock.hidden = ui.nextLevel.hidden = ui.untied.hidden = ui.resultsNote.hidden = true;
+  ui.versus.hidden = ui.best.hidden = ui.nextLevel.hidden = ui.untied.hidden = ui.resultsNote.hidden = true;
   ui.shareNote.hidden = true;
   if (stopped) {
     state.last = null;
@@ -1032,7 +1040,7 @@ function end(stopped = false) {
       saveTied();
       if (fresh || gilded) {
         notes.push([fresh ? `<b>+${fresh}</b> tied` : '', gilded ? `<b>${gilded}</b> turned gold` : '',
-          `${Object.keys(tied).filter(id => kb!.country(id)).length} of ${kb.countries.length}`].filter(Boolean).join(' · '));
+          `${Object.keys(tied).filter(id => kb!.country(id)).length}/${kb.countries.length} countries explored`].filter(Boolean).join(' · '));
       }
     }
     if (EXPERIMENTS.dailyRope && state.daily) {
@@ -1072,33 +1080,26 @@ function end(stopped = false) {
       }
     }
 
-    // A great Monkey's fist round of the level's own questions opens Atlas, the hidden fourth level, with The Gordian Knot
-    // under it. Once.
+    // A good Monkey's fist round or a perfect Bowline round of the level's own questions opens Atlas, the hidden fourth
+    // level, with The Gordian Knot under it (ATLAS_AT). Once.
     stats.rounds++;
     endTrial(); // a new player's first round was 8 questions; from now on, 13
-    if (!atlasOpen() && state.level === 'hard' && !isCustom(state.sel) && total >= 8 && pct >= ATLAS_AT) {
+    const atlasAt = state.level ? ATLAS_AT[state.level] : undefined;
+    if (!atlasOpen() && atlasAt !== undefined && !isCustom(state.sel) && pct >= atlasAt) {
       stats.atlas = true;
-      ui.unlock.hidden = false;
-      ui.nextLevel.hidden = true; // the opening says it, with its own button
-      gains.push('');
+      fresh.push('atlas');
     }
     saveStats();
     // Sound Collector: a round in each part of the day (by the player's clock) opens the choice of music.
-    if (collectPart(dayPart())) gains.push(GAIN_NOTES.music);
+    if (collectPart(dayPart())) fresh.push('music');
   }
 
-  // Rewards earned, a line each under the numbers (Atlas has its own card).
-  const said = [...gains, ...state.won.map(r => GAIN_NOTES[r])].filter(Boolean);
-  if (said.length) {
-    if (stopped) ui.resultsNote.innerHTML = '';
-    ui.resultsNote.insertAdjacentHTML('beforeend', said.map(g => `<span class="gain">${g}</span>`).join(''));
-    ui.resultsNote.hidden = false;
-  }
   // The Gordian Knot's end has a sound of its own as its music fades: its celebration when every question was right,
-  // else its stop sound. Anything earned has one too, once however many came together, after the stop sound (never
-  // over it); the celebration says it all by itself.
+  // else its stop sound. Anything unlocked has the popup at the top with its twinkle, once however many came together,
+  // right after the end or stop sound (never over it); under the celebration, the popup alone (James, 23 Nov 2026:
+  // instead of lines under the results).
   if (state.gordian) { if (master) sound.celebrate(); else sound.gordianStop(); }
-  if ((gains.length || state.won.length) && !master) sound.unlock(state.gordian ? 1.9 : 1.1);
+  unlocks.announce([...state.won, ...fresh], state.gordian ? 1.9 : 1.1, master);
 
   ui.answers.innerHTML = '';
   state.results.forEach((r, j) => {
@@ -1586,14 +1587,9 @@ document.addEventListener('click', e => {
 for (const d of document.querySelectorAll('dialog')) d.addEventListener('close', () => {
   for (const b of d.querySelectorAll<HTMLButtonElement>('button.info[aria-expanded="true"]')) b.click();
 });
-// "Too easy? Try Monkey's fist": the next level, at once. So does "Try Atlas" when Atlas opens.
+// "Too easy? Try Monkey's fist": the next level, at once.
 ui.nextGo.addEventListener('click', () => {
   setLevel(ui.nextGo.dataset.level as Level);
-  saveSelection();
-  start(selection);
-});
-ui.unlockGo.addEventListener('click', () => {
-  setLevel('impossible');
   saveSelection();
   start(selection);
 });
