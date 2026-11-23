@@ -12,11 +12,14 @@
 //     data/geo/notable-peaks.csv for famous peaks Natural Earth lacks, or whose height it gives wrongly (its `sheets`:
 //     the countries whose sheet lists it). A peak that is some country's highest point keeps the knowledge base's name
 //     and height.
+//   Texts: a line about the country and one interesting fact (James, 22 Nov 2026: "a short description and an
+//     interesting fact per country"), from data/countries/about.yaml, as `a` and `f`.
 // Inputs: public/data/countries.json, public/data/rivers.json, sources/cache/ne-rivers.geojson,
-// sources/cache/ne-elevation-points.geojson, world-atlas 1:50m, data/geo/notable-peaks.csv.
+// sources/cache/ne-elevation-points.geojson, world-atlas 1:50m, data/geo/notable-peaks.csv, data/countries/about.yaml.
 // Run: node scripts/build-sheets.mjs (npm run build:sheets)
 import fs from 'node:fs/promises';
 import { feature } from 'topojson-client';
+import YAML from 'yaml';
 import { geoArea, geoBounds, geoCentroid, geoContains, geoDistance, geoLength } from 'd3-geo';
 import { parseCsv } from './lib/csv.mjs';
 import { norm, slug } from './lib/text.mjs';
@@ -25,6 +28,7 @@ const root = new URL('..', import.meta.url).pathname;
 const read = p => fs.readFile(root + p, 'utf8');
 const kb = JSON.parse(await read('public/data/countries.json'));
 const kbCourses = JSON.parse(await read('public/data/rivers.json'));
+const about = YAML.parse(await read('data/countries/about.yaml'));
 const RAD = 6371, MAX_RIVERS = 6, MAX_PEAKS = 5, DEG = 180 / Math.PI;
 const km = (a, b) => geoDistance(a, b) * RAD;
 
@@ -223,7 +227,9 @@ for (const c of kb.countries) {
     picked.push(p);
   }
   const peaks = picked.filter(p => p.name).sort((a, b) => b.m - a.m).map(p => [p.name, p.m, r2(p.ll[1]), r2(p.ll[0])]);
-  if (rivers.length || peaks.length) out.countries[c.id] = { ...(rivers.length ? { r: rivers } : {}), ...(peaks.length ? { p: peaks } : {}) };
+  const text = about[c.id];
+  const e = { ...(rivers.length ? { r: rivers } : {}), ...(peaks.length ? { p: peaks } : {}), ...(text ? { a: text.about, f: text.fact } : {}) };
+  if (Object.keys(e).length) out.countries[c.id] = e;
 }
 await fs.writeFile(root + 'public/data/sheets.json', JSON.stringify(out));
 if (process.env.DEBUG) for (const id of process.env.DEBUG.split(',')) {

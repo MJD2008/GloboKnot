@@ -1442,6 +1442,11 @@ body.cs-open .start { left: var(--cs-shift, 0px); }
 .cs-photo figcaption a { color: inherit; text-decoration: underline; text-decoration-color: rgba(255, 255, 255, 0.25); }
 .cs-photo.empty { display: grid; place-items: center; margin: 0 14px; border: 1.5px dashed rgba(255, 255, 255, 0.16); border-radius: 7px; color: var(--muted); font-size: 0.78rem; background: none; }
 .cs-photo.empty code { font-size: 0.74rem; color: var(--ink); }
+/* A line about the country under its photos, and one fact after the map (a spark in place of a word). */
+.cs-about { margin: 8px 14px 0; font-size: 0.9rem; line-height: 1.45; font-weight: 550; color: color-mix(in srgb, var(--ink) 86%, var(--muted)); text-wrap: pretty; }
+.cs-fact { display: flex; gap: 9px; align-items: flex-start; margin: 12px 14px 2px; padding: 9px 12px; border-radius: 8px; border: 1px solid color-mix(in srgb, var(--target) 24%, transparent); background: color-mix(in srgb, var(--target) 9%, transparent); font-size: 0.88rem; line-height: 1.45; font-weight: 600; text-wrap: pretty; }
+.cs-fact svg { flex: none; width: 15px; height: 15px; margin-top: 2px; fill: var(--target); }
+.cs-about[hidden], .cs-fact[hidden] { display: none; }
 .cs-map-box { padding: 10px 14px 0; }
 .cs-map { border-radius: 7px; touch-action: auto; }
 .cs-map .hl { fill: color-mix(in srgb, var(--target) 45%, var(--land)); stroke: #eafff2; stroke-width: 1.1; }

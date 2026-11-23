@@ -1,8 +1,10 @@
 // A country's sheet (James, 16 Nov 2026): tap a country on the home globe and a sheet about it opens beside the globe,
 // which picks the country out in green. On it: photos of the country, swiped or clicked through (public/photos, docs/PHOTOS.md),
 // a map with the capital, the major rivers and the notable peaks named and the neighbours around it, and the facts:
-// capital, languages, highest point, peaks, rivers, neighbours. The rivers and peaks beyond the knowledge base come from
-// public/data/sheets.json (scripts/build-sheets.mjs), loaded with the first sheet.
+// capital, languages, highest point, peaks, rivers, neighbours. Under the photos a line about the country, and after the
+// map one interesting fact (James, 22 Nov 2026: "a short description and an interesting fact per country"). The texts,
+// and the rivers and peaks beyond the knowledge base, come from public/data/sheets.json (scripts/build-sheets.mjs),
+// loaded with the first sheet.
 // A neighbour (its name, or its shape on the map) opens its own sheet, and the first stays open ("without closing the
 // original one"): a wide screen shows the last two side by side, sliding the menu over to make room; a narrower one
 // shows one. No tabs for the ones before (James, 22 Nov 2026: they cluttered the screen): only the sheets that fit stay
@@ -12,7 +14,7 @@ import type { MapLabel, SheetMap, WorldMap } from './map';
 import { sound } from './sound';
 import { backdrop } from './backdrop';
 
-interface Extra { r?: string[]; p?: [name: string, m: number, lat: number, lng: number][] }
+interface Extra { r?: string[]; p?: [name: string, m: number, lat: number, lng: number][]; a?: string; f?: string }
 interface SheetData { rivers: Record<string, { n: string; c: [number, number][][] }>; countries: Record<string, Extra> }
 /** A photo of a country: what it shows ("Paris"), who took it and under which licence, and where that is written. */
 export interface Photo { src: string; place?: string; credit?: string; link?: string }
@@ -29,6 +31,8 @@ export interface Sheets {
 const X = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg>';
 /** A framed landscape: the photo as the background. */
 const FRAME = '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2" /><path d="m3.5 16.5 5-5 4 4 2.5-2.5 5.5 5.5" /><circle cx="16" cy="9.2" r="1.3" /></svg>';
+/** A spark: the fact's mark, in place of a word. */
+const SPARK = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5c.7 4.6 2.6 6.9 7.5 9.5-4.9 2.6-6.8 4.9-7.5 9.5-.7-4.6-2.6-6.9-7.5-9.5 4.9-2.6 6.8-4.9 7.5-9.5Z" /></svg>';
 const esc = (s: string) => s.replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]!);
 const fmt = (n: number) => n.toLocaleString('en-GB');
 
@@ -181,11 +185,23 @@ export function initSheets(root: HTMLElement, o: {
         <button class="icon-btn cs-x" type="button" aria-label="Close ${esc(c.name)}" title="Close">${X}</button>
       </header>
       ${pic}
+      <p class="cs-about" hidden></p>
       <div class="cs-map-box"><svg class="map cs-map" role="img" aria-label="Map of ${esc(c.name)}" viewBox="0 0 640 400"></svg></div>
+      <p class="cs-fact" hidden>${SPARK}<span class="sr-only">Fact: </span><span></span></p>
       <dl class="cs-facts">${facts(id, dataNow?.countries[id])}</dl>`;
+    texts(el, dataNow?.countries[id]);
     const fig = el.querySelector<HTMLElement>('.cs-photo[data-n]');
     if (fig) markBackdrop(fig);
     return el;
+  }
+
+  /** The line about the country and its fact, once loaded. */
+  function texts(el: HTMLElement, extra: Extra | undefined) {
+    const about = el.querySelector<HTMLElement>('.cs-about')!, fact = el.querySelector<HTMLElement>('.cs-fact')!;
+    about.textContent = extra?.a ?? '';
+    about.hidden = !extra?.a;
+    fact.lastElementChild!.textContent = extra?.f ?? '';
+    fact.hidden = !extra?.f;
   }
 
   /** The map, once the rivers and peaks have loaded, and only while the sheet shows (names are sized to it). */
@@ -197,6 +213,7 @@ export function initSheets(root: HTMLElement, o: {
     drawn.add(id);
     const extra = d?.countries[id];
     el.querySelector('.cs-facts')!.innerHTML = facts(id, extra);
+    texts(el, extra);
     const c = kb.country(id)!;
     const nb = kb.neighbours(id).map(n => kb.country(n)).filter((x): x is Country => !!x);
     const top = kb.get<Peak>(kb.highestPoint(id) ?? '');

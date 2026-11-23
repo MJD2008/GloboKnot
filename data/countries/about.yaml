@@ -1,0 +1,586 @@
+# A line about each country, and one fact, for its sheet (James, 22 Nov 2026: "a short description and an interesting
+# fact per country"). Display only, like the rest of the sheet (scripts/build-sheets.mjs): the quiz never asks about
+# them. Written from the CIA World Factbook (public domain: Introduction > Background, Geography - note) and checked
+# against general references; numbers only where they don't drift. Keep each to one sentence.
+AFG:
+  about: A landlocked, mountainous country between Central and South Asia, founded in 1747 and long a buffer between the British and Russian empires.
+  fact: The Hindu Kush divides the country, and its highest peaks rise in the Wakhan Corridor, a narrow strip that reaches China.
+AGO:
+  about: A large country on Africa's south-west coast, whose north was part of the Kingdom of Kongo, independent from Portugal since 1975.
+  fact: Its province of Cabinda is cut off from the rest of the country by a strip of the Democratic Republic of the Congo.
+ALB:
+  about: A small, mountainous country on the Adriatic and Ionian coasts of the Balkans, independent from the Ottoman Empire since 1912.
+  fact: Under communist rule it built some 170,000 concrete bunkers against an invasion that never came.
+AND:
+  about: A tiny principality high in the Pyrenees between France and Spain, the last survivor of the border states Charlemagne set up against the Moors.
+  fact: "It has two heads of state at once: the President of France and the Bishop of Urgell in Spain."
+ARE:
+  about: A federation of seven emirates on the Persian Gulf, formed in 1971, grown rich on oil, trade and travel.
+  fact: Dubai's Burj Khalifa, 828 m tall, has been the tallest building in the world since 2010.
+ARG:
+  about: The second-largest country in South America, reaching from the subtropical north to Tierra del Fuego, independent from Spain since 1816.
+  fact: Aconcagua is the highest mountain outside Asia, and the highest in both the Western and the Southern Hemisphere.
+ARM:
+  about: A landlocked country in the mountains of the South Caucasus, independent from the Soviet Union since 1991.
+  fact: It was the first state to adopt Christianity, early in the 4th century.
+ATG:
+  about: Two main islands and many small ones in the Leeward Islands of the Caribbean, a British colony until 1981.
+  fact: Antigua is said to have 365 beaches, one for every day of the year.
+AUS:
+  about: The world's sixth-largest country and its smallest continent, home to people for at least 60,000 years.
+  fact: It is the largest country in the world without a land border.
+AUT:
+  about: A landlocked Alpine country in central Europe, once the heart of the Habsburg empire, now a small republic known for its music.
+  fact: Vienna's Schönbrunn Zoo, opened in 1752, is the oldest zoo in the world still open.
+AZE:
+  about: A country of the South Caucasus on the Caspian Sea, mostly Turkic-speaking and Shia Muslim, with an exclave, Nakhchivan.
+  fact: Its long coast is on the Caspian Sea, which is a lake, so the country is landlocked.
+BDI:
+  about: A small, hilly, landlocked country on Lake Tanganyika, one of the most densely populated in Africa.
+  fact: It lies on the divide between the basins of the Nile and the Congo.
+BEL:
+  about: A small country at the crossroads of Western Europe, of Dutch-speaking Flanders, French-speaking Wallonia and bilingual Brussels, independent since 1830.
+  fact: Tintin, the Smurfs and the saxophone were all invented by Belgians.
+BEN:
+  about: A narrow country reaching inland from the Gulf of Guinea, home to some 42 peoples and once the Kingdom of Dahomey.
+  fact: Vodun, the religion known abroad as voodoo, began here, and a national holiday honours it every 10 January.
+BFA:
+  about: A landlocked country in the savanna of West Africa, home of the Mossi kingdoms, called Upper Volta until 1984.
+  fact: Its name means 'land of upright people', joining words from two of its languages, Mooré and Dyula.
+BGD:
+  about: One of the most densely populated countries in the world, built on the deltas where the Ganges, Brahmaputra and Meghna reach the Bay of Bengal.
+  fact: It shares the Sundarbans, the largest mangrove forest in the world, with India.
+BGR:
+  about: A Balkan country on the Black Sea, one of the oldest states in Europe, founded in 681.
+  fact: The Cyrillic alphabet took shape here, in the First Bulgarian Empire, in the 9th and 10th centuries.
+BHR:
+  about: An island kingdom in the Persian Gulf, the first place on the Arab side of the Gulf where oil was found, in 1932.
+  fact: The King Fahd Causeway, about 25 km of bridges and embankments, links it to Saudi Arabia.
+BHS:
+  about: A chain of some 700 islands in the Atlantic, south-east of Florida, where Columbus first landed in the Americas in 1492.
+  fact: On Big Major Cay, in the Exumas, wild pigs swim out to meet the boats.
+BIH:
+  about: A mountainous Balkan country with a sliver of Adriatic coast, made of two entities since the Dayton agreement of 1995.
+  fact: Its whole coast, at Neum, is only about 20 km long, and splits Croatia's coast in two.
+BLR:
+  about: A flat, landlocked country of forests and marshes in eastern Europe, independent since 1991 and closely tied to Russia.
+  fact: Białowieża Forest, on its border with Poland, is a last piece of Europe's ancient forest, where wild bison still roam.
+BLZ:
+  about: A small country on the Caribbean coast of Central America, once British Honduras, and the only one in the region with English as its official language.
+  fact: Its barrier reef, home to the Great Blue Hole, is the largest in the Western Hemisphere.
+BOL:
+  about: A landlocked country of high Andean plateaus and Amazon lowlands, named after Simón Bolívar, with two capitals, Sucre and La Paz.
+  fact: It shares Lake Titicaca, the highest navigable lake in the world, with Peru.
+BRA:
+  about: The largest country in South America, covering nearly half the continent, home to most of the Amazon rainforest and the only Portuguese-speaking one.
+  fact: It borders every other South American country except Chile and Ecuador.
+BRB:
+  about: A coral island in the Caribbean, settled by the English in 1627, independent since 1966 and a republic since 2021.
+  fact: It is the easternmost island of the Caribbean.
+BRN:
+  about: A small, oil-rich sultanate on the north coast of Borneo, whose sultans once ruled much of the island's shores.
+  fact: It is in two parts, separated by Malaysia; the eastern one, Temburong, is almost surrounded by it.
+BTN:
+  about: A landlocked Himalayan kingdom between China and India, a monarchy since 1907 and a constitutional one since 2008.
+  fact: Its highest mountain, Gangkhar Puensum, is the highest in the world that has never been climbed.
+BWA:
+  about: A landlocked country of southern Africa, mostly Kalahari Desert, peaceful and democratic since independence in 1966.
+  fact: The Okavango is a great river delta that never reaches the sea; its waters fade into the Kalahari.
+CAF:
+  about: A landlocked country of savanna and rainforest, independent from France since 1960, rich in diamonds, gold and wildlife.
+  fact: It lies almost exactly at the centre of the African continent.
+CAN:
+  about: The second-largest country in the world, reaching from the Atlantic to the Pacific and the Arctic, self-governing since 1867.
+  fact: It has the longest coastline of any country in the world.
+CHE:
+  about: A landlocked Alpine country at the crossroads of northern and southern Europe, a confederation since 1291, with four national languages.
+  fact: It has stayed neutral in international wars since 1815.
+CHL:
+  about: A long, narrow country between the Andes and the Pacific, from the Atacama Desert to Cape Horn.
+  fact: It is some 4,300 km long, yet on average only about 175 km wide.
+CHN:
+  about: One of the oldest civilisations and largest countries in the world, ruled by dynasties from at least the 13th century BC until 1912.
+  fact: The whole country, nearly 5,000 km wide, keeps a single time zone.
+CIV:
+  about: A West African country on the Gulf of Guinea, a French colony until 1960, with Yamoussoukro as its capital and Abidjan as its largest city.
+  fact: It is the largest producer of cocoa beans in the world.
+CMR:
+  about: A country where West and Central Africa meet, once German, then French and British, with both French and English official.
+  fact: It is called 'Africa in miniature' for holding nearly every landscape of the continent.
+COD:
+  about: The second-largest country in Africa, straddling the equator around the basin of the Congo River, home to more than 200 peoples.
+  fact: The Congo is the deepest river in the world, more than 200 m deep in places.
+COG:
+  about: A former French colony on the west bank of the Congo River, with most of its people in Brazzaville and Pointe-Noire.
+  fact: Brazzaville faces Kinshasa across the Congo River, the closest pair of capitals in the world after Rome and the Vatican.
+COL:
+  about: The country where South America meets Central America, with Andes, Amazon and Caribbean coast, named after Christopher Columbus.
+  fact: It is the only South American country with coasts on both the Pacific and the Caribbean.
+COM:
+  about: A volcanic archipelago at the north end of the Mozambique Channel, long a crossroads of trade between Arabia, India and East Africa.
+  fact: It is the only country of the Arab League that lies wholly in the Southern Hemisphere.
+CPV:
+  about: Ten volcanic islands in the Atlantic, about 500 km off West Africa, uninhabited until the Portuguese arrived in the 15th century.
+  fact: Its active volcano, Pico do Fogo, last erupted in 2014 and 2015.
+CRI:
+  about: A small Central American country between two oceans, known for its rainforests, volcanoes and protected nature.
+  fact: It abolished its army in 1948.
+CUB:
+  about: The largest island of the Caribbean, a Spanish colony until 1898 and a communist state since 1959.
+  fact: Its bee hummingbird is the smallest bird in the world.
+CYP:
+  about: The third-largest island in the Mediterranean, independent from Britain since 1960 and divided since 1974.
+  fact: Its capital, Nicosia, is the last divided capital in Europe.
+CZE:
+  about: A landlocked country in the heart of Europe, made of Bohemia and Moravia, independent since Czechoslovakia split peacefully in 1993.
+  fact: Its people drink more beer per head than any other nation.
+DEU:
+  about: The largest economy in Europe and the most populous country of the EU, reunited in 1990 after more than 40 years apart.
+  fact: Most of its rivers flow north to the sea, but the Danube rises in the Black Forest and flows east to the Black Sea.
+DJI:
+  about: A small, hot country on the Horn of Africa at the mouth of the Red Sea, a French colony until 1977.
+  fact: Lake Assal, about 155 m below sea level, is the lowest point in Africa and one of the saltiest lakes on Earth.
+DMA:
+  about: A mountainous volcanic island in the Lesser Antilles, called 'the Nature Island of the Caribbean'.
+  fact: Its Boiling Lake, a flooded volcanic vent, is the second-largest hot lake in the world.
+DNK:
+  about: A small Nordic kingdom made of the Jutland peninsula and some 400 islands, once the home of Viking raiders.
+  fact: Its flag, the Dannebrog, is the oldest national flag still in use.
+DOM:
+  about: The eastern two-thirds of Hispaniola, which it shares with Haiti; its capital, Santo Domingo, is the oldest European city in the Americas.
+  fact: Pico Duarte is the highest mountain in the Caribbean.
+DZA:
+  about: The largest country in Africa, four-fifths desert, independent from France since 1962 after a long war.
+  fact: The rock art of Tassili n'Ajjer, in the Sahara, shows cattle, hunters and rivers from a time when the desert was green.
+ECU:
+  about: A country on the equator, which gives it its name, with Andes, Amazon and the Galápagos Islands, once the north of the Inca Empire.
+  fact: Because the Earth bulges at the equator, the summit of Chimborazo is the point on its surface farthest from its centre.
+EGY:
+  about: One of the oldest civilisations in the world, unified around 3200 BC, its people living on the narrow green strip of the Nile between deserts.
+  fact: The Sinai Peninsula puts part of it in Asia, so it lies on two continents.
+ERI:
+  about: A country on the Red Sea coast of the Horn of Africa, an Italian colony, then part of Ethiopia, independent since 1993 after a 30-year war.
+  fact: Its capital, Asmara, is a UNESCO World Heritage Site for its Italian modernist buildings of the 1930s.
+ESP:
+  about: The larger part of the Iberian Peninsula, once at the head of a world empire, a democracy since the late 1970s.
+  fact: It holds two cities in North Africa, Ceuta and Melilla.
+EST:
+  about: The northernmost of the three Baltic states, flat and wooded, independent in 1918 and again since 1991.
+  fact: In 2007 it became the first country to let people vote online in a national election.
+ETH:
+  about: One of the oldest nations in the world, home to more than 80 peoples, never colonised apart from a brief Italian occupation.
+  fact: The Blue Nile, which carries most of the Nile's water, flows out of its Lake Tana.
+FIN:
+  about: A Nordic country of forests and lakes, under Sweden for centuries and then Russia, independent since 1917.
+  fact: It has some 188,000 lakes, and about three million saunas.
+FJI:
+  about: An archipelago of more than 300 islands in the South Pacific, a British colony until 1970.
+  fact: Only about 110 of its 332 islands are inhabited.
+FRA:
+  about: The largest country of Western Europe, from the Channel to the Mediterranean and the Alps, a republic since 1870.
+  fact: With its lands overseas it spans twelve time zones, more than any other country.
+FSM:
+  about: Four island states spread across the western Pacific, freely associated with the United States since 1986.
+  fact: On Yap, huge carved stone discs called rai are still used as money in traditional exchanges.
+GAB:
+  about: A thinly populated country on the equator in Central Africa, mostly rainforest, with large oil reserves.
+  fact: Rainforest covers nearly nine-tenths of the country.
+GBR:
+  about: An island country off north-west Europe, a union of England, Scotland, Wales and Northern Ireland, once at the head of the largest empire in history.
+  fact: No place in it is more than 125 km from tidal water.
+GEO:
+  about: A country of the Caucasus on the Black Sea, home of the ancient kingdoms of Colchis and Iberia, Christian since the 330s.
+  fact: The two deepest known caves on Earth, both more than 2 km deep, are in its Arabika Massif.
+GHA:
+  about: A stable West African country on the Gulf of Guinea, the first in sub-Saharan Africa to win independence from colonial rule, in 1957.
+  fact: Lake Volta, made by a dam in 1965, is the largest artificial lake in the world by area.
+GIN:
+  about: A West African country of coast, highlands and forest, independent from France since 1958, rich in bauxite.
+  fact: The Niger, West Africa's great river, rises in its highlands.
+GMB:
+  about: The smallest country on the African mainland, a narrow strip along the Gambia River, almost surrounded by Senegal.
+  fact: Along most of its length it is less than 50 km wide.
+GNB:
+  about: A small, low-lying country on West Africa's Atlantic coast, a Portuguese colony until 1974.
+  fact: On its Bijagós Islands, hippos live by the shore and swim in the sea.
+GNQ:
+  about: A mainland strip and islands in the Gulf of Guinea, a Spanish colony until 1968, the only African country where Spanish is official.
+  fact: Despite its name, the equator does not pass through it.
+GRC:
+  about: A mountainous peninsula and some 2,000 islands at the southern tip of the Balkans, the cradle of democracy, independent since 1830.
+  fact: The Olympic Games began here, at Olympia, in 776 BC.
+GRD:
+  about: A small volcanic island and its neighbours in the southern Caribbean, independent from Britain since 1974.
+  fact: Known as the Spice Isle, it grows so much nutmeg that one is drawn on its flag.
+GTM:
+  about: The heart of the ancient Maya world, a land of volcanoes and highland lakes in Central America, independent since 1821.
+  fact: Tikal, in its northern rainforest, was one of the greatest Maya cities, with temples over 60 m tall.
+GUY:
+  about: The only English-speaking country in South America, mostly rainforest, a Dutch and then British colony until 1966.
+  fact: Kaieteur Falls drops about 226 m in a single fall, one of the most powerful waterfalls in the world.
+HND:
+  about: A mountainous country of Central America with a long Caribbean coast and a short Pacific one, independent since 1821.
+  fact: Copán, in its west, was a great Maya city; its stairway carries the longest Maya inscription known.
+HRV:
+  about: A crescent-shaped country between central Europe and the Adriatic, independent since 1991, with a long coast and some 1,200 islands, islets and reefs.
+  fact: The cravat, and so the necktie, is named after Croatian soldiers' scarves, admired in 17th-century Paris.
+HTI:
+  about: The western third of Hispaniola, the most mountainous country in the Caribbean, independent since 1804.
+  fact: It is the only country born of a successful slave revolt.
+HUN:
+  about: A landlocked country of the Carpathian Basin, a Christian kingdom since the year 1000, divided by the Danube and the Tisza.
+  fact: The Rubik's Cube was invented in Budapest, in 1974.
+IDN:
+  about: The largest country in the world made up only of islands, thousands of them along the equator between the Indian and Pacific Oceans, declared independent in 1945.
+  fact: Komodo dragons, the largest lizards on Earth, live wild on a few of its islands and nowhere else.
+IND:
+  about: The most populous country in the world, filling most of the Indian subcontinent from the Himalayas to the Indian Ocean, independent from Britain since 1947.
+  fact: Chess began here, around the 6th century, as a game called chaturanga.
+IRL:
+  about: Five-sixths of the island of Ireland, west of Great Britain, self-governing since 1922 and a republic since 1949.
+  fact: No snakes are native to the island; legend says Saint Patrick drove them into the sea.
+IRN:
+  about: A large, mountainous country between the Caspian Sea and the Persian Gulf, known as Persia until 1935 and an Islamic republic since 1979.
+  fact: Its year begins at the spring equinox, with Nowruz, a festival more than 3,000 years old.
+IRQ:
+  about: The land between the Tigris and the Euphrates, ancient Mesopotamia, where Sumer, Babylon and Assyria rose, independent since 1932.
+  fact: Cuneiform, one of the first ways of writing, was invented here in Sumer more than 5,000 years ago.
+ISL:
+  about: A volcanic island just south of the Arctic Circle, between Greenland and Norway, settled by Norse and Celtic people in the 9th century.
+  fact: Its parliament, the Althing, has met since 930, which makes it one of the oldest in the world.
+ISR:
+  about: A small country on the eastern shore of the Mediterranean, founded in 1948, with the Negev desert in its south.
+  fact: Mount Sodom, near the Dead Sea, is a hill made mostly of salt, and holds the longest salt cave in the world.
+ITA:
+  about: A boot-shaped peninsula reaching into the Mediterranean, with Sicily and Sardinia, united as one country only in 1861.
+  fact: "Two other countries lie entirely inside it: Vatican City and San Marino."
+JAM:
+  about: The third-largest island of the Caribbean, south of Cuba, home of the Taino before Spain and Britain, independent since 1962.
+  fact: Reggae grew up here in the late 1960s, out of ska and rocksteady.
+JOR:
+  about: A kingdom in the Middle East, almost landlocked but for a short coast on the Gulf of Aqaba, independent since 1946.
+  fact: The shore of the Dead Sea, on its western border, is the lowest land on Earth, more than 400 m below sea level.
+JPN:
+  about: An island country off the east coast of Asia, four main islands and thousands of smaller ones, closed to the world for two centuries until 1854.
+  fact: Mount Fuji, its highest peak, is a volcano that last erupted in 1707.
+KAZ:
+  about: The largest landlocked country in the world, a land of steppe between the Caspian Sea and the Altai mountains, independent since 1991.
+  fact: The wild ancestors of the apples we eat still grow in its mountains near Almaty.
+KEN:
+  about: An East African country on the equator, from the Indian Ocean coast to Lake Victoria, independent from Britain since 1963.
+  fact: Mount Kenya, Africa's second-highest peak, stands almost on the equator yet still has glaciers.
+KGZ:
+  about: A landlocked, almost entirely mountainous country in the Tien Shan, with a proud nomadic tradition, independent since 1991.
+  fact: The sun on its flag frames the crown of a yurt, the round felt tent of its nomads.
+KHM:
+  about: A land of rice paddies and forests around the Mekong and the Tonle Sap lake, heir to the Khmer empire of Angkor, independent from France since 1953.
+  fact: Angkor Wat, the largest religious monument in the world, is pictured on its flag.
+KIR:
+  about: Thirty-three coral atolls and islands scattered across the central Pacific in three groups, the Gilbert, Phoenix and Line Islands, independent since 1979.
+  fact: It lies in all four hemispheres, and its Line Islands are the first land on Earth to start each new day.
+KNA:
+  about: Two volcanic islands of the Leeward Islands, 3 km apart, the smallest country in the Americas, independent from Britain since 1983.
+  fact: From above, Saint Kitts is shaped like a bat and Nevis like a ball.
+KOR:
+  about: The southern half of the Korean Peninsula, a republic since 1948, grown from war and poverty into one of the world's leading economies.
+  fact: Its alphabet, Hangul, was designed on purpose in the 1440s, under King Sejong, so that everyone could learn to read.
+KWT:
+  about: A small, flat desert country at the head of the Persian Gulf, ruled by the Al Sabah family since the 18th century, independent since 1961.
+  fact: Its dinar is the most valuable unit of currency in the world.
+LAO:
+  about: The only landlocked country of South-East Asia, mountainous and forested along the Mekong, heir to the 14th-century kingdom of Lan Xang.
+  fact: The Plain of Jars is scattered with thousands of huge stone jars, made around 2,000 years ago, probably for burials.
+LBN:
+  about: The smallest country of mainland Asia, on the eastern Mediterranean, the heart of ancient Phoenicia, independent from France since 1943.
+  fact: The Phoenicians who lived here spread the alphabet from which Greek, Latin and most of today's alphabets come.
+LBR:
+  about: A country on the West African coast founded by freed slaves from the United States, the first African republic, independent since 1847.
+  fact: Its capital, Monrovia, is named after James Monroe, the fifth president of the United States.
+LBY:
+  about: A large North African country, more than nine-tenths desert, with most of its people along the Mediterranean coast, independent since 1951.
+  fact: Waw an Namus, a volcano in the middle of the Sahara, holds an oasis of small lakes in its crater.
+LCA:
+  about: A volcanic island of the Windward Islands that changed hands between England and France 14 times, independent from Britain since 1979.
+  fact: With two Nobel Prize winners, Arthur Lewis and Derek Walcott, it has more laureates per person than any other country.
+LIE:
+  about: A small principality in the Alps between Switzerland and Austria, sovereign since 1806 and fully independent since 1866.
+  fact: "It is one of only two doubly landlocked countries, surrounded only by other landlocked ones: the other is Uzbekistan."
+LKA:
+  about: A tear-shaped island south of India, where Buddhism arrived around 250 BC, called Ceylon until 1972, independent from Britain since 1948.
+  fact: In 1960 it elected the world's first woman prime minister, Sirimavo Bandaranaike.
+LSO:
+  about: A mountain kingdom completely surrounded by South Africa, with more than four-fifths of its land above 1,800 m, independent since 1966.
+  fact: Its lowest point, about 1,400 m above the sea, is higher than the lowest point of any other country.
+LTU:
+  about: The southernmost of the three Baltic states, which at the end of the 14th century was the largest country in Europe.
+  fact: It was the first Soviet republic to declare independence, on 11 March 1990.
+LUX:
+  about: A small country between Belgium, France and Germany, founded in 963, independent since 1867 and one of the founders of the EU.
+  fact: It is the only grand duchy left in the world.
+LVA:
+  about: The middle one of the three Baltic states, low, green and forested, with Riga, the largest city of the Baltics, independent again since 1991.
+  fact: Riga has one of the finest collections of Art Nouveau buildings in the world.
+MAR:
+  about: A kingdom in the north-west of Africa, between the Atlantic, the Mediterranean and the Sahara, independent from France since 1956.
+  fact: Al-Qarawiyyin in Fez, founded in 859, is often called the oldest university in the world still teaching.
+MCO:
+  about: The second-smallest country in the world, a principality on the French Riviera ruled by the Grimaldi family since 1419.
+  fact: Its flag, red over white, is the same as Indonesia's but for its shape.
+MDA:
+  about: A small landlocked country between Romania and Ukraine, part of Romania between the two world wars, independent since 1991.
+  fact: The Milestii Mici cellars hold the largest wine collection in the world, along some 200 km of underground tunnels.
+MDG:
+  about: The fourth-largest island in the world, off the south-east coast of Africa, settled from Indonesia some 1,500 years ago, independent from France since 1960.
+  fact: Around 90% of its plants and animals are found nowhere else, lemurs among them.
+MDV:
+  about: Twenty-six coral atolls of some 1,200 islands in the Indian Ocean, the smallest country in Asia, independent from Britain since 1965.
+  fact: It is the flattest country in the world, its land on average only about 2 m above the sea.
+MEX:
+  about: A large country between the United States and Central America, home of the Olmec, Maya and Aztec civilisations, independent from Spain since 1821.
+  fact: Maize was first grown here, some 9,000 years ago, from a wild grass called teosinte.
+MHL:
+  about: Two chains of coral atolls in the North Pacific, Ratak (sunrise) and Ralik (sunset), independent since 1986 in free association with the United States.
+  fact: Its early navigators mapped the ocean swells with charts made of sticks and shells.
+MKD:
+  about: A landlocked, mountainous Balkan country, independent from Yugoslavia since 1991 and called North Macedonia since 2019.
+  fact: Lake Ohrid, on its border with Albania, is one of the oldest lakes in the world, more than a million years old.
+MLI:
+  about: A large landlocked country of West Africa, from the Sahara to the Niger valley, named after the medieval Mali Empire, independent from France since 1960.
+  fact: The Great Mosque of Djenné is the largest mud-brick building in the world, and the whole town re-plasters it every year.
+MLT:
+  about: A small archipelago in the middle of the Mediterranean, south of Sicily, ruled by the Knights of St John for over 250 years, independent since 1964.
+  fact: Its stone temples, built more than 5,000 years ago, are older than Stonehenge and the pyramids of Egypt.
+MMR:
+  about: The largest country of mainland South-East Asia, along the Irrawaddy River, also called Burma, independent from Britain since 1948.
+  fact: Bagan, on the Irrawaddy, still has more than 2,000 Buddhist temples and pagodas from the 11th to 13th centuries.
+MNE:
+  about: A small Balkan country on the Adriatic, named for its "black mountain", independent again since 2006.
+  fact: The Bay of Kotor looks like a fjord, but it is a river canyon drowned by the sea.
+MNG:
+  about: A vast landlocked country of steppe, desert and mountain between Russia and China, the homeland of Genghis Khan.
+  fact: It is the most sparsely populated country in the world, and its capital, Ulaanbaatar, is the coldest.
+MOZ:
+  about: A long country on the Indian Ocean coast of southern Africa, crossed by the Zambezi, independent from Portugal since 1975.
+  fact: Its flag is the only one in the world with a modern rifle on it.
+MRT:
+  about: A large Saharan country on Africa's Atlantic coast, between the Maghreb and the Sahel, independent from France since 1960.
+  fact: The Richat Structure, the "Eye of the Sahara", is a ring of rock some 40 km wide, easy to see from space.
+MUS:
+  about: A volcanic island in the Indian Ocean, east of Madagascar, almost ringed by coral reefs, uninhabited until 1638 and independent since 1968.
+  fact: It was the only home of the dodo, a flightless bird gone by the end of the 17th century.
+MWI:
+  about: A long, narrow, landlocked country along Lake Malawi in south-east Africa, independent from Britain since 1964.
+  fact: Lake Malawi has more species of fish than any other lake on Earth.
+MYS:
+  about: A country in two parts, the south of the Malay Peninsula and the north of Borneo, on the Strait of Malacca, formed in 1963.
+  fact: Its rainforests grow the Rafflesia, the largest single flower on Earth, which smells of rotting meat.
+NAM:
+  about: A dry country on Africa's south-west coast, named after the Namib Desert, independent from South Africa since 1990.
+  fact: The Namib is thought to be the oldest desert in the world, dry for at least 55 million years.
+NER:
+  about: A large landlocked country of West Africa, four-fifths Sahara, its people along the Niger River and the savanna of the south, independent since 1960.
+  fact: The Ténéré Tree was once the most isolated tree on Earth, alone in the desert, until a truck knocked it down in 1973.
+NGA:
+  about: The most populous country in Africa, from the Sahel down the Niger to its delta on the Gulf of Guinea, independent from Britain since 1960.
+  fact: Its film industry, Nollywood, makes more films a year than any other but India's.
+NIC:
+  about: The largest country in Central America, between the Caribbean and the Pacific, with two great lakes, independent from Spain since 1821.
+  fact: Bull sharks swim up the San Juan River from the Caribbean into Lake Nicaragua.
+NLD:
+  about: A low country at the mouths of the Rhine, Meuse and Scheldt, a great seafaring and trading power in the 17th century.
+  fact: About a quarter of it lies below sea level, kept dry by dikes, dunes and pumps.
+NOR:
+  about: A long, mountainous country on the west of Scandinavia, with one of the most rugged coastlines on Earth, fully independent since 1905.
+  fact: With all its fjords and islands, its coast is long enough to wrap around the Earth twice.
+NPL:
+  about: A landlocked Himalayan country between China and India, with eight of the world's ten highest mountains, a republic since 2008.
+  fact: Its flag, two stacked triangles, is the only national flag that is not a rectangle.
+NRU:
+  about: A single raised coral island in the central Pacific, the smallest island country in the world, independent since 1968.
+  fact: It has no official capital; the government sits in the district of Yaren.
+NZL:
+  about: Two main islands and many small ones in the South-West Pacific, Aotearoa in Maori, among the last large lands people reached, around 1300.
+  fact: In 1893 it became the first self-governing country where women could vote in national elections.
+OMN:
+  about: An old seafaring sultanate on the south-east corner of the Arabian Peninsula, whose Musandam exclave guards the Strait of Hormuz.
+  fact: In the 19th century its sultans also ruled Zanzibar, off East Africa, and moved their capital there.
+PAK:
+  about: A country from the Arabian Sea to the Karakoram, where the Indus Valley civilisation flourished, independent since 1947.
+  fact: K2, the second-highest mountain on Earth, rises on its border with China.
+PAN:
+  about: The narrow isthmus joining Central and South America, which broke away from Colombia in 1903 and runs the Panama Canal.
+  fact: Because the isthmus bends, the canal's Pacific entrance lies east of its Atlantic one.
+PER:
+  about: A country of Pacific desert coast, high Andes and Amazon forest, the heart of the Inca Empire, independent from Spain since 1821.
+  fact: The Amazon begins as meltwater on the slopes of Nevado Mismi, in the Andes of southern Peru.
+PHL:
+  about: An archipelago of more than 7,000 islands in the western Pacific, named after King Philip II of Spain, independent since 1946.
+  fact: Its jeepneys, the brightly painted buses of its streets, began as US Army jeeps left behind after the Second World War.
+PLW:
+  about: More than 300 islands at the western end of the Caroline chain in the Pacific, independent since 1994 in free association with the United States.
+  fact: In 2009 it made its waters the world's first shark sanctuary.
+PNG:
+  about: The eastern half of New Guinea and many islands, mountainous and forested, settled some 50,000 years ago, independent from Australia since 1975.
+  fact: More than 800 languages are spoken there, more than in any other country.
+POL:
+  about: A large country on the North European Plain, from the Baltic to the Carpathians, divided among its neighbours in 1795 and reborn in 1918.
+  fact: Marie Curie, born in Warsaw, was the first person to win two Nobel Prizes.
+PRK:
+  about: The northern half of the Korean Peninsula, mountainous and thinly peopled inland, separated from the South since 1945.
+  fact: Mount Paektu, on its border with China, erupted around the year 946 in one of the largest eruptions in recorded history.
+PRT:
+  about: A country on the Atlantic edge of Europe, with the Azores and Madeira, which led the age of sea discovery in the 15th century.
+  fact: Its border with Spain, set in 1297, is one of the oldest in the world.
+PRY:
+  about: A landlocked country in the heart of South America, between Argentina, Bolivia and Brazil, independent from Spain since 1811.
+  fact: Guarani, the language of its first peoples, is spoken by most Paraguayans and is official beside Spanish.
+QAT:
+  about: A small, flat desert peninsula in the Persian Gulf, ruled by the Al Thani family since the 1800s, independent since 1971.
+  fact: Its maroon flag is the only national flag more than twice as wide as it is tall.
+ROU:
+  about: A country of the Carpathians, the Danube and the Black Sea coast, formed when Wallachia and Moldavia united in 1859.
+  fact: The Palace of the Parliament in Bucharest is the heaviest building in the world.
+RUS:
+  about: The largest country in the world, across eleven time zones from the Baltic to the Pacific, grown from the principality of Muscovy.
+  fact: Lake Baikal, in Siberia, holds about a fifth of the fresh water in all the world's lakes and rivers.
+RWA:
+  about: A small, landlocked country of green hills and volcanoes in Africa's Great Lakes region, the "land of a thousand hills", independent since 1962.
+  fact: It banned plastic bags in 2008, and on the last Saturday of each month people work together to clean their towns.
+SAU:
+  about: Most of the Arabian Peninsula, the birthplace of Islam and home of Mecca and Medina, united as a kingdom in 1932.
+  fact: It is the largest country in the world without a river.
+SDN:
+  about: A large country of the Nile, once ancient Nubia and the Kingdom of Kush, independent since 1956.
+  fact: It has more pyramids than Egypt, built by the kings of Kush at Meroe and elsewhere.
+SEN:
+  about: The westernmost country of mainland Africa, on the Atlantic, almost wrapped around the Gambia, independent from France since 1960.
+  fact: Lake Retba, near Dakar, is pink, coloured by algae in its very salty water.
+SGP:
+  about: A city-state on an island at the tip of the Malay Peninsula, founded as a British port in 1819, independent since 1965.
+  fact: Land won from the sea has made it about a quarter larger than it was in the 1960s.
+SLB:
+  about: A double chain of volcanic islands and coral atolls in the South-West Pacific, east of New Guinea, independent from Britain since 1978.
+  fact: Rennell Island, a raised coral atoll, holds Lake Tegano, the largest lake of the Pacific islands.
+SLE:
+  about: A green, rainy country on the West African coast, whose capital, Freetown, was founded for freed slaves in 1792, independent since 1961.
+  fact: Its name comes from the Portuguese for "lion mountains", given to the hills around Freetown in 1462.
+SLV:
+  about: The smallest country in Central America and the only one without a Caribbean coast, a land of volcanoes, independent since 1821.
+  fact: Joya de Cerén, a farming village buried by volcanic ash around the year 600, is called the Pompeii of the Americas.
+SMR:
+  about: A tiny republic on a mountain of the Apennines, completely surrounded by Italy, by tradition founded in 301.
+  fact: It claims to be the oldest republic in the world still standing.
+SOM:
+  about: The tip of the Horn of Africa, with the longest coastline of mainland Africa, on the Gulf of Aden and the Indian Ocean, independent since 1960.
+  fact: It is often called a nation of poets, for the place verse holds in everyday life.
+SSD:
+  about: A landlocked country of the upper White Nile, the newest country in the world, independent from Sudan since 2011.
+  fact: The Sudd, a swamp of the White Nile, can spread over a seventh of the country in the rainy season.
+STP:
+  about: Two volcanic islands in the Gulf of Guinea, uninhabited until the Portuguese came in the late 15th century, independent since 1975.
+  fact: The equator crosses the islet of Rolas, just off São Tomé's southern tip.
+SUR:
+  about: The smallest country of South America, mostly rainforest, with most of its people along the coast, Dutch until 1975.
+  fact: In 1667 the Dutch kept it in exchange for New Amsterdam, today's New York.
+SVK:
+  about: A landlocked, mountainous country in the heart of Europe, part of Hungary for centuries, independent since Czechoslovakia split peacefully in 1993.
+  fact: It makes more cars per person than any other country.
+SVN:
+  about: A small country where the Alps meet the Adriatic and the Pannonian Plain, independent from Yugoslavia since 1991.
+  fact: Its caves are home to the olm, a blind salamander that can live for a hundred years.
+SWE:
+  about: The largest country of Scandinavia, of forests and some 100,000 lakes, at peace since 1814.
+  fact: Under the "everyman's right", anyone may walk, camp and pick berries on almost any land.
+SWZ:
+  about: A small landlocked kingdom almost surrounded by South Africa, called Swaziland until 2018, independent since 1968.
+  fact: It is the last absolute monarchy in Africa.
+SYC:
+  about: More than a hundred granite and coral islands in the Indian Ocean, the smallest country in Africa, independent from Britain since 1976.
+  fact: The coco de mer, a palm of its islands, grows the largest seed in the world.
+SYR:
+  about: An old crossroads of the Middle East, between the Mediterranean and the Euphrates, independent from France since 1946.
+  fact: Damascus, its capital, is thought to be one of the oldest cities in the world still lived in.
+TCD:
+  about: The largest of Africa's landlocked countries, from the Sahara to the savanna, named after Lake Chad, independent from France since 1960.
+  fact: Lake Chad is what is left of Lake Mega-Chad, which some 7,000 years ago was about as large as the Caspian Sea.
+TGO:
+  about: A narrow strip of West Africa, only about 50 km of coast but some 600 km long, independent from France since 1960.
+  fact: In its Koutammakou valley the Batammariba people still build tall tower-houses of earth.
+THA:
+  about: A country at the heart of mainland South-East Asia, a kingdom since the 13th century, the only one in the region never colonised by Europe.
+  fact: The full ceremonial name of Bangkok is the longest place name in the world.
+TJK:
+  about: A landlocked country of Central Asia, more than nine-tenths mountains, independent from the Soviet Union since 1991.
+  fact: Ismoil Somoni Peak, once called Communism Peak, was the highest mountain of the Soviet Union.
+TKM:
+  about: A mostly desert country of Central Asia, between the Caspian Sea and the Amu Darya, where the Silk Road city of Merv once stood.
+  fact: The Darvaza gas crater, the "Door to Hell", has been burning since the 1970s.
+TLS:
+  about: The eastern half of the island of Timor, Portuguese for four centuries, independent since 2002.
+  fact: It is the only country in Asia that lies entirely in the Southern Hemisphere.
+TON:
+  about: About 170 islands in the South Pacific, the only Pacific kingdom never colonised, a British protectorate until 1970.
+  fact: The 2022 eruption of its Hunga Tonga volcano was heard as far away as Alaska.
+TTO:
+  about: The two southernmost islands of the Caribbean, just off Venezuela, independent from Britain since 1962.
+  fact: The steelpan, tuned from old oil drums, was invented here in the 1930s and 1940s.
+TUN:
+  about: The northernmost country of Africa, on the Mediterranean, once the heart of Carthage, independent from France since 1956.
+  fact: Luke Skywalker's desert planet, Tatooine, is named after its town of Tataouine, and parts of Star Wars were filmed here.
+TUR:
+  about: A country astride Europe and Asia, mostly on the high plateau of Anatolia, founded in 1923 from the heart of the Ottoman Empire.
+  fact: Göbekli Tepe, its rings of carved stone pillars, was raised some 11,000 years ago, long before Stonehenge.
+TUV:
+  about: Nine small coral islands and atolls in the Pacific, one of the smallest and most remote countries in the world, independent from Britain since 1978.
+  fact: Its internet ending, .tv, earns it money from television and streaming sites.
+TZA:
+  about: A large East African country, from the Indian Ocean and Zanzibar to Lakes Victoria and Tanganyika, formed by their union in 1964.
+  fact: Olduvai Gorge holds some of the oldest stone tools and fossils of early humans, nearly two million years old.
+UGA:
+  about: A landlocked, green country on the equator, with Lake Victoria and the source of the White Nile, independent from Britain since 1962.
+  fact: About half of the world's mountain gorillas live in its Bwindi forest.
+UKR:
+  about: The second-largest country in Europe, of black-earth steppe from the Carpathians to the Black Sea, the heart of medieval Kyivan Rus, independent since 1991.
+  fact: Arsenalna, in Kyiv, is the deepest metro station in the world, more than 100 m underground.
+URY:
+  about: The second-smallest country of South America, of rolling grassland between Argentina and Brazil, independent since 1828.
+  fact: It hosted and won the first football World Cup, in 1930.
+USA:
+  about: A federal republic of 50 states across the middle of North America and out to Alaska and Hawaii, independent from Britain since 1776.
+  fact: Yellowstone, created in 1872, was the first national park in the world.
+UZB:
+  about: The heart of Central Asia, along the old Silk Road through Samarkand, Bukhara and Khiva, independent from the Soviet Union since 1991.
+  fact: The Aral Sea, on its border, has shrunk to a tenth of its size since the 1960s, when its rivers were turned to water cotton.
+VAT:
+  about: The smallest country in the world, a walled enclave in Rome, seat of the Pope and the Catholic Church, independent since 1929.
+  fact: It has a cash machine with instructions in Latin.
+VCT:
+  about: Saint Vincent and a chain of small islands and cays in the Windward Islands, independent from Britain since 1979.
+  fact: Pirates of the Caribbean was filmed at Wallilabou Bay, on Saint Vincent.
+VEN:
+  about: A country on the Caribbean coast of South America, from the Andes to the Orinoco and the table mountains of the Guiana Highlands, independent since 1811.
+  fact: Angel Falls, dropping from a table mountain, is the highest uninterrupted waterfall in the world.
+VNM:
+  about: A long, S-shaped country on the South China Sea, from the Red River delta to the Mekong delta, only 50 km wide at its narrowest.
+  fact: Son Doong is the largest cave passage in the world, with its own jungle and clouds inside.
+VUT:
+  about: A Y-shaped chain of some 80 volcanic islands in the South Pacific, ruled jointly by Britain and France until 1980.
+  fact: The land divers of Pentecost Island, who leap from tall towers tied by vines, inspired bungee jumping.
+WSM:
+  about: The western islands of Samoa, at the heart of Polynesia, the first Pacific island country to regain its independence, in 1962.
+  fact: In 2011 it skipped 30 December, moving west of the date line to share its days with Australia and New Zealand.
+YEM:
+  about: The south-west corner of the Arabian Peninsula, on the strait of Bab el-Mandeb, united from North and South Yemen in 1990.
+  fact: Shibam, a walled town of mud-brick tower houses, is called the Manhattan of the desert.
+ZAF:
+  about: The southern tip of Africa, between the Atlantic and Indian Oceans, a democracy for all its people since 1994.
+  fact: "It has three capitals: Pretoria for the government, Cape Town for parliament and Bloemfontein for the courts."
+ZMB:
+  about: A landlocked country of high plateau in southern Africa, along the Zambezi, once Northern Rhodesia, independent since 1964.
+  fact: Lake Kariba, on its border with Zimbabwe, is the largest reservoir in the world by volume.
+ZWE:
+  about: A landlocked country between the Zambezi and the Limpopo, named after Great Zimbabwe, the stone city of a medieval kingdom, independent since 1980.
+  fact: Victoria Falls, on its border with Zambia, is the largest curtain of falling water in the world.
+SRB:
+  about: A landlocked country of the central Balkans, crossed by the Danube, a medieval kingdom and later the largest republic of Yugoslavia.
+  fact: Nikola Tesla's ashes are kept in a golden sphere at his museum in Belgrade.
