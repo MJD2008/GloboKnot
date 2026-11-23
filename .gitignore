@@ -4,3 +4,5 @@ build/
 dist/
 .astro/
 .DS_Store
+.wrangler/
+worker/gen/

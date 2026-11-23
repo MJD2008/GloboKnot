@@ -23,6 +23,8 @@ import { PICKS, dayPart, sound, type Pick } from './sound';
 import { charge } from './spark';
 import { initFire } from './fire';
 import { backdrop, initBackdrop } from './backdrop';
+import { board as fetchBoard, gordianEnd, gordianStart, initLive, keepUntied, myId, rename as renameOnBoard, untied } from './online';
+import { NAME_MAX } from './board-name';
 
 const $ = <T extends HTMLElement = HTMLElement>(sel: string) => document.querySelector(sel) as T;
 const url = (path: string) => new URL(path, document.baseURI).href;
@@ -78,6 +80,7 @@ const ui = {
   unlockGo: $<HTMLButtonElement>('#unlock-go'),
   untied: $('#untied'),
   untiedTime: $('#untied-time'),
+  master: $('#master'),
   resultsTitle: $('#results-title'),
   versus: $('#versus'),
   best: $('#best'),
@@ -190,6 +193,7 @@ const state = {
   stopped: false,                      // Esc or Stop: the answers so far, without a score
   planned: 0,                          // questions in the round as it began (a stop cuts it short)
   seed: '',
+  run: null as string | null,          // The Gordian Knot: its id on the server, once the server has noted its start
   round: [] as Question[],
   i: 0,
   results: [] as Result[],
@@ -223,6 +227,7 @@ async function load() {
     globe.detail = () => world?.detail ?? null;
     globe.shapeOf = num => world?.shape(num) ?? null;
     paintTied();
+    paintOnline();
     if (!screens.start.hidden) globe.play();
     // The lights of the night side come a moment later; the globe doesn't wait for them.
     fetch(url('data/lights.json')).then(r => r.json()).then(d => globe?.setLights(d)).catch(() => {});
@@ -244,6 +249,7 @@ async function load() {
   practiceSheet = initPractice(kb, ui.practiceSheet, startPractice);
   countrySheets = initSheets($('#country-sheets'), { kb, world, url, loadRivers, photos: photoList(), onFront: frontSheet });
   [ui.play, ui.daily, ui.practice].forEach(b => (b.disabled = false));
+  paintOnline();
   paintHome();
   document.body.classList.add('ready');
   if (!screens.start.hidden) globe?.play();
@@ -261,6 +267,18 @@ function countryAt(p: [number, number]) {
   byNum ??= new Map(kb.countries.map(c => [c.num, c]));
   const hit = world.countryAt(p), c = hit && byNum.get(hit.num);
   return c ? { name: c.name, shape: hit.shape, id: c.id } : null;
+}
+
+/** Players on the site now by country (two-letter codes, from the server), on the globe. */
+let online: Record<string, number> = {};
+let byIso2: Map<string, Country> | null = null;
+function paintOnline() {
+  if (!globe || !kb) return;
+  byIso2 ??= new Map(kb.countries.map(c => [c.iso2, c]));
+  globe.setOnline(Object.entries(online).flatMap(([cc, n]) => {
+    const c = byIso2!.get(cc);
+    return c && n > 0 ? [{ id: c.id, num: c.num, ll: c.ll, n }] : [];
+  }));
 }
 
 /** James's photos of the countries, listed into the page when it is built (docs/PHOTOS.md). */
@@ -423,6 +441,7 @@ function open(d: HTMLDialogElement) {
   if (d === ui.menu) menu?.paint();
   if (d === ui.practiceSheet) practiceSheet?.paint();
   if (d === ui.settings) paintSettings();
+  if (d === ui.about) void paintBoard();
   if (!d.open) { d.showModal(); sound.open(); }
 }
 for (const d of sheets) {
@@ -471,6 +490,9 @@ async function start(sel: Selection, daily = false, ch: Challenge | null = null)
   state.streak = state.best = 0;
   state.timed = true; // every round, the Daily too
   state.started = performance.now();
+  // The Gordian Knot begun: the server notes the time, for its board (online.ts).
+  state.run = null;
+  if (state.gordian) askRun(++runs, state.started);
   // The Daily's knots grow with its levels, so the climb shows before it starts.
   ui.beads.innerHTML = state.round.map(q => (q.level ? `<i class="lv-${q.level}"></i>` : '<i></i>')).join('');
   ui.trail.innerHTML = '';
@@ -1042,9 +1064,11 @@ function end(stopped = false) {
         if (!stats.untied || ms < stats.untied.ms) stats.untied = { ms, day: today() };
         ui.untied.hidden = false;
         ui.untiedTime.textContent = `Untied in ${clockOf(ms)}`;
-        // Master: the multicolour theme (and the leaderboard), with a celebration.
+        // Master: the multicolour theme and a place on the board, with a celebration. The run is kept until it has a
+        // name on the board (the page may close first); one begun without the server can't go on it.
         master = true;
         if (earn('multicolour')) state.won.push('multicolour');
+        if (state.run) keepUntied({ run: state.run, ms: Math.round(ms), answers: state.results.map(r => [r.q.key, r.typed]), edition: kb.edition });
       }
     }
 
@@ -1089,7 +1113,98 @@ function end(stopped = false) {
   if (!stopped && !state.gordian) sound.done(share);
   show('results');
   ui.again.focus({ preventScroll: true });
+  // Master: a name for the board, straight away (or why this run can't go on it).
+  ui.master.hidden = !master;
+  if (master) {
+    if (state.run) nameForm(ui.master, !matchMedia('(pointer: coarse)').matches);
+    else ui.master.innerHTML = '<p class="master-note">This run began without a connection to the board, so it can\u2019t go on it.</p>';
+  }
 }
+
+// ---- The Gordian Knot's board (online.ts; on the server, worker/board.ts)
+let runs = 0; // Gordian Knots begun on this page: a late answer from the server for an earlier one is ignored
+/** Asks the server to note a Gordian Knot's start, again a few times over its first minutes if it can't be reached. */
+function askRun(id: number, begun: number, tries = 0) {
+  void gordianStart(performance.now() - begun).then(run => {
+    if (id !== runs || !state.gordian) return;
+    if (run) state.run = run;
+    else if (tries < 3) setTimeout(() => { if (id === runs) askRun(id, begun, tries + 1); }, [20_000, 90_000, 300_000][tries]);
+  });
+}
+const WHY: Record<'name' | 'taken' | 'offline' | 'refused', string> = {
+  name: `Letters, digits and spaces, up to ${NAME_MAX}.`,
+  taken: 'That name is taken.',
+  offline: 'The board can\u2019t be reached just now. Your run is kept; try again later.',
+  refused: 'This run can\u2019t go on the board.',
+};
+/** The name box for an untied run waiting for its name (on the results, and in About while it waits). */
+function nameForm(box: HTMLElement, focus = false) {
+  const u = untied();
+  box.hidden = !u;
+  if (!u) { box.innerHTML = ''; return; }
+  box.innerHTML = `<form class="master-form" novalidate><label for="${box.id}-name">Your name on the board</label>
+    <div class="master-row"><input id="${box.id}-name" type="text" maxlength="${NAME_MAX}" autocomplete="nickname" spellcheck="false" enterkeyhint="done" />
+    <button class="btn primary" type="submit">Add</button></div><p class="master-note" aria-live="polite"></p></form>`;
+  const form = box.querySelector('form')!, input = form.querySelector('input')!, go = form.querySelector('button')!, note = form.querySelector('.master-note')!;
+  if (focus) input.focus({ preventScroll: true });
+  form.addEventListener('submit', async e => {
+    e.preventDefault();
+    go.disabled = true;
+    note.textContent = '';
+    const r = await gordianEnd(u, input.value);
+    go.disabled = false;
+    if (r.ok) {
+      keepUntied(null);
+      const here = box.closest('dialog') === ui.about; // in About, the board is right under it
+      box.innerHTML = `<p class="master-done">${r.place === 1 ? 'First' : ordinal(r.place)} on the board.${here ? '' : ' <button class="link" type="button" data-see-board>See the board</button>'}</p>`;
+      if (ui.about.open) void paintBoard(false);
+      return;
+    }
+    note.textContent = WHY[r.why];
+    if (r.why === 'refused') { keepUntied(null); input.disabled = go.disabled = true; }
+    else input.focus();
+  });
+}
+const dayOf = (d: string) => new Date(`${d}T12:00:00Z`).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+const PENCIL = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9a2.1 2.1 0 0 0-3-3L5 17z" /><path d="M14 8l2 2" /></svg>';
+/** The board in About: this edition's places, fastest first (the player's own can be renamed), then earlier editions'. */
+async function paintBoard(form = true) {
+  if (form) nameForm($('#board-mine'));
+  const list = $('#board'), note = $('#board-note');
+  const [b, me] = await Promise.all([fetchBoard(), myId()]);
+  if (!b) { list.innerHTML = ''; note.textContent = 'The board can\u2019t be reached just now.'; return; }
+  const now = b.entries.filter(e => !b.edition || e.edition === b.edition), before = b.entries.filter(e => b.edition && e.edition !== b.edition);
+  const row = (e: (typeof b.entries)[number], i: number, old: boolean) => `<li${e.id === me ? ' class="mine"' : ''}>
+    <span class="b-place">${i + 1}</span><span class="b-name">${esc(e.name)}</span>
+    ${e.id === me && !b.sample ? `<button class="icon-btn b-edit" type="button" aria-label="Rename" title="Rename">${PENCIL}</button>` : ''}
+    <span class="b-time">${clockOf(e.ms)}</span><span class="b-day">${dayOf(e.day)}${old ? ` · edition ${esc(e.edition)}` : ''}</span></li>`;
+  list.innerHTML = now.map((e, i) => row(e, i, false)).join('')
+    + (before.length ? `<li class="b-sub">Earlier editions</li>${before.map((e, i) => row(e, i, true)).join('')}` : '');
+  note.textContent = b.sample ? 'Sample rows: the preview has no server.'
+    : now.length ? `Edition ${b.edition} · ${b.n.toLocaleString('en-GB')} questions` : 'Not yet untied.';
+}
+/** Renaming one's place: the name becomes a box, Enter keeps it, Esc leaves it. */
+function renameRow(li: HTMLElement) {
+  const name = li.querySelector<HTMLElement>('.b-name')!, was = name.textContent ?? '';
+  const form = document.createElement('form');
+  form.className = 'b-rename';
+  form.innerHTML = `<input type="text" maxlength="${NAME_MAX}" aria-label="New name" spellcheck="false" /><button class="btn primary" type="submit">Save</button><small aria-live="polite"></small>`;
+  const input = form.querySelector('input')!, small = form.querySelector('small')!;
+  input.value = was;
+  name.replaceWith(form);
+  li.querySelector('.b-edit')?.remove();
+  input.focus();
+  input.select();
+  input.addEventListener('keydown', e => { if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); void paintBoard(); } });
+  form.addEventListener('submit', async e => {
+    e.preventDefault();
+    if (input.value.trim() === was) { void paintBoard(); return; }
+    const r = await renameOnBoard(input.value);
+    if (r.ok) void paintBoard();
+    else small.textContent = WHY[r.why];
+  });
+}
+
 
 // ---- looking back: an answer on a big map (or its text), with the right answer lit up and the countries around it
 // named, and a card about what the question was about.
@@ -1443,6 +1558,13 @@ ui.flag.addEventListener('click', () => ui.media.classList.toggle('big'));
 ui.daily.addEventListener('click', () => start(DAILY, true));
 $('#open-settings').addEventListener('click', () => open(ui.settings));
 $('#open-about').addEventListener('click', () => open(ui.about));
+// The board: "See the board" (after a place on it), and renaming one's own place.
+document.addEventListener('click', e => {
+  const t = e.target as Element;
+  if (t.closest('[data-see-board]')) { open(ui.about); requestAnimationFrame(() => $('#board-title').scrollIntoView({ block: 'start' })); return; }
+  const edit = t.closest('.b-edit');
+  if (edit) renameRow(edit.closest('li')!);
+});
 $('#credits-line').addEventListener('click', () => { open(ui.about); ui.about.querySelector('.sources')?.scrollIntoView({ block: 'start' }); });
 $('#menu-play').addEventListener('click', () => start(selection));
 ui.form.addEventListener('submit', e => { e.preventDefault(); flash(ui.form.querySelector('.go')); if (state.locked) next(); else answer(ui.input.value); });
@@ -1541,6 +1663,8 @@ document.addEventListener('keydown', e => {
 
 paintHome();
 sound.scene('home');
+// Players on the site now, by country, glowing on the globe (online.ts).
+initLive(counts => { online = counts; paintOnline(); });
 // The logo on fire, in The Gordian Knot and for those who earned its animation (fire.ts).
 initFire($('.brand'));
 // The Gordian Knot's heartbeat at the edges of the screen gets its sound, beat for beat, while a question is open.

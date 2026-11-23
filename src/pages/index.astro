@@ -211,6 +211,8 @@ const INFO = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12
         <Fragment set:html={MEDAL} />
         <div><b>Better than Alexander</b><span>He cut the Gordian Knot. You untied it.</span><small id="untied-time"></small></div>
       </div>
+      <!-- Master: a name for The Gordian Knot's board (About); the server checks the run before it goes on (online.ts). -->
+      <div id="master" class="master" hidden></div>
       <div class="actions">
         <button id="again" class="btn primary" type="button">New round</button>
         <button id="share" class="btn" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="18" cy="5.5" r="2.5" /><circle cx="6" cy="12" r="2.5" /><circle cx="18" cy="18.5" r="2.5" /><path d="m8.2 10.8 7.6-4.1M8.2 13.2l7.6 4.1" /></svg>Share</button>
@@ -437,6 +439,12 @@ const INFO = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12
           <li class="knots"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12h4.5M16.5 12H21" /><circle cx="12" cy="12" r="4.5" /></svg><span>Each answer ties a knot. All correct at the first attempt, and the rope closes into a ring.<Fragment set:html={ROPE} /></span></li>
         </ul>
         <p class="keys"><kbd>Enter</kbd> answer · <kbd>&rarr;</kbd> skip · <kbd>1</kbd>–<kbd>4</kbd> pick · <kbd>Esc</kbd> stop</p>
+        <!-- The Gordian Knot's board, from the server (online.ts, worker/board.ts): this edition's places, fastest first. -->
+        <h3 id="board-title">The Gordian Knot</h3>
+        <p class="board-lead">Every question in the game, typed, each right the first time. One place per player; each run is checked by the server.</p>
+        <div id="board-mine" class="master" hidden></div>
+        <ol id="board" class="board"></ol>
+        <p id="board-note" class="board-note">…</p>
         <h3>Sources</h3>
         <ul class="sources">
           <li><a href="https://github.com/mledoze/countries">mledoze/countries</a> <span>ODbL 1.0</span></li>
@@ -448,6 +456,7 @@ const INFO = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12
           <li><a href="https://commons.wikimedia.org/">Wikimedia Commons</a>: the photos on the country sheets, each credited under it <span>CC0, CC BY, CC BY-SA</span></li>
         </ul>
         <p class="fine">Data edition <span id="edition">…</span></p>
+        <p class="fine">While a page is open, the server counts it by country, from the connection; this is not stored. The board keeps what it shows, and a code from your browser that marks your place.</p>
       </div>
     </div>
   </dialog>

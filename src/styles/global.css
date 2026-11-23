@@ -1577,3 +1577,43 @@ body:not(.home) .backdrop::after { background: color-mix(in srgb, var(--bg) 88%,
 .cs-bg:hover { opacity: 1; background: rgba(8, 12, 20, 0.8); }
 .cs-bg[aria-pressed="true"] { opacity: 1; background: var(--accent); color: var(--accent-ink, #fff); }
 .cs-bg svg { width: 17px; height: 17px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+
+/* ---------- The Gordian Knot's board (online.ts): the name box after an untied run, and the board in About */
+.master { max-width: 420px; margin: -6px auto 18px; text-align: left; }
+.about .master { margin: 0 0 12px; max-width: none; }
+.master-form label { display: block; margin-bottom: 6px; color: var(--muted); font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; }
+.master-row { display: flex; gap: 8px; }
+.master-row input, .b-rename input {
+  flex: 1;
+  min-width: 0;
+  padding: 11px 13px;
+  border-radius: 9px;
+  border: 1.5px solid var(--line-strong);
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+  font-weight: 650;
+}
+.master-row input:focus, .b-rename input:focus { outline: none; border-color: var(--accent); }
+.master-row .btn { padding: 11px 18px; }
+.master-note { min-height: 1.4em; margin: 6px 0 0; color: var(--muted); font-size: 0.88rem; font-weight: 600; }
+.master-done { margin: 0; font-weight: 700; }
+.master-done .link, .board-note .link { border: 0; background: none; padding: 0 2px; margin-left: 4px; font: inherit; color: var(--accent); text-decoration: underline; text-underline-offset: 2px; cursor: pointer; }
+.board-lead { margin: 0 0 10px; color: var(--muted); font-size: 0.92rem; }
+.board { list-style: none; margin: 0; padding: 0; font-variant-numeric: tabular-nums; }
+.board li { display: grid; grid-template-columns: 2.2ch minmax(0, 1fr) auto auto; align-items: center; gap: 4px 12px; padding: 7px 8px; border-bottom: 1px solid var(--line); }
+.board li.mine { background: color-mix(in srgb, var(--accent) 12%, transparent); border-radius: 6px; }
+.board .b-place { color: var(--muted); font-weight: 750; }
+.board .b-name { font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.board .b-time { font-weight: 700; }
+.board .b-day { color: var(--muted); font-size: 0.82rem; text-align: right; }
+.board .b-edit { width: 30px; height: 30px; margin: -4px 0; }
+.board .b-edit svg { width: 17px; height: 17px; }
+.board li:has(.b-edit) { grid-template-columns: 2.2ch minmax(0, 1fr) auto auto auto; }
+.board .b-sub { display: block; padding: 14px 8px 4px; border: 0; color: var(--muted); font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; }
+.board .b-rename { display: flex; gap: 6px; align-items: center; min-width: 0; flex-wrap: wrap; }
+.board .b-rename input { padding: 6px 9px; }
+.board .b-rename .btn { padding: 6px 12px; font-size: 0.9rem; }
+.board .b-rename small { flex-basis: 100%; color: var(--muted); }
+.board-note { margin: 8px 0 0; color: var(--muted); font-size: 0.85rem; }
+@media (max-width: 420px) { .board li { grid-template-columns: 2.2ch minmax(0, 1fr) auto; } .board .b-day { grid-column: 2 / -1; text-align: left; } .board li:has(.b-edit) { grid-template-columns: 2.2ch minmax(0, 1fr) auto auto; } }
