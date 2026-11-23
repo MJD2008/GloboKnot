@@ -29,7 +29,10 @@ import { board as fetchBoard, gordianEnd, gordianStart, initLive, keepUntied, my
 import { NAME_MAX } from './board-name';
 
 const $ = <T extends HTMLElement = HTMLElement>(sel: string) => document.querySelector(sel) as T;
-const url = (path: string) => new URL(path, document.baseURI).href;
+/** A file's address, next to the page. The private preview carries some files inside the page instead (an Artifact
+ *  version holds at most 511 files, so the flags go in as data: URLs and leave room for photos): window.__gkPacked. */
+const packed = (window as unknown as { __gkPacked?: Record<string, string> }).__gkPacked;
+const url = (path: string) => packed?.[path] ?? new URL(path, document.baseURI).href;
 
 applySettings();
 

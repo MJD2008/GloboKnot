@@ -1,7 +1,7 @@
 # Globoknot photos: a few per country
 
 Tap a country on the home globe and its sheet opens: photos at the top, then a line about the country, a map, one
-interesting fact and the facts. There are up to three photos per country, with a dot for each: they glide on by
+interesting fact and the facts. There are up to five photos per country, with a dot for each: they glide on by
 themselves every few seconds, and a click, a tap or a swipe brings the next. Under the one in view:
 what it shows and who took it, under which licence, linked to the photo's page on Wikimedia Commons, where its full
 licence and history are. A country without a photo shows its sheet without one (the private preview shows a dashed
@@ -33,6 +33,40 @@ made (each photo's Commons file, what it shows, author and licence). To make the
 out`, `topup.py <repo> out`, then `make_photos.py out/plan.json <repo> scripts/photos/skip.json`. To drop a photo, add
 its plan key (`fra-2`: France's second candidate in the plan, not the second file) to `skip.json` and run
 `make_photos.py` again; the next candidate moves up.
+
+## Landmarks, culture, nature and food (23 Nov 2026)
+
+James then asked for fewer city shots and more of what a country is known for ("Día de Muertos for Mexico, or the
+Grand Canyon for the US"), and for a nature photo where there wasn't one, food, and people. So a sheet now shows up to
+five photos, in this order:
+
+1. a landmark,
+2. a custom or festival (these show the people),
+3. another landmark,
+4. a nature photo, only when neither landmark is one already,
+5. a dish.
+
+The earlier photos only fill a country up to three, after these.
+
+- `scripts/photos/subjects.py` lists the subjects per country by their English Wikipedia titles: `SUBJECTS` (landmarks
+  and customs), `EAT` (dishes) and `WILD` (nature).
+- `scripts/photos/fetch_culture.py <repo> <out> [culture-skip.json]` takes each subject's own image from Wikidata, or
+  else the photo from its Commons category that its English article shows or Commons marks as a featured, quality or
+  valued image. A photo of a custom or dish found outside the country's own subcategory must name the country. Same
+  rules as before: free licences only, landscape, at least 1000 px wide, no paintings, maps or old photos. It
+  downloads the picks at 960 px for review and writes `culture.json`.
+- Every pick was looked at on contact sheets. Out went another country's dish filed in the same category (Korean
+  nurungji under Iran's tahdig), brand logos, signboards, museum displays, festival photos taken abroad, black and
+  white photos, unappetising food, close-ups of people, dark cave interiors, and hazy or mostly-sky shots. A subject
+  whose photos were all of that left the list (tahdig, palusami and halwa show other countries' dishes; Jeita Grotto
+  and Kow Ata are too dark inside). `scripts/photos/culture-skip.json` lists them, as
+  `CODE:Commons file name`, a file name alone (for every country), or `CODE:~words` (every file of that country whose
+  name holds the words). Run `fetch_culture.py` again after adding to it and the next best moves up.
+- `scripts/photos/make_culture.py <culture.json> <repo> scripts/photos/culture-skip.json` makes the WebP files and
+  `credits.json` as before. Run it on the earlier photos (`git checkout 44426ca -- public/photos` first), never on its
+  own output.
+
+`scripts/photos/culture.json` is the list it made: each photo's Commons file, what it shows, its author and licence.
 
 ## The files
 
