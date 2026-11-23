@@ -224,7 +224,9 @@ async function load() {
     globe.chainNear = chainNear;
     globe.countryAt = countryAt;
     globe.onTap = hit => { if (hit.id) countrySheets?.open(hit.id); };
-    globe.onZoom = zoomed => { if (!screens.start.hidden) sound.scene(zoomed ? 'globe' : 'home'); countrySheets?.relayout(); };
+    // Zoomed in, the day's music; back in its rope it goes on: space comes back only after a round (James, 23 Nov 2026:
+    // "The ambient space music should only come back if you're returning from a quiz").
+    globe.onZoom = zoomed => { if (zoomed && !screens.start.hidden) sound.scene('globe'); countrySheets?.relayout(); };
     globe.detail = () => world?.detail ?? null;
     globe.shapeOf = num => world?.shape(num) ?? null;
     paintTied();
@@ -415,6 +417,7 @@ function paintConfig() {
 
 // ---------------------------------------------------------------- screens and sheets
 function show(name: keyof typeof screens) {
+  const was = (Object.keys(screens) as (keyof typeof screens)[]).find(k => !screens[k].hidden);
   for (const [k, el] of Object.entries(screens)) el.hidden = k !== name;
   // The home screen is a night sky; the quiz and the results follow the theme.
   document.body.classList.toggle('home', name === 'start');
@@ -425,9 +428,10 @@ function show(name: keyof typeof screens) {
   if (lv) document.body.dataset.lv = lv; else delete document.body.dataset.lv;
   themeColor();
   if (name === 'start') { globe?.play(); skyOn(); paintHome(); } else { globe?.pause(); sky.pause(); countrySheets?.closeAll(); }
-  // The music: space on the home screen (the day's own once the globe is grown), the day's in a round and on its
-  // results, The Gordian Knot's own in it.
-  sound.scene(name === 'start' ? (globe?.zoomed ? 'globe' : 'home') : name === 'results' ? 'results' : name === 'quiz' && state.gordian ? 'gordian' : 'round');
+  // The music: space on the home screen when you come back to it (the day's own if the globe is still grown), the
+  // day's in a round, The Gordian Knot's own in it, none on the results. Home already (a challenge link opened there),
+  // whatever plays goes on.
+  if (name !== 'start' || was !== 'start') sound.scene(name === 'start' ? (globe?.zoomed ? 'globe' : 'home') : name === 'results' ? 'results' : name === 'quiz' && state.gordian ? 'gordian' : 'round');
   if (name !== 'results') clearKnotSounds();
   window.scrollTo({ top: 0 });
 }
@@ -943,8 +947,9 @@ const RANKS: [number, string][] = [
   [0, 'Loose end'],
 ];
 const rankOf = (pct: number) => RANKS.find(([min]) => pct >= min)!;
-/** After a great round (90% or more) of a level's own questions, the next level is offered ("Too easy? Try Bowline").
- *  Monkey's fist leads to Atlas only once Atlas is open. */
+/** After a great round (90% or more) of a level's own questions, the next level is offered ("Next level: Bowline";
+ *  James, 23 Nov 2026: "Maybe say next level (harder version) after a round instead of too easy?"). Monkey's fist leads
+ *  to Atlas only once Atlas is open. */
 const NEXT_AT = 90;
 /** Two rounds in a row under 40% on a level's own questions offer the level below (experiment, A first round that
  *  lands): a way down before frustration. Atlas, who carries the world, gets a pun of its own. */
@@ -1017,8 +1022,9 @@ function end(stopped = false) {
     const up = pct >= NEXT_AT ? levelUp() : null, down = levelDown(pct), next = up ?? down;
     if (next) {
       ui.nextLevel.hidden = false;
-      ui.nextWhy.textContent = up ? 'Too easy?' : DOWN_WHY[state.level!] ?? 'Too hard?';
-      ui.nextGo.textContent = `Try ${LEVELS[next].label}`;
+      ui.nextWhy.textContent = up ? 'Next level:' : DOWN_WHY[state.level!] ?? 'Too hard?';
+      ui.nextGo.textContent = up ? LEVELS[next].label : `Try ${LEVELS[next].label}`;
+      ui.nextGo.setAttribute('aria-label', up ? `Play the next level, ${LEVELS[next].label}: harder questions` : `Play ${LEVELS[next].label}, the level below`);
       ui.nextGo.dataset.level = next;
       ui.nextGo.className = `link lv-${next}`;
     }
@@ -1587,7 +1593,7 @@ document.addEventListener('click', e => {
 for (const d of document.querySelectorAll('dialog')) d.addEventListener('close', () => {
   for (const b of d.querySelectorAll<HTMLButtonElement>('button.info[aria-expanded="true"]')) b.click();
 });
-// "Too easy? Try Monkey's fist": the next level, at once.
+// "Next level: Monkey's fist" (or, after two hard rounds, "Too hard? Try Overhand"): that level, at once.
 ui.nextGo.addEventListener('click', () => {
   setLevel(ui.nextGo.dataset.level as Level);
   saveSelection();

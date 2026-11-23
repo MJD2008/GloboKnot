@@ -2,8 +2,9 @@
 // allow them to use an image provided in that country's index entry as their background ... Preserve the normal
 // background as the default. Do not add a general background-selection option to Settings."). The button on a sheet's
 // photo sets it (and, on the same photo, takes it away again: back to the night sky); another country's photo replaces
-// it. On the home screen it takes the place of the night sky, darkened so the menu reads; in a round and on its
-// results it is only a faint, blurred tint under the page's own colour. Kept in this browser (gk-background).
+// it. On the home screen it takes the place of the night sky, sharp and bright, darkened only at the top and the foot
+// so the header and the menu read (James, 23 Nov 2026: "a bit more crisp and bright"); in a round and on its results it
+// is only a faint, blurred tint under the page's own colour. Kept in this browser (gk-background).
 import type { Photo } from './sheet';
 
 const KEY = 'gk-background';

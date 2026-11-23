@@ -5,11 +5,11 @@
 // map one interesting fact (James, 22 Nov 2026: "a short description and an interesting fact per country"). The texts,
 // and the rivers and peaks beyond the knowledge base, come from public/data/sheets.json (scripts/build-sheets.mjs),
 // loaded with the first sheet.
-// A neighbour (its name, or its shape on the map) opens its own sheet, and the first stays open ("without closing the
-// original one"): a wide screen shows the last two side by side, sliding the menu over to make room; a narrower one
-// shows one, at the right from 900 px wide (James, 23 Nov 2026: "to the right, like it originally was"; it came up from
-// the bottom under 1100 px), from the bottom on a phone. No tabs for the ones before (James, 22 Nov 2026: they cluttered
-// the screen): only the sheets that fit stay open. × closes one; Esc closes them all and puts the globe back (app.ts).
+// A neighbour (its name, or its shape on the map) opens its own sheet in place of the first: one sheet on the screen at
+// a time (James, 23 Nov 2026: "only one details page at a time should be allowed on the screen instead of 2"; two stood
+// side by side before), at the right from 900 px wide, the menu sliding over to make room (James, 23 Nov 2026: "to the
+// right, like it originally was"), from the bottom on a phone. No tabs for the ones before (James, 22 Nov 2026: they
+// cluttered the screen). × closes it; Esc closes it and puts the globe back (app.ts).
 import type { Knowledge, City, Country, Peak, River } from './kb';
 import type { MapLabel, SheetMap, WorldMap } from './map';
 import { sound } from './sound';
@@ -63,21 +63,26 @@ export function initSheets(root: HTMLElement, o: {
     return data;
   }
 
-  /** From this wide, the sheets stand in a column at the right; narrower (a phone), one comes up from the bottom. */
+  /** From this wide, the sheet stands at the right; narrower (a phone), it comes up from the bottom. */
   const SIDE = 900;
-  /** How many sheets fit side by side, how far the menu slides over for them, and how wide it may be: narrower beside a
-   *  sheet on a screen too small for both. While the globe is grown the menu waits at the left edge, sheet or not, until
-   *  the globe is back (James, 23 Nov 2026: "moved to the left until you un-zoom, or press esc"). */
-  function room(): { n: number; shift: number; menu: number; side: number } {
-    const w = innerWidth, panel = 340, gap = 12, full = Math.min(560, w - 32);
-    if (w < SIDE) return { n: 1, shift: 0, menu: 0, side: 0 }; // the menu as it is
-    const n = w - 2 * panel - 3 * gap >= 720 ? 2 : 1;
-    const right = order.length ? w - n * panel - (n + 1) * gap : w; // the free space ends here
+  /** One sheet at a time: a neighbour's takes the place of the one it was opened from (James, 23 Nov 2026: "only one
+   *  details page at a time should be allowed on the screen instead of 2"). */
+  const ONE = 1;
+  /** As wide as the menu gets while the globe is grown (James, 23 Nov 2026: "Could the play interface slim down a bit
+   *  when you're inspecting countries on the globe?"); the CSS makes it shorter too (body.globe-big). */
+  const SLIM = 380;
+  /** How far the menu slides over for the sheet, and how wide it may be: narrower beside a sheet on a screen too small
+   *  for both. While the globe is grown the menu waits at the left edge, slim, sheet or not, until the globe is back
+   *  (James, 23 Nov 2026: "moved to the left until you un-zoom, or press esc"). */
+  function room(): { shift: number; menu: number; side: number } {
+    const w = innerWidth, panel = 340, gap = 12, big = document.body.classList.contains('globe-big');
+    const full = Math.min(big ? SLIM : 560, w - 32);
+    if (w < SIDE) return { shift: 0, menu: 0, side: 0 }; // the menu as it is
+    const right = order.length ? w - panel - 2 * gap : w; // the free space ends here
     const menu = Math.max(320, Math.min(full, right - 24 - gap));
     const edge = 24 - (w - menu) / 2; // the shift that puts the menu at the left edge
-    const shift = document.body.classList.contains('globe-big') ? edge : Math.max(edge, Math.min(0, right - gap - (w + menu) / 2));
-    const open = Math.min(order.length, n); // the sheets open now, at the right
-    return { n, shift, menu, side: open ? open * panel + (open + 1) * gap : 0 };
+    const shift = big ? edge : Math.max(edge, Math.min(0, right - gap - (w + menu) / 2));
+    return { shift, menu, side: order.length ? panel + 2 * gap : 0 };
   }
   const start = document.querySelector<HTMLElement>('#start');
   /** The menu where room() puts it (`menu` 0: its own width), and how much of the right the sheets take (`side`: the
@@ -240,10 +245,9 @@ export function initSheets(root: HTMLElement, o: {
     world.render(el.querySelector<SVGSVGElement>('.cs-map')!, { num: c.num, ll: c.ll, labels, sheet });
   }
 
-  /** Keeps the sheets that fit (the oldest go), and slides the menu over on a wide screen. */
+  /** Keeps the newest sheet (the one before it goes), and slides the menu over on a wide screen. */
   function layout() {
-    const { n } = room();
-    while (order.length > n) close(order[0], false);
+    while (order.length > ONE) close(order[0], false);
     for (const [id, el] of panels) el.classList.toggle('front', id === order.at(-1));
     root.hidden = !order.length;
     document.body.classList.toggle('cs-open', !!order.length);
@@ -264,7 +268,7 @@ export function initSheets(root: HTMLElement, o: {
       row.append(el);
       sound.open();
     }
-    // The one in front is the right-most (layout closes the oldest when there are more than fit).
+    // The one in front is the right-most (layout closes the one before it).
     for (const x of order) row.append(panels.get(x)!);
     layout();
     if (focus) panels.get(id)!.focus({ preventScroll: true });

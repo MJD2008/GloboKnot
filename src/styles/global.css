@@ -1409,11 +1409,33 @@ body.gordian::before {
 }
 
 /* ---------- a country's sheet: tap a country on the home globe (scripts/sheet.ts). A column of glass at the right from
-   900 px wide (the menu slides over to make room, the globe with it, narrower if it must), two side by side when they
-   fit; at the bottom of a phone's screen. */
+   900 px wide (the menu slides over to make room, the globe with it, narrower if it must), one at a time; at the
+   bottom of a phone's screen. */
 /* (Moved by `left`, not a transform: a transform would carry the sky and the grown globe, fixed to the screen, along.) */
 .start { position: relative; left: 0; transition: left 0.35s cubic-bezier(0.3, 0.7, 0.3, 1); }
 body:is(.cs-open, .globe-big) .start { left: var(--cs-shift, 0px); }
+/* While the globe is grown the menu slims down, to see more of it (James, 23 Nov 2026: "Could the play interface slim
+   down a bit when you're inspecting countries on the globe?"): narrower (sheet.ts: SLIM) and shorter, the same buttons
+   in the same places. Its foot stays where it was (the globe's box makes up the height), so it shrinks towards it. */
+.start .home-levels button, .start .config-line {
+  transition: transform 0.32s var(--spring), background-color 0.15s, border-color 0.15s, color 0.15s, box-shadow 0.15s, opacity 0.15s,
+    min-height 0.3s ease, padding 0.3s ease, margin 0.3s ease, font-size 0.3s ease;
+}
+.start :is(.btn-play, .btn-soft) {
+  transition: transform 0.36s var(--spring), box-shadow 0.36s var(--spring), background-color 0.15s, border-color 0.15s, color 0.15s, opacity 0.2s,
+    min-height 0.3s ease, padding 0.3s ease;
+}
+.start .btn-play span, .start-row, .globe-box { transition: font-size 0.3s ease, margin 0.3s ease, gap 0.3s ease; }
+body.globe-big .home-levels button { padding-block: 6px; font-size: 0.9rem; }
+body.globe-big .config-line { min-height: 36px; margin-bottom: 13px; padding-block: 5px; font-size: 0.86rem; }
+body.globe-big .config-line::after { bottom: -8px; }
+body.globe-big .btn-play { min-height: 54px; padding-block: 8px; }
+body.globe-big .btn-play span { font-size: 1.2rem; }
+body.globe-big .start-row { margin-top: 12px; gap: 8px; }
+body.globe-big .btn-soft { min-height: 44px; padding-block: 7px; }
+body.globe-big { --slim-up: 52px; } /* how much shorter the menu is (50 px on a phone, where the knots' row is lower) */
+@media (max-width: 480px) { body.globe-big { --slim-up: 50px; } }
+body.globe-big .globe-box { margin-bottom: calc(var(--gw) * 0.28 + 6px + var(--slim-up)); }
 .cs-stack {
   position: fixed;
   z-index: 3;
@@ -1578,20 +1600,33 @@ body:is(.cs-open, .globe-big) .start { left: var(--cs-shift, 0px); }
 :root[data-theme="dark"] :is(body.gordian:not(.home), :root.fx-texture body)::after, :root.fx-texture body.home::after { opacity: 0.22; mix-blend-mode: screen; }
 
 /* ---------- a country's photo as the background (backdrop.ts) */
-/* Behind everything, the page's own colour under it. On the home screen it takes the night sky's place, darkened
-   towards the edges and the bottom so the menu reads on it; in a round and on the results, a faint blurred tint. */
+/* Behind everything, the page's own colour under it. On the home screen it takes the night sky's place, sharp and
+   bright (James, 23 Nov 2026: "Is there a way to make the images a bit more crisp and bright when they're set as a
+   background?"): no blur, a little more light, colour and contrast, and darkened only where the header and the menu
+   need it, at the top and the foot, and a little at the edges; in a round and on the results, a faint blurred tint. */
 .backdrop { position: fixed; inset: 0; z-index: -2; overflow: hidden; pointer-events: none; }
-.backdrop i { position: absolute; inset: -20px; background: center / cover no-repeat; opacity: 0; filter: blur(1.5px); transition: opacity 0.9s ease; }
+.backdrop i { position: absolute; inset: 0; background: center / cover no-repeat; opacity: 0; filter: brightness(1.06) saturate(1.14) contrast(1.06); transition: opacity 0.9s ease; }
 .backdrop i.on { opacity: 1; }
 .backdrop::after {
   content: '';
   position: absolute;
   inset: 0;
   background:
-    linear-gradient(to bottom, rgba(4, 6, 12, 0.18), rgba(4, 6, 12, 0.5) 62%, rgba(4, 6, 12, 0.78)),
-    radial-gradient(110% 85% at 50% 38%, rgba(4, 6, 12, 0.2), rgba(4, 6, 12, 0.72));
+    linear-gradient(to bottom, rgba(4, 6, 12, 0.42), rgba(4, 6, 12, 0) 100px, rgba(4, 6, 12, 0) 52%, rgba(4, 6, 12, 0.3) 74%, rgba(4, 6, 12, 0.6)),
+    radial-gradient(125% 95% at 50% 42%, rgba(4, 6, 12, 0) 55%, rgba(4, 6, 12, 0.34));
 }
-body:not(.home) .backdrop i { filter: blur(14px) saturate(1.1); }
+body:not(.home) .backdrop i { inset: -30px; filter: blur(14px) saturate(1.1); }
+/* On the bright photo the header, the menu, the zoom buttons and the credits carry their own shade instead of the whole
+   photo being dimmed: a shadow under the header and the fine print, frosted glass under the menu. */
+:root.has-backdrop body.home .top { filter: drop-shadow(0 1px 5px rgba(4, 6, 12, 0.6)); }
+:root.has-backdrop body.home .top :is(.icon-btn, .info) { color: rgba(236, 241, 248, 0.94); }
+:root.has-backdrop body.home :is(.home-levels, .config-line, .btn-soft, .globe-zoom button) {
+  background-color: rgba(8, 12, 22, 0.74);
+  -webkit-backdrop-filter: blur(12px) saturate(1.2);
+  backdrop-filter: blur(12px) saturate(1.2);
+}
+:root.has-backdrop body.home .config-line { color: rgba(214, 223, 238, 0.86); }
+:root.has-backdrop body.home .credits-line { color: rgba(226, 232, 242, 0.78); text-shadow: 0 0 3px rgba(4, 8, 18, 0.95), 0 0 10px rgba(4, 8, 18, 0.6); }
 body:not(.home) .backdrop::after { background: color-mix(in srgb, var(--bg) 88%, transparent); }
 :root.has-backdrop .sky { display: none; }
 /* The button on a sheet's photo: the photo in view as the background; pressed while it is. */
