@@ -10,6 +10,7 @@ Data edition: see `sources/manifest.json` (first edition fetched 2026-11-11; Nat
 | [Natural Earth](https://www.naturalearthdata.com/) 1:10m via [nvkelso/natural-earth-vector](https://github.com/nvkelso/natural-earth-vector), 1:50m via [world-atlas](https://github.com/topojson/world-atlas) | the maps; positions of capitals and peaks; river courses; the city lights on the home globe (populated places); the rivers and peaks on the country sheets | public domain |
 | [Universal Declaration of Human Rights](https://www.ohchr.org/en/human-rights/universal-declaration/universal-declaration-human-rights/about-universal-declaration-human-rights-translation-project) in Unicode, via [NLTK's udhr2 corpus](https://github.com/nltk/nltk_data) | the language text samples (opening of Article 1) | OHCHR translations, quoted briefly with attribution; check OHCHR's terms of use before the public launch |
 | [flag-icons](https://github.com/lipis/flag-icons) | flag images | MIT |
-| Photos on the country sheets (`public/photos`) | one per country, added by James | each photo's own licence and credit, in `public/photos/credits.json` (see `docs/PHOTOS.md`) |
+| [Wikimedia Commons](https://commons.wikimedia.org/), found through [Wikidata](https://www.wikidata.org/) | the photos on the country sheets (`public/photos`, up to three per country) | each photo's own free licence (CC0, public domain, CC BY, CC BY-SA); its author, licence and page are in `public/photos/credits.json` and under the photo itself (see `docs/PHOTOS.md`) |
+| James's own audio | the music and the sound effects (`public/audio`) | his own work (see `docs/AUDIO.md`) |
 
 The site's credits page must name these sources and the data date.

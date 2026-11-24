@@ -1,0 +1,1825 @@
+# About each country, and one fact, for its sheet (James, 22 Nov 2026: "a short description and an interesting fact
+# per country"; 23 Nov 2026: "Could the descriptions be a bit longer? 2-10 sentences, depending on how much there is to
+# say about the country."). Display only, like the rest of the sheet (scripts/build-sheets.mjs): the quiz never asks
+# about them. Written from the CIA World Factbook (public domain: Introduction > Background, Geography - note) and
+# checked against general references. `about` is 2 to 10 sentences, by how much there is to say, and never repeats the
+# country's fact; `fact` is one sentence. Numbers only where they don't drift, neutral where names or borders are
+# disputed, and no abbreviations with full stops, so that every full stop ends a sentence (test/about.test.mjs).
+AFG:
+  about: >-
+    A landlocked, mountainous country between Central and South Asia, at the crossroads of old routes between Persia,
+    India and the steppes. Ahmad Shah Durrani founded it in 1747, and in the 19th century it was a buffer between the
+    British and Russian empires, fully independent from 1919. A coup in 1973 and a communist one in 1978 led to the
+    Soviet invasion of 1979 and a decade of war, then civil war and the rise of the Taliban in the 1990s. After the
+    attacks of 11 September 2001 a US-led intervention removed the Taliban, who returned to power in 2021 as foreign
+    forces withdrew. Pashto and Dari are its main languages, and farming and herding still support many of its people.
+    The empty niches of Bamiyan, where giant Buddhas stood until 2001, and the blue-tiled shrine of Mazar-i-Sharif
+    recall its long history.
+  fact: The Hindu Kush divides the country, and its highest peaks rise in the Wakhan Corridor, a narrow strip that reaches China.
+AGO:
+  about: >-
+    A large country on Africa's south-west coast, whose north was part of the Kingdom of Kongo before the Portuguese
+    founded Luanda in 1576 and made it a hub of the Atlantic slave trade. It won independence in 1975 after a long war
+    against Portuguese rule, then suffered a civil war that lasted, with pauses, until 2002. Oil and diamonds have
+    made it one of Africa's largest economies. Its land runs from rainforest in the north to the edge of the Namib
+    Desert in the south, with the Kalandula Falls on the Lucala River among its sights. Portuguese is its official
+    language, spoken alongside Umbundu, Kimbundu and Kikongo.
+  fact: Its province of Cabinda is cut off from the rest of the country by a strip of the Democratic Republic of the Congo.
+ALB:
+  about: >-
+    A small, mountainous country on the Adriatic and Ionian coasts of the Balkans. Illyrians, Greeks and Romans left
+    their mark here, and in the 15th century Skanderbeg held off the Ottomans for a quarter of a century before the
+    country fell under their rule until independence in 1912. After the Second World War it lived under one of
+    Europe's most isolated communist regimes, which ended in the early 1990s. Today it is a candidate to join the
+    European Union, and its beaches and mountains draw ever more visitors. Its language, Albanian, forms a branch of
+    its own in the Indo-European family.
+  fact: Under communist rule it built some 170,000 concrete bunkers against an invasion that never came.
+AND:
+  about: >-
+    A tiny principality high in the Pyrenees between France and Spain, the last survivor of the border states that
+    Charlemagne set up against the Moors. A pact of 1278 set up the joint rule that still shapes it, and it adopted
+    its first written constitution only in 1993. Today it lives mostly from tourism, skiing and shoppers drawn by its
+    low taxes. Catalan is its official language.
+  fact: "It has two heads of state at once: the President of France and the Bishop of Urgell in Spain."
+ARE:
+  about: >-
+    A federation of seven emirates on the Persian Gulf, formed in 1971 when the Trucial States left British
+    protection; Ras al-Khaimah joined in 1972. Pearling and trade sustained the coast until oil was found in the late
+    1950s and transformed it within a generation. Abu Dhabi, the largest emirate, holds most of the oil, while Dubai
+    has become a world hub for trade, flights and tourism. Most of the people living here are foreign workers, above
+    all from South Asia. Inland lie the dunes of the Empty Quarter and the oasis city of Al Ain.
+  fact: Dubai's Burj Khalifa, 828 m tall, has been the tallest building in the world since 2010.
+ARG:
+  about: >-
+    The second-largest country in South America, reaching from the subtropical north to Tierra del Fuego, independent
+    from Spain since 1816. Its heartland is the Pampas, the vast grassland whose cattle and wheat made it one of the
+    richest countries in the world around 1900. Waves of immigrants, above all from Italy and Spain, shaped its
+    cities, and Buenos Aires is the city of tango. The 20th century brought Peronism, military coups and a "Dirty War"
+    that ended with democracy in 1983, a year after its defeat in the war with Britain over the Falkland Islands
+    (Malvinas). Its landscapes range from the Iguazú Falls in the north-east to the glaciers of Patagonia, the Perito
+    Moreno among them. Football, asado and mate are national passions.
+  fact: Aconcagua is the highest mountain outside Asia, and the highest in both the Western and the Southern Hemisphere.
+ARM:
+  about: >-
+    A landlocked country in the mountains of the South Caucasus, with a language, an alphabet and a church of its own.
+    Its kingdom was briefly a great power under Tigranes the Great in the 1st century BC, and its alphabet was devised
+    around 405 by the monk Mesrop Mashtots. Over the centuries it was ruled by Persians, Byzantines, Arabs, Mongols,
+    Ottomans and Russians. During the First World War the Armenians of the Ottoman Empire suffered deportations and
+    massacres in which around a million people died, the Armenian Genocide. It became independent from the Soviet
+    Union in 1991. Mount Ararat, a national symbol, rises in sight of the capital, Yerevan, but stands across the
+    border in Türkiye, and monasteries such as Geghard and Tatev cling to its gorges.
+  fact: It was the first state to adopt Christianity, early in the 4th century.
+ATG:
+  about: >-
+    Two main islands and many small ones in the Leeward Islands of the Caribbean, a British colony until 1981. Sugar
+    plantations worked by enslaved Africans once covered Antigua, and English Harbour was a base of the Royal Navy,
+    where Nelson's Dockyard still stands. Today tourism drives its economy, and Antigua Sailing Week is among the
+    great regattas of the Caribbean. Barbuda, flat and quiet, is known for its pink-sand beaches and a large colony of
+    frigatebirds.
+  fact: Antigua is said to have 365 beaches, one for every day of the year.
+AUS:
+  about: >-
+    The world's sixth-largest country and its smallest continent, home to people for at least 50,000 years. Aboriginal
+    and Torres Strait Islander peoples hold some of the oldest living cultures on Earth, whose rock art and songlines
+    cross the land. Britain founded a penal colony at Sydney in 1788, and six colonies joined as the Commonwealth of
+    Australia in 1901. Most Australians live in cities along the coasts, Sydney and Melbourne the largest, while the
+    dry interior, the outback, is among the emptiest land on Earth. Uluru rises from its red centre, and the Great
+    Barrier Reef, the largest coral reef system in the world, runs along the Queensland coast. Koalas, wombats and
+    platypuses are among the animals found nowhere else. Its economy rests on services, mining and farming.
+  fact: It is the largest country in the world without a land border.
+AUT:
+  about: >-
+    A landlocked country in Central Europe, about two-thirds of it in the Alps. The Habsburgs, who ruled from Vienna
+    for more than six centuries, built an empire across Central Europe, and for a time their family also held Spain
+    and its empire. After the First World War it became a small republic; Nazi Germany annexed it in 1938, and it
+    regained full independence in 1955 on the condition of permanent neutrality. Vienna was the city of Haydn, Mozart,
+    Beethoven and Schubert, of Freud and the coffee house, and still holds a season of balls every winter. Salzburg,
+    Mozart's birthplace, the lakes of the Salzkammergut and the peaks of the Tyrol draw visitors in every season. It
+    joined the European Union in 1995.
+  fact: Vienna's Schönbrunn Zoo, opened in 1752, is the oldest zoo in the world still open.
+AZE:
+  about: >-
+    A country between the Caucasus Mountains and the Caspian Sea, where Europe meets Asia. Persian, Arab, Turkic and
+    Russian rule all shaped it before a short-lived republic in 1918, one of the first in the Muslim world, and seven
+    decades in the Soviet Union until independence in 1991. Oil has been drawn here since ancient times; around 1900
+    Baku produced about half of the world's oil, and oil and gas still drive its economy. The walled old city of Baku
+    holds the Maiden Tower and the Palace of the Shirvanshahs. Fires that burn on gas seeping from the ground, as at
+    Yanar Dag, gave it the name "land of fire".
+  fact: Its long coast is on the Caspian Sea, which is a lake, so the country is landlocked.
+BDI:
+  about: >-
+    A small, landlocked country of hills in the Great Lakes region of Africa, on the north-east shore of Lake
+    Tanganyika. A kingdom for centuries, it came under German and then Belgian rule, and became independent in 1962.
+    Conflict between Hutu and Tutsi marked much of its history, including a civil war from 1993 to 2005. Most of its
+    people farm, coffee and tea are among its main exports, and its royal drummers, whose ritual UNESCO lists, are
+    famous far beyond its borders.
+  fact: It lies on the divide between the basins of the Nile and the Congo.
+BEL:
+  about: >-
+    A small country on the North Sea, between France, Germany, Luxembourg and the Netherlands. It is divided between
+    Dutch-speaking Flanders in the north and French-speaking Wallonia in the south, with bilingual Brussels and a
+    small German-speaking community in the east. Its cities, Bruges, Ghent and Antwerp, grew rich on cloth and trade
+    in the Middle Ages and gave Europe the Flemish painters, from Van Eyck to Rubens. It became independent from the
+    Netherlands in 1830 and was the first country on the continent to industrialise. Fought over in both world wars,
+    it was a founder of what became the European Union, and Brussels hosts the Union's main institutions and NATO's
+    headquarters. Its chocolate, waffles, fries and hundreds of beers are famous far beyond its borders.
+  fact: Tintin, the Smurfs and the saxophone were all invented by Belgians.
+BEN:
+  about: >-
+    A narrow country in West Africa, stretching some 650 km from the Bight of Benin to the Niger River. In the south
+    rose the Kingdom of Dahomey, remembered for its royal palaces at Abomey and its women soldiers, the Agojie, and
+    enriched in part by the Atlantic slave trade. A French colony, it became independent in 1960, and in 1990 and 1991
+    it was among the first African countries to move peacefully from one-party rule to democracy. Ganvié, a town on
+    stilts in Lake Nokoué, and the national parks of the north, home to lions and elephants, are among its sights.
+  fact: Vodun, the religion known abroad as voodoo, began here, and a national holiday honours it every 10 January.
+BFA:
+  about: >-
+    A landlocked country in the Sahel of West Africa, formerly Upper Volta, a French colony until 1960. The Mossi
+    kingdoms, founded centuries ago, still have their kings, the Mogho Naaba among them in Ouagadougou. It took its
+    present name in 1984, under Thomas Sankara. Most of its people farm, and cotton and gold are its main exports.
+    Ouagadougou hosts FESPACO, the largest film festival in Africa, every two years.
+  fact: Its name means 'land of upright people', joining words from two of its languages, Mooré and Dyula.
+BGD:
+  about: >-
+    A low, fertile country on the delta of the Ganges, the Brahmaputra and the Meghna, among the most densely
+    populated on Earth. Part of Bengal, it became the eastern part of Pakistan when British India was divided in 1947,
+    and won independence in 1971 after a war of liberation. Its rivers bring both rich soil and floods, and cyclones
+    from the Bay of Bengal strike its coast. It has grown fast on its garment industry, one of the largest in the
+    world. Bengali, whose defence in 1952 is remembered every 21 February, is spoken by nearly everyone, and Cox's
+    Bazar has one of the longest natural beaches in the world.
+  fact: It shares the Sundarbans, the largest mangrove forest in the world, with India.
+BGR:
+  about: >-
+    A country in the east of the Balkans, between the Danube and the Black Sea, with the Balkan and Rila mountains at
+    its heart. The Thracians lived here before the Bulgars founded a state in 681, which grew into one of the great
+    powers of medieval Europe. After nearly five centuries of Ottoman rule it became an autonomous principality in
+    1878 and fully independent in 1908, and after the Second World War it was a communist state until 1989. It joined
+    NATO in 2004 and the European Union in 2007. The Rila Monastery, its Thracian tombs and the Valley of Roses, whose
+    flowers are grown for their oil, are among its treasures.
+  fact: The Cyrillic alphabet took shape here, in the First Bulgarian Empire, in the 9th and 10th centuries.
+BHR:
+  about: >-
+    An archipelago in the Persian Gulf, the smallest country in the Middle East. As Dilmun it was a trading hub
+    between Mesopotamia and the Indus Valley more than 4,000 years ago, and later it was famous for its pearls. In
+    1932 it became the first place on the Arab side of the Gulf to strike oil, and it has since grown into a centre of
+    banking. A British protectorate, it became independent in 1971.
+  fact: The King Fahd Causeway, about 25 km of bridges and embankments, links it to Saudi Arabia.
+BHS:
+  about: >-
+    Some 700 islands and thousands of cays on the edge of the Atlantic, south-east of Florida, about 30 of them
+    inhabited. Columbus made his first landfall in the Americas here in 1492, probably on San Salvador. The islands
+    were a haunt of pirates in the early 18th century and a British colony until independence in 1973. Today tourism
+    and banking are its mainstays, and the turquoise shallows of its banks surround islands such as Andros, Eleuthera
+    and the Exumas.
+  fact: On Big Major Cay, in the Exumas, wild pigs swim out to meet the boats.
+BIH:
+  about: >-
+    A mountainous country in the western Balkans, home to Bosniaks, Serbs and Croats, where mosques, Orthodox and
+    Catholic churches and synagogues stand close together in Sarajevo. A medieval kingdom, it was ruled by the
+    Ottomans from the 15th century and by Austria-Hungary from 1878; in Sarajevo in 1914 the murder of Archduke Franz
+    Ferdinand set off the First World War. Part of Yugoslavia after both world wars, it declared independence in 1992,
+    which was followed by war until 1995, including the Srebrenica genocide. The Dayton Agreement that ended it
+    divided the country into two entities. The old bridge of Mostar, destroyed in 1993 and rebuilt in 2004, has become
+    a symbol of the country.
+  fact: Its whole coast, at Neum, is only about 20 km long, and splits Croatia's coast in two.
+BLR:
+  about: >-
+    A landlocked country of plains, forests and marshes in Eastern Europe, between Poland, Lithuania, Latvia, Russia
+    and Ukraine. For centuries its lands belonged to the Grand Duchy of Lithuania and the Polish-Lithuanian
+    Commonwealth, before passing to the Russian Empire in the late 18th century. It suffered terribly in the Second
+    World War, losing about a quarter of its people, and was a Soviet republic until independence in 1991. More than a
+    third of it is forest, and the Polesia marshes in the south are among the largest wetlands in Europe. The castles
+    of Mir and Nesvizh are listed by UNESCO.
+  fact: Białowieża Forest, on its border with Poland, is a last piece of Europe's ancient forest, where wild bison still roam.
+BLZ:
+  about: >-
+    A small country on the Caribbean coast of Central America, once British Honduras, independent since 1981 and the
+    only country in Central America with English as its official language. Maya cities such as Caracol and Lamanai lie
+    in its forests, which also shelter jaguars in the world's first jaguar reserve, the Cockscomb Basin. Its people
+    include Mestizo, Creole, Maya and Garifuna communities, and Mennonite farmers. Offshore lie hundreds of small
+    islands, the cays, loved by divers.
+  fact: Its barrier reef, home to the Great Blue Hole, is the largest in the Western Hemisphere.
+BOL:
+  about: >-
+    A landlocked country in the heart of South America, reaching from the high Altiplano of the Andes down to the
+    Amazon rainforest and the Chaco. Tiwanaku, near Lake Titicaca, was the centre of a great Andean civilisation, and
+    the Inca empire later ruled the highlands. Under Spain the silver of Potosí's Cerro Rico made the city one of the
+    largest in the Americas. It became independent in 1825, took its name from Simón Bolívar, and lost its coast to
+    Chile in the War of the Pacific (1879 to 1884). Many of its people are Indigenous, Quechua and Aymara above all.
+    Sucre is its constitutional capital, while the government sits in La Paz, the highest seat of government in the
+    world, and the Salar de Uyuni is the largest salt flat on Earth.
+  fact: It shares Lake Titicaca, the highest navigable lake in the world, with Peru.
+BRA:
+  about: >-
+    The largest country in South America, covering nearly half of the continent, and the only one where Portuguese is
+    the main language. Portugal claimed it in 1500 and built a colony of sugar, then gold and coffee, worked by
+    millions of enslaved Africans, more than anywhere else in the Americas. It became independent in 1822 as an empire
+    under a Portuguese prince, abolished slavery in 1888, the last country in the Americas to do so, and became a
+    republic in 1889. The Amazon rainforest, the largest on Earth, covers much of the north. Its people descend from
+    Indigenous peoples, Europeans and Africans, and from later Japanese and Middle Eastern immigrants. Rio de
+    Janeiro's carnival, samba, bossa nova and its football are known all over the world. São Paulo is the largest city
+    in the Southern Hemisphere, and Brasília, its modernist capital, was built from nothing in the late 1950s. It is
+    one of the world's great farming powers, for soy, coffee, sugar and beef.
+  fact: It borders every other South American country except Chile and Ecuador.
+BRB:
+  about: >-
+    A small coral island in the West Indies, English and then British from 1627 until independence in 1966. Sugar
+    plantations worked by enslaved Africans made it one of England's richest colonies in the 17th century. It became a
+    republic in 2021, and lives from tourism and finance. Cricket is a passion, and the Crop Over festival celebrates
+    the end of the sugar harvest.
+  fact: It is the easternmost island of the Caribbean.
+BRN:
+  about: >-
+    A small sultanate on the north coast of Borneo, whose sultans once ruled much of the island's coast and parts of
+    the Philippines. A British protectorate from 1888, it became fully independent in 1984. Oil and gas, found in
+    1929, made it one of the richest countries in Asia. Rainforest covers most of its land, and Kampong Ayer, a
+    village of houses on stilts in the river at Bandar Seri Begawan, has stood for centuries.
+  fact: It is in two parts, separated by Malaysia; the eastern one, Temburong, is almost surrounded by it.
+BTN:
+  about: >-
+    A small Buddhist kingdom in the eastern Himalayas, between China and India, rising from subtropical forest to
+    glaciers above 7,000 m. Unified in the 17th century by Zhabdrung Ngawang Namgyal, it has been ruled by the
+    Wangchuck kings since 1907 and became a constitutional monarchy in 2008. It measures its progress by Gross
+    National Happiness, keeps most of its land under forest, and asks visitors to pay a daily fee. Its
+    fortress-monasteries, the dzongs, and the Tiger's Nest monastery on a cliff above Paro are among the sights of the
+    Himalayas.
+  fact: Its highest mountain, Gangkhar Puensum, is the highest in the world that has never been climbed.
+BWA:
+  about: >-
+    A landlocked country in southern Africa, most of it covered by the Kalahari. As the British protectorate of
+    Bechuanaland it was one of the poorest places in the world when it became independent in 1966; diamonds found soon
+    after, and careful government, made it one of Africa's success stories. It has been a stable democracy ever since.
+    Its wildlife is among the richest in Africa, with the largest population of elephants on the continent, in Chobe
+    and around the Okavango. English is its official language, and Setswana is spoken by most of its people.
+  fact: The Okavango is a great river delta that never reaches the sea; its waters fade into the Kalahari.
+CAF:
+  about: >-
+    A landlocked country of savanna and forest in Central Africa, between the Sahel and the Congo basin. Once
+    Ubangi-Shari, part of French Equatorial Africa, it became independent in 1960, and has since known coups, an
+    emperor who crowned himself, Bokassa, in the 1970s, and long periods of conflict. Its forests at Dzanga-Sangha are
+    home to forest elephants and western lowland gorillas, and its rivers drain to the Congo and to Lake Chad. Sango,
+    spoken by nearly everyone, is an official language alongside French.
+  fact: It lies almost exactly at the centre of the African continent.
+CAN:
+  about: >-
+    The second-largest country in the world, reaching from the Atlantic to the Pacific and north into the Arctic.
+    First Nations and Inuit lived here long before French and British colonists, whose rivalry ended with British rule
+    in 1763; the Métis were born of their meeting. Confederation in 1867 joined the first provinces into a dominion,
+    which grew to ten provinces and three territories and became fully sovereign step by step until 1982. English and
+    French are both official, and Québec keeps its French language and culture. Most Canadians live within a few
+    hundred kilometres of the US border, in cities such as Toronto, Montréal and Vancouver, while the north is a land
+    of forest, tundra and countless lakes. The Rocky Mountains of Banff and Jasper, Niagara Falls and the Bay of
+    Fundy, with the highest tides in the world, are among its wonders.
+  fact: It has the longest coastline of any country in the world.
+CHE:
+  about: >-
+    A small, mountainous country in the heart of Europe, where the Alps cover about 60% of the land and the Jura and a
+    central plateau share the rest. It grew from an alliance of three cantons in 1291 into a confederation of 26
+    cantons, with direct democracy: its citizens vote on laws and changes to the constitution several times a year. It
+    has four national languages, German, French, Italian and Romansh. Geneva hosts many international organisations,
+    among them the Red Cross, founded there in 1863, and the United Nations' European headquarters. Banking, watches,
+    chocolate, cheese and precision industry made it one of the richest countries in the world. The Matterhorn, the
+    Jungfrau and lakes such as Geneva and Lucerne draw visitors all year.
+  fact: It has stayed neutral in international wars since 1815.
+CHL:
+  about: >-
+    A long, narrow country between the Andes and the Pacific, from the Atacama, the driest non-polar desert on Earth,
+    to the glaciers and fjords of Patagonia and Cape Horn. The Inca ruled its north, while in the south the Mapuche
+    long resisted first the Inca and then Spain. It became independent in 1818, and won the nitrate and copper lands
+    of the north in the War of the Pacific. In 1973 a military coup brought General Pinochet to power until 1990, when
+    democracy returned. It is the world's largest producer of copper, and its central valleys grow wine and fruit.
+    Easter Island, with its giant moai statues, lies some 3,500 km out in the Pacific.
+  fact: It is some 4,300 km long, yet on average only about 175 km wide.
+CHN:
+  about: >-
+    The most populous country in the world for centuries, until India passed it in 2023, and the third or fourth
+    largest by area. Its civilisation grew along the Yellow and Yangtze rivers over more than 3,000 years of written
+    history, ruled by dynasties from the Shang to the Qing. Paper, printing, the compass and gunpowder were invented
+    here, and the Great Wall and the Silk Road recall its empires. The last emperor fell in 1912, and after decades of
+    war the Communist Party founded the People's Republic in 1949. Since reforms began in 1978 it has grown into the
+    world's second-largest economy and its largest manufacturer. Its landscapes range from the Tibetan Plateau and the
+    Himalayas to the Gobi Desert and the karst peaks of Guilin. Mandarin is its official language, and most of its
+    people are Han Chinese, alongside 55 recognised minorities.
+  fact: The whole country, nearly 5,000 km wide, keeps a single time zone.
+CIV:
+  about: >-
+    A country on the Gulf of Guinea in West Africa, with lagoons along its coast, rainforest in the south and savanna
+    in the north. A French colony, it became independent in 1960, and under its first president, Félix
+    Houphouët-Boigny, it grew into one of the most prosperous countries in the region. Conflicts from 2002 to 2011
+    interrupted that growth, which has since resumed. Abidjan is its largest city and economic heart, while
+    Yamoussoukro, the official capital, holds the Basilica of Our Lady of Peace, among the largest churches in the
+    world. It has some 60 ethnic groups, and French is its official language.
+  fact: It is the largest producer of cocoa beans in the world.
+CMR:
+  about: >-
+    A country where West and Central Africa meet, between the Gulf of Guinea and Lake Chad. A German colony from 1884,
+    it was divided between France and Britain after the First World War; the French part became independent in 1960,
+    and part of the British south joined it in 1961. That is why it has two official languages, French and English,
+    alongside some 250 local ones. Mount Cameroon, an active volcano, rises from the coast. Its football team, the
+    Indomitable Lions, was the first from Africa to reach a World Cup quarter-final, in 1990.
+  fact: It is called 'Africa in miniature' for holding nearly every landscape of the continent.
+COD:
+  about: >-
+    The second-largest country in Africa, most of it in the basin of the Congo River and covered by the second-largest
+    rainforest on Earth. The Kingdom of Kongo, the Luba and the Lunda once ruled parts of it. From 1885 it was the
+    personal property of King Leopold II of Belgium, whose regime of forced labour for rubber killed and maimed vast
+    numbers of people, until Belgium took it over as a colony in 1908. Independent since 1960, it was known as Zaire
+    from 1971 to 1997, and wars from 1996 to 2003, drawing in its neighbours, cost millions of lives. Its ground holds
+    immense wealth in copper, cobalt, diamonds and gold, and it produces most of the world's cobalt. Kinshasa is among
+    the largest French-speaking cities in the world, and the rumba of the two Congos is listed by UNESCO. Its forests
+    shelter okapis, bonobos and mountain gorillas.
+  fact: The Congo is the deepest river in the world, more than 200 m deep in places.
+COG:
+  about: >-
+    A country of rainforest and savanna astride the equator, on the right bank of the Congo and Ubangi rivers. Part of
+    the Kingdom of Loango and other states before France claimed it in the 1880s, it became the heart of French
+    Equatorial Africa, and Brazzaville served as the capital of Free France during the Second World War. Independent
+    since 1960, it has lived through Marxist rule and civil wars in the 1990s. Oil from offshore fields drives its
+    economy, and its forests, as in Odzala-Kokoua and Nouabalé-Ndoki, shelter gorillas and forest elephants.
+  fact: Brazzaville faces Kinshasa across the Congo River, the closest pair of capitals in the world after Rome and the Vatican.
+COL:
+  about: >-
+    A country in the north-west of South America, where three ranges of the Andes fan out between the Amazon, the
+    plains of the Orinoco and the sea. Spain founded Santa Marta and Cartagena in the 16th century, and Simón Bolívar
+    won its independence in 1819, as part of Gran Colombia. It is one of the most biodiverse countries on Earth, with
+    more species of birds than any other country. A long conflict between the state, guerrillas, paramilitaries and
+    drug cartels marked the late 20th century, and a peace deal with the largest guerrilla group, the FARC, was signed
+    in 2016. Its coffee is famous worldwide, it is the leading source of emeralds, and Gabriel García Márquez made its
+    towns the setting of magical realism. Cartagena's walled old town, Medellín and Bogotá, high in the Andes, draw
+    ever more visitors.
+  fact: It is the only South American country with coasts on both the Pacific and the Caribbean.
+COM:
+  about: >-
+    Three volcanic islands, Grande Comore, Mohéli and Anjouan, at the northern mouth of the Mozambique Channel,
+    between Mozambique and Madagascar. Arab, African and Malagasy influences mixed here over centuries of trade, and
+    its sultanates came under French rule in the 19th century. It declared independence in 1975, but the fourth
+    island, Mayotte, chose to stay French, and the country has known many coups since. Mount Karthala, a large active
+    volcano, rises on Grande Comore, and the islands grow much of the world's ylang-ylang, used in perfume.
+  fact: It is the only country of the Arab League that lies wholly in the Southern Hemisphere.
+CPV:
+  about: >-
+    Ten volcanic islands in the Atlantic, about 570 km off the coast of Senegal, uninhabited until the Portuguese
+    settled them in the 15th century. They became a hub of the Atlantic slave trade and a stop for ships crossing the
+    ocean. Independent from Portugal since 1975, it has become one of Africa's most stable democracies. More of its
+    people live abroad than at home, and its music, morna, sung by Cesária Évora, is listed by UNESCO. Portuguese is
+    its official language, alongside the Cape Verdean Creole that everyone speaks.
+  fact: Its active volcano, Pico do Fogo, last erupted in 2014 and 2015.
+CRI:
+  about: >-
+    A small country between the Caribbean and the Pacific in Central America, with a spine of volcanoes, cloud forests
+    and beaches on both coasts. A Spanish colony, it became independent in 1821 and grew rich on coffee and then
+    bananas. Since a short civil war in 1948 it has been one of the most stable democracies in Latin America. About a
+    quarter of its land is protected, and it holds some 5% of the world's species, from sloths and toucans to the
+    quetzal. It makes nearly all its electricity from renewable sources, and its saying "pura vida" sums up its
+    easy-going life.
+  fact: It abolished its army in 1948.
+CUB:
+  about: >-
+    The largest island of the Caribbean, about 150 km south of Florida. Spain held it for nearly four centuries and
+    made it a land of sugar plantations worked by enslaved Africans; it won independence in 1902, after wars against
+    Spain and an American occupation. In 1959 Fidel Castro's revolution took power and built a communist state allied
+    with the Soviet Union, and in 1962 Soviet missiles here brought the world close to nuclear war. Havana's old town
+    and fortresses, the tobacco fields of Viñales and its classic American cars are famous, and its music, from son
+    and rumba to salsa, has travelled the world.
+  fact: Its bee hummingbird is the smallest bird in the world.
+CYP:
+  about: >-
+    The third-largest island of the Mediterranean, in its far east, near Türkiye and the Levant. Settled by Greeks in
+    ancient times, it was ruled in turn by Persians, Romans, Byzantines, Crusaders, Venetians and Ottomans, then by
+    Britain from 1878 until independence in 1960. Fighting between Greek and Turkish Cypriots, a coup backed by Greece
+    and Türkiye's invasion in 1974 divided the island, and its north declared a state that only Türkiye recognises.
+    The Republic of Cyprus, which holds the south, joined the European Union in 2004. In myth Aphrodite was born from
+    the sea near Paphos, and the island's beaches, mountains and painted Byzantine churches draw visitors from all
+    over Europe.
+  fact: Its capital, Nicosia, is the last divided capital in Europe.
+CZE:
+  about: >-
+    A landlocked country in Central Europe, made of Bohemia, Moravia and part of Silesia. The Kingdom of Bohemia was
+    among the most powerful in Europe in the 14th century, when Charles IV made Prague the capital of the Holy Roman
+    Empire and founded its university. Later ruled by the Habsburgs, it became part of Czechoslovakia in 1918, was
+    occupied by Nazi Germany and then ruled by communists, until the peaceful Velvet Revolution of 1989. In 1993
+    Czechoslovakia split peacefully into Czechia and Slovakia. Prague's castle, bridges and spires, the spa town of
+    Karlovy Vary and the castle town of Český Krumlov are among its treasures. Its glass and crystal, and composers
+    such as Dvořák and Smetana, are known worldwide.
+  fact: Its people drink more beer per head than any other nation.
+DEU:
+  about: >-
+    The most populous country of the European Union, reaching from the North Sea and the Baltic to the Alps. For
+    centuries its lands were a patchwork of states within the Holy Roman Empire, and the birthplace of the printing
+    press and of the Protestant Reformation, begun by Martin Luther in 1517. Prussia united them as the German Empire
+    in 1871. Defeat in the First World War, then Nazi rule, the Holocaust and the Second World War, which it started,
+    led to its division into West and East Germany in 1949. The Berlin Wall fell in 1989, and the country reunited in
+    1990. Today it is Europe's largest economy, known for its cars and engineering, and a founder of what became the
+    European Union. Bach, Beethoven, Goethe and Einstein were born in its lands, and its castles, half-timbered towns,
+    beer and Christmas markets draw visitors from everywhere.
+  fact: Most of its rivers flow north to the sea, but the Danube rises in the Black Forest and flows east to the Black Sea.
+DJI:
+  about: >-
+    A small country in the Horn of Africa, on the Bab-el-Mandeb strait, where the Red Sea meets the Gulf of Aden
+    between Africa and Arabia. Once French Somaliland and then the French Territory of the Afars and the Issas, it
+    became independent in 1977. Its port, on one of the world's busiest shipping lanes, is its lifeline, and several
+    foreign powers keep military bases here. Most of its land is hot, dry desert and volcanic rock, crossed by the
+    rifts where Africa is slowly pulling apart. Its people are mostly Somali and Afar, and French and Arabic are its
+    official languages.
+  fact: Lake Assal, about 155 m below sea level, is the lowest point in Africa and one of the saltiest lakes on Earth.
+DMA:
+  about: >-
+    A mountainous, volcanic island in the Lesser Antilles, between Guadeloupe and Martinique, covered in rainforest.
+    The Kalinago, the island's first people, held out against Europeans longer than on most Caribbean islands, and
+    still live in their own territory on its east coast. Fought over by France and Britain in the 18th century, it was
+    a British colony until independence in 1978. Known as the "nature island", it has hundreds of rivers, waterfalls
+    and hot springs, and sperm whales live off its coast all year.
+  fact: Its Boiling Lake, a flooded volcanic vent, is the second-largest hot lake in the world.
+DNK:
+  about: >-
+    The southernmost of the Nordic countries, made of the Jutland peninsula and over 400 islands, about 70 of them
+    inhabited, between the North Sea and the Baltic. The Vikings set out from here, and Danish kings once ruled
+    England, Norway and Sweden at different times, and Iceland until 1944. Greenland and the Faroe Islands still
+    belong to the Danish realm, with home rule of their own. It is a constitutional monarchy, among the oldest in the
+    world, and one of the least corrupt and most equal countries on Earth. Hans Christian Andersen, Lego and hygge,
+    its cosy way of life, are known all over the world, and Copenhagen is a city of bicycles.
+  fact: Its flag, the Dannebrog, is the oldest national flag still in use.
+DOM:
+  about: >-
+    The eastern two-thirds of Hispaniola, which it shares with Haiti, in the Caribbean. Columbus reached the island in
+    1492, and Santo Domingo, founded in 1496, is the oldest European city in the Americas still inhabited, with the
+    first cathedral and university of the New World. It won independence from Haiti in 1844, and later lived through
+    the long dictatorship of Rafael Trujillo, from 1930 to 1961. Today tourism, mining and money sent home from abroad
+    drive its economy, and its beaches, such as Punta Cana, draw millions. Merengue and bachata were born here, and
+    baseball is a national passion.
+  fact: Pico Duarte is the highest mountain in the Caribbean.
+DZA:
+  about: >-
+    The largest country in Africa, most of it covered by the Sahara, with a fertile coast on the Mediterranean and the
+    Atlas Mountains between them. Berber (Amazigh) peoples have lived here for millennia; Carthage, Rome, the Arabs
+    and the Ottomans followed. France ruled it from 1830 and made it part of France itself, until a war of
+    independence from 1954 to 1962 that cost hundreds of thousands of lives. Oil and gas, found in the 1950s, are the
+    core of its economy. Arabic and Tamazight are its official languages, and French is widely spoken. Its Roman ruins
+    at Timgad and Djémila, the Kasbah of Algiers and the oasis towns of the Mzab valley are listed by UNESCO.
+  fact: The rock art of Tassili n'Ajjer, in the Sahara, shows cattle, hunters and rivers from a time when the desert was green.
+ECU:
+  about: >-
+    A country on the equator, which gave it its name, between Colombia and Peru on the Pacific coast. It spans four
+    worlds: the coast, the Andes with their volcanoes, the Amazon rainforest and the Galápagos Islands, whose wildlife
+    helped Charles Darwin form his theory of evolution. Quito was a northern capital of the Inca empire before the
+    Spanish conquest, and its colonial old town was among the first places named a World Heritage Site, in 1978.
+    Independent since 1830, it has used the US dollar as its currency since 2000. It is the world's leading exporter
+    of bananas, and among the largest of shrimp and roses.
+  fact: Because the Earth bulges at the equator, the summit of Chimborazo is the point on its surface farthest from its centre.
+EGY:
+  about: >-
+    A country of desert crossed by the Nile, along whose valley and delta nearly all its people live. One of the
+    earliest civilisations rose here more than 5,000 years ago, and its pharaohs left the pyramids of Giza, the
+    temples of Luxor and Karnak and the tombs of the Valley of the Kings. Greeks, Romans, Arabs and Ottomans ruled it
+    in turn, and Cairo grew into the largest city of the Arab world. The Suez Canal, opened in 1869, links the
+    Mediterranean to the Red Sea. It became nominally independent from Britain in 1922, and a revolution in 1952
+    overthrew the monarchy and made it a republic. Arabic is its language, and it is the most populous country in the
+    Arab world.
+  fact: The Sinai Peninsula puts part of it in Asia, so it lies on two continents.
+ERI:
+  about: >-
+    A country on the Red Sea, in the Horn of Africa, rising from a hot coastal plain to a cool highland plateau. It
+    was part of the ancient Kingdom of Aksum, then an Italian colony from 1890, under British rule after the Second
+    World War, and joined to Ethiopia in 1952. After a thirty-year war it won independence in 1993. It has held no
+    national elections since independence. The Dahlak Archipelago lies off its coast, and Tigrinya, Tigre and Arabic
+    are among its languages.
+  fact: Its capital, Asmara, is a UNESCO World Heritage Site for its Italian modernist buildings of the 1930s.
+ESP:
+  about: >-
+    A country covering most of the Iberian Peninsula, with the Balearic and Canary Islands, between the Mediterranean
+    and the Atlantic. Phoenicians, Greeks, Romans and Visigoths came before the Moors, who ruled much of it for nearly
+    eight centuries and left the Alhambra of Granada and the Mezquita of Córdoba. The Christian kingdoms completed
+    their reconquest in 1492, the year Columbus sailed for the Americas, and Spain built an empire that spanned the
+    globe. In the 20th century a civil war from 1936 to 1939 led to Franco's dictatorship, followed after his death in
+    1975 by democracy under a constitutional monarchy. It joined the European Union in 1986. Spanish, the first
+    language of nearly 500 million people, began in Castile, and Catalan, Basque and Galician are also official in
+    their regions. Flamenco, tapas, Gaudí's buildings in Barcelona and the paintings of Velázquez, Goya and Picasso
+    are among its gifts to the world.
+  fact: It holds two cities in North Africa, Ceuta and Melilla.
+EST:
+  about: >-
+    The northernmost of the three Baltic states, on the Gulf of Finland, with more than 2,000 islands along its coast.
+    Danes, Germans, Swedes and Russians ruled it in turn from the 13th century, until it declared independence in
+    1918. Occupied by the Soviet Union in 1940, it regained independence in 1991 after the Singing Revolution, when
+    crowds sang for freedom. It joined the European Union and NATO in 2004. It is among the most digital societies in
+    the world, where Skype was created, and about half of its land is forest. Its language, Estonian, is related to
+    Finnish, unlike the languages of its Baltic neighbours, and Tallinn's medieval old town is one of the best
+    preserved in Europe.
+  fact: In 2007 it became the first country to let people vote online in a national election.
+ETH:
+  about: >-
+    A landlocked country in the Horn of Africa, the second most populous in Africa, built on a high plateau split by
+    the Great Rift Valley. Some of the oldest known human ancestors, such as the skeleton called Lucy, were found
+    here. The Kingdom of Aksum, one of the great powers of the ancient world, adopted Christianity in the 4th century,
+    and later kings built the rock-hewn churches of Lalibela and the castles of Gondar. It defeated Italy at the
+    Battle of Adwa in 1896, and apart from an Italian occupation from 1936 to 1941 it was never colonised. The
+    monarchy ended in 1974, and the country has since lived through a Marxist regime, famine and wars. Coffee comes
+    from its highlands, and it keeps a calendar of its own, some seven to eight years behind the Gregorian one.
+  fact: The Blue Nile, which carries most of the Nile's water, flows out of its Lake Tana.
+FIN:
+  about: >-
+    A country of forests and lakes in northern Europe, between Sweden and Russia, about a quarter of it north of the
+    Arctic Circle. For some 600 years it was part of Sweden, then from 1809 a Grand Duchy of the Russian Empire, and
+    it declared independence in 1917. It held off the Soviet Union in the Winter War of 1939 and 1940, at the cost of
+    land, and stayed neutral during the Cold War. It joined the European Union in 1995 and NATO in 2023. Finnish,
+    related to Estonian and Hungarian, and Swedish are its official languages, and in Lapland the Sámi keep their own.
+    Its schools, its design, from Marimekko to Alvar Aalto, and its heavy metal bands are known far beyond its
+    borders.
+  fact: It has some 188,000 lakes, and about three million saunas.
+FJI:
+  about: >-
+    An archipelago in the South Pacific, north of New Zealand, whose two largest islands, Viti Levu and Vanua Levu,
+    hold most of its people. Seafaring peoples settled here some 3,000 years ago, and its chiefs ruled until Britain
+    made it a colony in 1874. Britain brought workers from India to its sugar plantations, and their descendants make
+    up about a third of its people. Independent since 1970, it has lived through several coups. Tourism and sugar
+    drive its economy, its coral reefs draw divers, and its rugby sevens team has won Olympic gold.
+  fact: Only about 110 of its 332 islands are inhabited.
+FRA:
+  about: >-
+    The largest country of the European Union, reaching from the Channel and the North Sea to the Mediterranean, and
+    from the Atlantic to the Rhine and the Alps. Gaul was conquered by Rome, then gave way to the Franks, whose king
+    Charlemagne was crowned emperor in 800. Its kings built Europe's most powerful state, until the Revolution of 1789
+    proclaimed the rights of man, and Napoleon then ruled much of the continent. It was a battlefield in both world
+    wars, and a founder of what became the European Union. It is the most visited country in the world, for Paris and
+    its Eiffel Tower and Louvre, the castles of the Loire, Mont-Saint-Michel and the Riviera. Its cuisine, wines and
+    cheeses, its fashion and its writers and painters, from Molière to Monet, have shaped Western culture. French is
+    spoken across the world, from Québec to West Africa.
+  fact: With its lands overseas it spans twelve time zones, more than any other country.
+FSM:
+  about: >-
+    Some 600 islands scattered across the western Pacific, north of the equator, grouped in four states: Yap, Chuuk,
+    Pohnpei and Kosrae. Spain, Germany and Japan ruled them in turn, and the United States administered them after the
+    Second World War as a UN trust territory. Independent since 1986, it is in free association with the United
+    States, which handles its defence. On Pohnpei stand the ruins of Nan Madol, a city of stone islets built on a reef
+    some 800 years ago, and Chuuk Lagoon holds dozens of Japanese wrecks from the war.
+  fact: On Yap, huge carved stone discs called rai are still used as money in traditional exchanges.
+GAB:
+  about: >-
+    A country on the equator, on Africa's Atlantic coast. A French colony, it became independent in 1960, and was
+    ruled by Omar Bongo and then his son from 1967 until a coup in 2023. Oil, manganese and timber have made it one of
+    the wealthier countries of sub-Saharan Africa. About a tenth of its land is set aside in national parks, such as
+    Loango, where elephants walk on the beaches, and Lopé. Its forests also shelter many of the world's western
+    lowland gorillas.
+  fact: Rainforest covers nearly nine-tenths of the country.
+GBR:
+  about: >-
+    A union of England, Scotland, Wales and Northern Ireland, on the island of Great Britain, the north-east of
+    Ireland and many smaller islands. England and Scotland were joined under one king in 1603 and as one kingdom in
+    1707, and Ireland followed in 1801; most of Ireland left in 1922. The first country to industrialise, it built the
+    largest empire in history, covering about a quarter of the world's land around 1920. Its language, English, became
+    the most widely spoken in the world. It stood against Nazi Germany throughout the Second World War, and after the
+    empire's end most of its former colonies joined the Commonwealth. It was a member of the European Union from 1973
+    to 2020. London, one of the world's great cities, holds Parliament, Buckingham Palace and the Tower of London, and
+    Shakespeare, the Beatles and modern football all come from here.
+  fact: No place in it is more than 125 km from tidal water.
+GEO:
+  about: >-
+    A country of high mountains and fertile valleys in the South Caucasus, on the Black Sea. In Greek myth Jason
+    sailed to Colchis, on its coast, for the Golden Fleece, and it adopted Christianity in the 4th century. Its
+    medieval kingdom reached its height under Queen Tamar around 1200. Ruled by Persia, the Ottomans and Russia, it
+    was part of the Soviet Union until independence in 1991; Stalin was born here, in Gori. It has its own alphabet
+    and language, unrelated to its neighbours'. Wine has been made here for some 8,000 years, in clay jars called
+    qvevri, and its feasts, the supra, are led by a toastmaster, the tamada.
+  fact: The two deepest known caves on Earth, both more than 2 km deep, are in its Arabika Massif.
+GHA:
+  about: >-
+    A country on the Gulf of Guinea in West Africa, named after an ancient empire that lay further north. Its Asante
+    kingdom grew rich on gold, which gave the coast its colonial name, the Gold Coast, and European forts along it,
+    such as Elmina and Cape Coast, were used in the Atlantic slave trade. In 1957 it became the first country in
+    sub-Saharan Africa to win independence from colonial rule, led by Kwame Nkrumah. It is one of Africa's most stable
+    democracies, and among the largest producers of gold and cocoa. Kente cloth, highlife music and jollof rice are
+    among its best-known traditions.
+  fact: Lake Volta, made by a dam in 1965, is the largest artificial lake in the world by area.
+GIN:
+  about: >-
+    A country on the Atlantic coast of West Africa, rising from mangrove coasts to the Fouta Djallon highlands, the
+    water tower of West Africa, where the Gambia and Senegal rivers rise. Part of it once belonged to the Mali Empire.
+    In 1958 it was the only French colony to vote against joining a new French community, and it became independent at
+    once. It holds about a quarter of the world's known bauxite, the ore of aluminium, and the vast Simandou iron ore
+    deposits. Mount Nimba, on its border with Ivory Coast and Liberia, shelters chimpanzees that use stones as tools.
+  fact: The Niger, West Africa's great river, rises in its highlands.
+GMB:
+  about: >-
+    The smallest country on the African mainland, following the Gambia River inland from the Atlantic, surrounded on
+    every other side by Senegal. Once part of the Mali Empire, it became a British colony, while the land around it
+    became French. Independent since 1965, it formed a short-lived confederation with Senegal in the 1980s. Its river
+    and wetlands are rich in birds, and Kunta Kinteh Island, a slave-trade post in the river, is listed by UNESCO.
+  fact: Along most of its length it is less than 50 km wide.
+GNB:
+  about: >-
+    A small country on the Atlantic coast of West Africa, of mangroves, rivers and low islands. It was a Portuguese
+    colony from the 15th century, and won independence in 1974 after a war of liberation led by Amílcar Cabral's
+    movement. It has known many coups and much instability since. Most of its people farm, and cashew nuts are by far
+    its main export. Its coast and the islands offshore are rich in birds and in nesting sea turtles.
+  fact: On its Bijagós Islands, hippos live by the shore and swim in the sea.
+GNQ:
+  about: >-
+    A small country in Central Africa, made of a mainland region, Río Muni, and islands in the Gulf of Guinea, among
+    them Bioko, home to Malabo. It is the only country in Africa with Spanish as an official language, a legacy of
+    Spanish rule until 1968. Oil found offshore in the 1990s made it one of the richest countries in Africa per
+    person. Bioko's forests shelter rare monkeys, and sea turtles nest on its beaches.
+  fact: Despite its name, the equator does not pass through it.
+GRC:
+  about: >-
+    A country of mountains, peninsulas and some 6,000 islands at the southern tip of the Balkans, between the Aegean,
+    Ionian and Mediterranean seas. Ancient Greece gave the world democracy, philosophy, theatre and much of Western
+    science, and its temples, from the Parthenon in Athens to Delphi, still stand. After Alexander the Great its
+    culture spread as far as Egypt and India, and it lived on in the Byzantine Empire for a thousand years. Under
+    Ottoman rule for about four centuries, it won independence in the 1820s. It joined the European Community in 1981,
+    and tourism and shipping are pillars of its economy. Santorini, Crete, Mykonos and the monasteries of Meteora on
+    their rock towers are among its many sights.
+  fact: The Olympic Games began here, at Olympia, in 776 BC.
+GRD:
+  about: >-
+    A small island country in the southern Caribbean, made of Grenada itself, Carriacou, Petite Martinique and some
+    smaller islands. France and Britain fought over it until it became British for good in 1783, and it became
+    independent in 1974. A revolution in 1979 and a coup in 1983 were followed by an invasion led by the United
+    States. Its beaches, such as Grand Anse, and the world's first underwater sculpture park draw visitors.
+  fact: Known as the Spice Isle, it grows so much nutmeg that one is drawn on its flag.
+GTM:
+  about: >-
+    The most populous country in Central America, a land of volcanoes, highland lakes and rainforest between Mexico
+    and Honduras. It was a heartland of the Maya, and Maya peoples still make up a large share of its population,
+    speaking more than 20 Mayan languages. Spain conquered it in the 1520s, and Antigua Guatemala, its old colonial
+    capital, keeps its baroque churches among the volcanoes. Independent since 1821, it lived through a civil war from
+    1960 to 1996. Lake Atitlán, ringed by volcanoes and Maya villages, is often called one of the most beautiful lakes
+    in the world, and its coffee and woven textiles are famous.
+  fact: Tikal, in its northern rainforest, was one of the greatest Maya cities, with temples over 60 m tall.
+GUY:
+  about: >-
+    A country on the north-east coast of South America, the only one on the continent with English as its official
+    language; its name is said to mean "land of many waters". Dutch and then British colonists grew sugar here with
+    enslaved Africans and, after slavery ended, workers from India, whose descendants are now its largest group.
+    Independent since 1966, it is closer to the Caribbean than to Latin America in its culture. Nearly all its people
+    live on the narrow coastal plain, much of it below sea level behind sea walls, while rainforest covers most of the
+    country. Oil found offshore in 2015 has made its economy one of the fastest-growing in the world.
+  fact: Kaieteur Falls drops about 226 m in a single fall, one of the most powerful waterfalls in the world.
+HND:
+  about: >-
+    A mountainous country in Central America, with a long Caribbean coast and a short one on the Pacific. Spain ruled
+    it from the 16th century until 1821. In the 20th century American fruit companies grew bananas on such a scale
+    here that it became the original "banana republic". The Bay Islands, Roatán and Utila among them, lie on the
+    Mesoamerican Reef and draw divers, and Garifuna communities live along its Caribbean coast. La Mosquitia, in the
+    east, is one of the largest rainforests left in Central America.
+  fact: Copán, in its west, was a great Maya city; its stairway carries the longest Maya inscription known.
+HRV:
+  about: >-
+    A crescent-shaped country between Central Europe and the Adriatic, whose coast is lined with more than a thousand
+    islands and islets. Croats settled here in the 7th century and formed a kingdom that joined Hungary in 1102; later
+    Venice held much of the coast and the Habsburgs the interior. Part of Yugoslavia after the First World War, it
+    declared independence in 1991, which was followed by war until 1995. It joined the European Union in 2013.
+    Dubrovnik's walled old town, Diocletian's Palace in Split and the lakes and waterfalls of Plitvice are among its
+    treasures, and its football team reached the World Cup final in 2018.
+  fact: The cravat, and so the necktie, is named after Croatian soldiers' scarves, admired in 17th-century Paris.
+HTI:
+  about: >-
+    The western third of Hispaniola, in the Caribbean, which it shares with the Dominican Republic. As the French
+    colony of Saint-Domingue it was the richest in the Caribbean, producing much of the world's sugar and coffee with
+    hundreds of thousands of enslaved Africans. Led by Toussaint Louverture and Jean-Jacques Dessalines, it became
+    independent in 1804, the first black republic and the second independent country in the Americas. Its history
+    since has known foreign occupation, dictatorship, poverty and disasters, among them the earthquake of 2010.
+    Haitian painting, music and the Vodou religion are known far beyond its shores, and the Citadelle Laferrière, a
+    mountain fortress built after independence, is listed by UNESCO. Haitian Creole and French are its official
+    languages.
+  fact: It is the only country born of a successful slave revolt.
+HUN:
+  about: >-
+    A landlocked country in the Carpathian Basin of Central Europe, crossed by the Danube and the Tisza. The Magyars
+    arrived here in the late 9th century, and Stephen I, crowned in 1000, made it a Christian kingdom. After a century
+    and a half of Ottoman rule, it came under the Habsburgs, and from 1867 shared the dual monarchy of
+    Austria-Hungary. Defeat in the First World War cost it two-thirds of its land. After the Second World War it was a
+    communist state, rising against Soviet rule in 1956, and it joined the European Union in 2004. Its language,
+    Hungarian, is not Indo-European but Uralic, distantly related to Finnish and Estonian. Budapest's Parliament on
+    the Danube, its thermal baths, Lake Balaton, paprika, goulash and Tokaji wine are its best-known sights and
+    tastes.
+  fact: The Rubik's Cube was invented in Budapest, in 1974.
+IDN:
+  about: >-
+    The largest archipelago country in the world, some 17,000 islands stretching more than 5,000 km along the equator
+    between Asia and Australia. It is the fourth most populous country and has more Muslims than any other, alongside
+    Hindu Bali and many other faiths. Its islands lay on the spice routes for centuries, home to Hindu and Buddhist
+    kingdoms that built Borobudur and Prambanan, before Islam spread and the Dutch made it their colony. It declared
+    independence in 1945, which the Netherlands recognised in 1949 after four years of fighting. It sits on the Ring
+    of Fire, with more active volcanoes than any other country. Its rainforests shelter orangutans, tigers and rhinos,
+    and its hundreds of peoples speak over 700 languages, united by Indonesian.
+  fact: Komodo dragons, the largest lizards on Earth, live wild on a few of its islands and nowhere else.
+IND:
+  about: >-
+    The most populous country in the world, filling most of the Indian subcontinent, from the Himalayas to the
+    tropical south. The Indus Valley civilisation flourished here some 4,500 years ago, and Hinduism, Buddhism,
+    Jainism and Sikhism were all born here. Great empires rose and fell, from the Mauryas and the Guptas to the
+    Mughals, who left the Taj Mahal. Britain took control step by step from the 18th century until independence in
+    1947, won largely through Mahatma Gandhi's non-violent movement, when the subcontinent was partitioned and
+    Pakistan was created. Since then it has been the world's largest democracy. Its states speak hundreds of
+    languages, with Hindi and English used by the central government. It is now one of the world's largest economies,
+    known for its software industry and for Bollywood, its films. Its food, spices, yoga, cricket and festivals such
+    as Diwali and Holi are loved around the world.
+  fact: Chess began here, around the 6th century, as a game called chaturanga.
+IRL:
+  about: >-
+    An island country in the Atlantic, west of Great Britain, covering most of the island of Ireland. Celtic peoples
+    lived here before Saint Patrick brought Christianity in the 5th century, and its monasteries kept learning alive
+    in Europe's early Middle Ages, producing the Book of Kells. English and then British rule lasted for centuries;
+    the Great Famine of the 1840s killed about a million people and led millions more to emigrate. After a rising in
+    1916 and a war of independence, most of the island became independent in 1922, while the north-east stayed in the
+    United Kingdom. It joined the European Community in 1973, and its economy boomed as the "Celtic Tiger". Irish, a
+    Celtic language, and English are both official. Writers such as Joyce, Yeats, Wilde and Beckett, its music and its
+    pubs have made it known all over the world.
+  fact: No snakes are native to the island; legend says Saint Patrick drove them into the sea.
+IRN:
+  about: >-
+    A large country of mountains and deserts between the Caspian Sea and the Persian Gulf, at the heart of one of the
+    world's oldest civilisations. Cyrus the Great founded the Persian Empire in the 6th century BC, the largest the
+    world had yet seen, and its ceremonial capital, Persepolis, still stands in ruins. After the Arab conquest in the
+    7th century it adopted Islam but kept its language, Persian, and its culture, which flowered in poetry, from
+    Ferdowsi to Hafez. Under the Safavids, from 1501, Shia Islam became its faith, and Isfahan was made one of the
+    most beautiful cities in the world. A revolution in 1979 overthrew the Shah and made it an Islamic republic. It
+    holds some of the world's largest reserves of oil and gas, and its carpets, saffron and pistachios are famous.
+  fact: Its year begins at the spring equinox, with Nowruz, a festival more than 3,000 years old.
+IRQ:
+  about: >-
+    A country in the Middle East built around the Tigris and Euphrates, the Mesopotamia of the ancient world, where
+    some of the first cities and the first written laws arose. Sumer, Akkad, Babylon and Assyria rose here in turn,
+    and Hammurabi's laws and the legend of the Hanging Gardens of Babylon belong to its past. Baghdad, founded in 762,
+    was the capital of the Abbasid caliphate and one of the greatest cities of the medieval world. After Ottoman rule
+    and a British mandate, it became independent in 1932. Under Saddam Hussein it fought long wars with Iran and over
+    Kuwait, and after the US-led invasion of 2003 it lived through years of conflict. It holds some of the world's
+    largest oil reserves, and the marshes of the south, home to the Marsh Arabs, are listed by UNESCO.
+  fact: Cuneiform, one of the first ways of writing, was invented here in Sumer more than 5,000 years ago.
+ISL:
+  about: >-
+    A volcanic island in the North Atlantic, just south of the Arctic Circle, where the Mid-Atlantic Ridge rises above
+    the sea. Norse settlers arrived in the 9th century, and its sagas, written in the Middle Ages, are among the great
+    works of European literature. Ruled by Norway and then Denmark, it became fully independent in 1944. Glaciers,
+    volcanoes, waterfalls and geysers cover its land, among them Geysir, which gave all geysers their name, and nearly
+    all its electricity and heating come from hydropower and geothermal energy. Most of its people live in and around
+    Reykjavík, the northernmost capital of a sovereign state. In winter the northern lights dance over it, and in
+    summer the sun barely sets.
+  fact: Its parliament, the Althing, has met since 930, which makes it one of the oldest in the world.
+ISR:
+  about: >-
+    A small country on the eastern Mediterranean, reaching from the hills of Galilee to the Negev desert and the Red
+    Sea at Eilat. The land is holy to Judaism, Christianity and Islam, and Jerusalem holds the Western Wall, the
+    Church of the Holy Sepulchre and the Dome of the Rock. Ancient Israelite kingdoms stood here, and after centuries
+    of Roman, Arab, Crusader, Ottoman and British rule, the State of Israel was declared in 1948 as a homeland for the
+    Jewish people, after the Holocaust. Its founding and the wars that followed displaced hundreds of thousands of
+    Palestinians, and conflict with them and with its neighbours has marked its history. Hebrew, revived as a spoken
+    language in modern times, is its main language, and it is a world leader in technology.
+  fact: Mount Sodom, near the Dead Sea, is a hill made mostly of salt, and holds the longest salt cave in the world.
+ITA:
+  about: >-
+    A boot-shaped peninsula reaching into the Mediterranean from the Alps, with the large islands of Sicily and
+    Sardinia. Rome grew from a city on the Tiber into an empire around the whole Mediterranean, and its language,
+    Latin, became the root of the Romance languages. After Rome's fall the peninsula split into city-states and
+    kingdoms, and Florence, Venice and Rome gave birth to the Renaissance, the age of Leonardo, Michelangelo and
+    Raphael. Italy was unified only in 1861, became a republic in 1946, and was a founder of what became the European
+    Union. It has more World Heritage Sites than almost any other country, from the Colosseum and Pompeii to the
+    canals of Venice and the leaning tower of Pisa. Its food, from pizza and pasta to espresso and gelato, its
+    fashion, its opera and its cars are loved worldwide. Etna and Vesuvius are among Europe's most famous volcanoes.
+  fact: "Two other countries lie entirely inside it: Vatican City and San Marino."
+JAM:
+  about: >-
+    An island in the Caribbean, south of Cuba, whose name comes from the Taíno word for "land of wood and water".
+    Spain held it first, then Britain from 1655, and its sugar plantations were worked by enslaved Africans until
+    slavery ended in the 1830s. Independent since 1962, it has given the world far more than its size suggests: Bob
+    Marley, the sprinters Usain Bolt and Shelly-Ann Fraser-Pryce, and the Rastafari movement. The Blue Mountains grow
+    one of the world's most prized coffees, and jerk cooking and rum are part of its daily life. Its beaches at Negril
+    and Montego Bay draw visitors from all over the world.
+  fact: Reggae grew up here in the late 1960s, out of ska and rocksteady.
+JOR:
+  about: >-
+    A country of desert and highland in the Middle East, almost landlocked but for a short coast on the Gulf of Aqaba.
+    Petra, the rose-red city carved into cliffs by the Nabataeans more than 2,000 years ago, is one of the wonders of
+    the world, and the red desert of Wadi Rum has stood in for Mars in films. Part of the Ottoman Empire until the
+    First World War, it became a British mandate and then, in 1946, an independent kingdom ruled by the Hashemite
+    family. It has taken in millions of refugees, from Palestine and later from Iraq and Syria. The Jordan River,
+    where Christians believe Jesus was baptised, runs along its western border.
+  fact: The shore of the Dead Sea, on its western border, is the lowest land on Earth, more than 400 m below sea level.
+JPN:
+  about: >-
+    An island country in the Pacific off East Asia, made of four main islands, Honshu, Hokkaido, Kyushu and Shikoku,
+    and thousands of smaller ones. Its emperors claim the oldest unbroken line of any monarchy, though for centuries
+    samurai and shoguns held the real power. From 1639 it closed itself to most foreigners for over two centuries,
+    then modernised at astonishing speed after 1868. After defeat in the Second World War, which ended with the atomic
+    bombings of Hiroshima and Nagasaki, it rebuilt itself into one of the world's largest economies, known for its
+    cars, electronics and fast trains. Most of its people live on crowded coastal plains, and greater Tokyo is one of
+    the largest metropolitan areas in the world. Earthquakes and volcanoes are part of life on the Ring of Fire.
+    Kyoto's temples, cherry blossoms, sushi, anime and manga are known everywhere.
+  fact: Mount Fuji, its highest peak, is a volcano that last erupted in 1707.
+KAZ:
+  about: >-
+    The largest landlocked country in the world, and the ninth largest of all, stretching from the Caspian Sea to the
+    Altai Mountains across endless steppe. Nomadic peoples have herded horses on its steppe for thousands of years.
+    Part of the Russian Empire and then the Soviet Union, it saw nuclear tests at Semipalatinsk and the launch of the
+    first satellite and the first man into space from Baikonur, which Russia still uses. Independent since 1991, it
+    grew rich on oil, gas and uranium, and moved its capital from Almaty to Astana in 1997. Kazakhs and Russians are
+    its largest groups, and both languages are widely spoken.
+  fact: The wild ancestors of the apples we eat still grow in its mountains near Almaty.
+KEN:
+  about: >-
+    A country in East Africa, on the Indian Ocean, crossed by the equator and the Great Rift Valley. Fossils found
+    around Lake Turkana make it one of the cradles of humankind. Swahili city-states such as Lamu and Mombasa traded
+    across the ocean for centuries before British rule, and Kenya won independence in 1963, after the Mau Mau
+    uprising. Its savannas, above all the Maasai Mara, hold one of the greatest wildlife spectacles on Earth when the
+    wildebeest cross on their great migration. Its runners have dominated long-distance races for decades, and tea,
+    flowers and tourism drive its economy. Swahili and English are its official languages, and Nairobi is one of
+    Africa's main business hubs.
+  fact: Mount Kenya, Africa's second-highest peak, stands almost on the equator yet still has glaciers.
+KGZ:
+  about: >-
+    A landlocked, mountainous country in Central Asia, where the Tian Shan covers most of the land. The Silk Road
+    crossed it, and its nomadic Kyrgyz people herded horses and sheep across high pastures, as many still do in
+    summer. Part of the Russian Empire and then the Soviet Union, it became independent in 1991. The Epic of Manas,
+    among the longest poems in the world, is its national treasure. Issyk-Kul, one of the largest mountain lakes on
+    Earth, never freezes despite the cold, and the World Nomad Games have been held on its shores.
+  fact: The sun on its flag frames the crown of a yurt, the round felt tent of its nomads.
+KHM:
+  about: >-
+    A country in mainland South-East Asia, around the Mekong and the great lake of Tonlé Sap, which swells several
+    times over in the rainy season. From the 9th to the 15th century the Khmer Empire ruled much of the region from
+    Angkor, whose temples are among the wonders of the world. A French protectorate from 1863, it became independent
+    in 1953. Between 1975 and 1979 the Khmer Rouge regime killed some 1.5 to 2 million people, about a quarter of the
+    population, in the Cambodian genocide. Since then it has rebuilt itself, and rice, garments and tourism drive its
+    economy. Khmer is its language, and most of its people are Theravada Buddhists.
+  fact: Angkor Wat, the largest religious monument in the world, is pictured on its flag.
+KIR:
+  about: >-
+    Thirty-three coral atolls and islands spread over some 3.5 million km² of the central Pacific, in three groups:
+    the Gilbert, Phoenix and Line Islands. Its name, said "Kiribas", is the local form of "Gilberts", and as the
+    Gilbert Islands it was a British colony until independence in 1979. Most of its land is only a few metres above
+    the sea, so rising seas are a grave threat. Kiritimati, or Christmas Island, is the largest coral atoll in the
+    world by land area, and the Phoenix Islands Protected Area is listed by UNESCO.
+  fact: It lies in all four hemispheres, and its Line Islands are the first land on Earth to start each new day.
+KNA:
+  about: >-
+    Two volcanic islands in the Leeward Islands of the Caribbean, the smallest country in the Americas. Saint Kitts
+    was the first English colony in the Caribbean, from 1623, and its Brimstone Hill Fortress, the "Gibraltar of the
+    West Indies", is listed by UNESCO. Sugar was its mainstay for three centuries, until the industry closed in 2005,
+    and it became independent in 1983. Nevis was the birthplace of Alexander Hamilton, one of the founders of the
+    United States.
+  fact: From above, Saint Kitts is shaped like a bat and Nevis like a ball.
+KOR:
+  about: >-
+    The southern half of the Korean Peninsula, between the Yellow Sea and the Sea of Japan (East Sea), with mountains
+    covering most of the land. Korean kingdoms flourished for centuries, the Joseon dynasty ruling from 1392 until
+    Japan annexed the peninsula in 1910. After the Second World War it was divided, and the Korean War of 1950 to 1953
+    ended in an armistice that still splits it at the Demilitarized Zone. From one of the poorest countries in the
+    world it grew, within a few decades, into a rich democracy and a leader in electronics, cars and shipbuilding. Its
+    pop music, films and dramas, the Korean Wave, are followed worldwide, and kimchi and Korean barbecue have spread
+    just as far. Seoul is one of the largest cities in the world.
+  fact: Its alphabet, Hangul, was designed on purpose in the 1440s, under King Sejong, so that everyone could learn to read.
+KWT:
+  about: >-
+    A small country at the head of the Persian Gulf, between Iraq and Saudi Arabia, mostly flat desert. It grew as a
+    port of traders, pearl divers and boat builders, ruled by the Al Sabah family since the 18th century, and was a
+    British protectorate until 1961. Oil, found in 1938, made it one of the richest countries in the world. In 1990
+    Iraq invaded and occupied it, until a US-led coalition drove Iraq out in 1991, when retreating troops set hundreds
+    of its oil wells on fire. The Kuwait Towers, on the shore of its capital, have become its symbol.
+  fact: Its dinar is the most valuable unit of currency in the world.
+LAO:
+  about: >-
+    The only landlocked country in South-East Asia, a land of mountains and forests along the Mekong. The kingdom of
+    Lan Xang, "a million elephants", ruled it from the 14th century, and its old royal capital, Luang Prabang, with
+    its golden temples and morning procession of monks, is listed by UNESCO. A French protectorate from 1893, it
+    became independent in 1953, and has been a communist state since 1975. During the Vietnam War it became the most
+    heavily bombed country per person in history, and unexploded bombs still lie in its fields. Most of its people are
+    Buddhist, and sticky rice is their everyday food.
+  fact: The Plain of Jars is scattered with thousands of huge stone jars, made around 2,000 years ago, probably for burials.
+LBN:
+  about: >-
+    A small, mountainous country on the eastern Mediterranean, between Syria and Israel. Its ancient Phoenician ports,
+    Byblos, Sidon and Tyre, traded across the sea, and Byblos is among the oldest continuously inhabited cities in the
+    world. The cedars of its mountains, prized since antiquity, stand on its flag. Under Ottoman and then French rule,
+    it became independent in 1943, with a system sharing power among its religious communities: Christian, Sunni, Shia
+    and Druze. A civil war from 1975 to 1990 devastated it. Beirut is known for its food, nightlife and universities,
+    and the Roman temples of Baalbek are among the largest ever built.
+  fact: The Phoenicians who lived here spread the alphabet from which Greek, Latin and most of today's alphabets come.
+LBR:
+  about: >-
+    A country on the Atlantic coast of West Africa, founded in 1822 as a home for freed slaves from the United States.
+    It declared independence in 1847, making it Africa's oldest republic, and it was never colonised; its flag recalls
+    that of the United States. Two civil wars from 1989 to 2003 cost some 250,000 lives, and in 2005 it elected Ellen
+    Johnson Sirleaf, the first woman elected head of state in Africa. Rainforest covers much of its land, home to
+    pygmy hippos, and rubber and iron ore are among its exports.
+  fact: Its capital, Monrovia, is named after James Monroe, the fifth president of the United States.
+LBY:
+  about: >-
+    A large country in North Africa, nearly all of it Sahara, with most of its people on the Mediterranean coast.
+    Greeks founded Cyrene in its east, Phoenicians the cities of its west, and the Roman ruins of Leptis Magna and
+    Sabratha are among the finest anywhere. Ruled by the Ottomans and then Italy, it became independent as a kingdom
+    in 1951. Oil, found in 1959, made it one of the richest countries in Africa, and in 1969 Muammar Gaddafi seized
+    power, ruling until he was overthrown in 2011; years of conflict followed. The Great Man-Made River carries water
+    from desert aquifers to its coast.
+  fact: Waw an Namus, a volcano in the middle of the Sahara, holds an oasis of small lakes in its crater.
+LCA:
+  about: >-
+    A volcanic island in the Lesser Antilles of the Caribbean, named, by tradition, after Saint Lucy. France and
+    Britain fought over it so often that it changed hands fourteen times, until Britain kept it in 1814; it became
+    independent in 1979. The Pitons, two steep volcanic peaks rising from the sea, are listed by UNESCO, and near them
+    lies Sulphur Springs, a volcano you can drive into. English is its official language, but most people also speak a
+    French-based creole, Kwéyòl.
+  fact: With two Nobel Prize winners, Arthur Lewis and Derek Walcott, it has more laureates per person than any other country.
+LIE:
+  about: >-
+    A tiny principality in the Alps, between Switzerland and Austria, on the upper Rhine. It takes its name from the
+    princely family that bought its two lordships in 1699 and 1712, and it became sovereign in 1806, as the Holy Roman
+    Empire broke up. It has had no army since 1868, uses the Swiss franc, and is one of the richest countries in the
+    world, with more registered companies than people. Its industry is a world leader in false teeth, and Vaduz
+    Castle, above the capital, is still the prince's home.
+  fact: "It is one of only two doubly landlocked countries, surrounded only by other landlocked ones: the other is Uzbekistan."
+LKA:
+  about: >-
+    A tear-shaped island in the Indian Ocean, off the southern tip of India. Its Sinhalese kingdoms, founded more than
+    2,000 years ago, built the great Buddhist cities of Anuradhapura and Polonnaruwa and the rock fortress of
+    Sigiriya, and Buddhism has been its main faith ever since. The Portuguese and the Dutch held its coasts, and the
+    British the whole island, as Ceylon, until independence in 1948. A civil war between the government and Tamil
+    separatists lasted from 1983 to 2009. Its tea, grown in the cool hill country, is famous worldwide, and its
+    beaches, elephants and leopards draw visitors.
+  fact: In 1960 it elected the world's first woman prime minister, Sirimavo Bandaranaike.
+LSO:
+  about: >-
+    A small, mountainous kingdom entirely surrounded by South Africa. Moshoeshoe I founded it in the 1820s by
+    gathering peoples fleeing the wars of the time on his mountain stronghold of Thaba Bosiu, and later sought British
+    protection to keep the Boers out. As Basutoland it was a British protectorate until independence in 1966. Its
+    Basotho people wear woollen blankets and conical straw hats, the mokorotlo, which appears on its flag. Water from
+    its highlands is piped to South Africa's cities, and in winter snow falls on its peaks.
+  fact: Its lowest point, about 1,400 m above the sea, is higher than the lowest point of any other country.
+LTU:
+  about: >-
+    The largest and southernmost of the three Baltic states. It was the last pagan country in Europe, converting to
+    Christianity only in 1387, and its Grand Duchy, joined with Poland, became one of the largest states in Europe,
+    reaching from the Baltic to the Black Sea. Taken over by the Russian Empire in the late 18th century, it declared
+    independence in 1918, but was occupied by the Soviet Union in 1940. In 1989 its people joined hands with Latvians
+    and Estonians in the Baltic Way, a human chain some 675 km long. It joined the European Union and NATO in 2004.
+    Lithuanian is one of the most archaic living Indo-European languages, and the Curonian Spit, a long strip of
+    dunes, is listed by UNESCO.
+  fact: It was the first Soviet republic to declare independence, on 11 March 1990.
+LUX:
+  about: >-
+    A small, landlocked country between Belgium, France and Germany, with wooded hills in the north and farmland and
+    vineyards along the Moselle in the south. Its capital grew around a castle of 963, whose fortress became so strong
+    it was called the Gibraltar of the North. Independent since 1839, it was occupied by Germany in both world wars. A
+    founder of what became the European Union, it hosts the EU's Court of Justice and other institutions. Steel made
+    it rich in the 20th century, and banking and finance have made it one of the richest countries in the world per
+    person. Its people speak Luxembourgish, French and German, and nearly half of those living there are foreigners.
+  fact: It is the only grand duchy left in the world.
+LVA:
+  about: >-
+    The middle one of the three Baltic states, a land of forests, lakes and a long sandy coast on the Baltic Sea.
+    German crusaders conquered it in the 13th century, and Riga, founded in 1201, became a rich Hanseatic port. Later
+    ruled by Poland, Sweden and the Russian Empire, it declared independence in 1918, was occupied by the Soviet Union
+    in 1940, and regained independence in 1991. It joined the European Union and NATO in 2004. Its song and dance
+    festivals, with tens of thousands of singers, are listed by UNESCO, and more than a million of its folk songs, the
+    dainas, have been collected. Latvian, a Baltic language, is related to Lithuanian.
+  fact: Riga has one of the finest collections of Art Nouveau buildings in the world.
+MAR:
+  about: >-
+    A country in the north-west corner of Africa, on both the Atlantic and the Mediterranean, just across the Strait
+    of Gibraltar from Spain. The Atlas Mountains divide its fertile coast from the Sahara. Amazigh (Berber) peoples
+    have lived here for thousands of years, and Arab and Berber dynasties from the 8th century on built Fez,
+    Marrakesh, Meknes and Rabat, its imperial cities. A French and Spanish protectorate from 1912, it became
+    independent in 1956, and it is ruled by kings of the Alaouite dynasty, in power since the 17th century. Its
+    medinas and souks, its mint tea, couscous and tagines, and its crafts of leather, tiles and carpets draw visitors
+    from all over the world. It holds most of the world's known phosphate reserves.
+  fact: Al-Qarawiyyin in Fez, founded in 859, is often called the oldest university in the world still teaching.
+MCO:
+  about: >-
+    A tiny city-state on the French Riviera, the second-smallest country in the world and the most densely populated.
+    The Grimaldi family seized its rock in 1297, and has ruled it for most of the centuries since. Its casino at Monte
+    Carlo, opened in the 19th century, made it rich, and today it is a byword for wealth, with no income tax for its
+    residents. Its Grand Prix, raced through its streets since 1929, is the most famous race in motor sport. Fewer
+    than a quarter of its residents are Monégasque citizens.
+  fact: Its flag, red over white, is the same as Indonesia's but for its shape.
+MDA:
+  about: >-
+    A small, landlocked country between Romania and Ukraine, a land of rolling hills, black soil and vineyards. Its
+    lands were the heart of the medieval principality of Moldavia, whose prince Stephen the Great fought off the
+    Ottomans in the 15th century. The Russian Empire took its eastern half, Bessarabia, in 1812; after a period as
+    part of Romania between the world wars, it became a Soviet republic, and then independent in 1991. Transnistria, a
+    strip east of the Dniester, broke away in 1992, and no member of the United Nations recognises it. Its official
+    language, Romanian, is shared with its western neighbour, and wine is its pride.
+  fact: The Milestii Mici cellars hold the largest wine collection in the world, along some 200 km of underground tunnels.
+MDG:
+  about: >-
+    The fourth-largest island in the world, in the Indian Ocean off south-east Africa, which split from Africa some
+    160 million years ago and from India some 88 million years ago. People came late: sailors from South-East Asia,
+    and later Africans, settled it within the last two thousand years, and Malagasy, its language, is related to the
+    languages of Borneo. The Merina kingdom unified much of the island in the 19th century before France made it a
+    colony in 1896; it became independent in 1960. It is the world's leading producer of vanilla. Most of the world's
+    baobab species grow only here, and the spiny forests of the south and the stone needles of the Tsingy de Bemaraha
+    are found nowhere else.
+  fact: Around 90% of its plants and animals are found nowhere else, lemurs among them.
+MDV:
+  about: >-
+    Some 1,200 coral islands in 26 atolls, strung across the Indian Ocean south-west of India, only about 200 of them
+    inhabited. Buddhist for centuries, its people converted to Islam in the 12th century, and its sultans ruled under
+    British protection until independence in 1965. Tourism, born here in the 1970s, now drives its economy, with each
+    resort on an island of its own, and tuna fishing is its other mainstay. Its reefs, with manta rays and whale
+    sharks, are among the best places to dive on Earth, and rising seas are a grave threat to its future.
+  fact: It is the flattest country in the world, its land on average only about 2 m above the sea.
+MEX:
+  about: >-
+    A large country between the United States and Central America, with coasts on the Pacific and the Gulf of Mexico.
+    Great civilisations rose here: the Olmecs, Teotihuacan with its pyramids of the Sun and Moon, the Maya of the
+    south and the Aztecs, whose capital Tenochtitlan stood where Mexico City is today. Spain conquered it in 1521, and
+    it became independent in 1821, then lost about half of its territory to the United States in the 1840s. A
+    revolution from 1910 shaped the modern country. It has the largest Spanish-speaking population in the world, and
+    many Indigenous languages, such as Nahuatl and Maya. Its cuisine, from tacos and mole to chocolate and chillies,
+    is listed by UNESCO, and the Day of the Dead, mariachi music and the art of Frida Kahlo and Diego Rivera are
+    famous worldwide. Chichén Itzá, Teotihuacan and the beaches of Cancún draw visitors from everywhere.
+  fact: Maize was first grown here, some 9,000 years ago, from a wild grass called teosinte.
+MHL:
+  about: >-
+    Twenty-nine coral atolls and five islands in the central Pacific, in two parallel chains. Micronesian navigators
+    settled them some 2,000 years ago or more; Germany, then Japan ruled them, and after the Second World War the
+    United States administered them. Between 1946 and 1958 the United States tested 67 nuclear weapons at Bikini and
+    Enewetak atolls, whose people were moved away, and Bikini is still almost empty. Independent since 1986, in free
+    association with the United States, it has most of its land barely above the sea. Kwajalein, one of the largest
+    atolls in the world, holds a US missile test site.
+  fact: Its early navigators mapped the ocean swells with charts made of sticks and shells.
+MKD:
+  about: >-
+    A landlocked, mountainous country in the central Balkans, along the valley of the Vardar. Its lands were part of
+    ancient Paeonia and Macedon, then of Rome, Byzantium, the medieval Bulgarian and Serbian states and, for five
+    centuries, the Ottoman Empire. Part of Yugoslavia after the First World War, it became independent peacefully in
+    1991. A long dispute with Greece over its name ended in 2019, when it became North Macedonia, and it joined NATO
+    in 2020. Ohrid, on its lake, was a centre of Slavic learning in the Middle Ages, said to have had 365 churches,
+    and Macedonian, a South Slavic language, is written in Cyrillic. Mother Teresa was born in Skopje.
+  fact: Lake Ohrid, on its border with Albania, is one of the oldest lakes in the world, more than a million years old.
+MLI:
+  about: >-
+    A large, landlocked country in West Africa, its north in the Sahara and its south watered by the Niger, whose
+    inland delta floods vast plains each year. It takes its name from the Mali Empire, whose ruler Mansa Musa made a
+    famous pilgrimage to Mecca in 1324 with so much gold that he upset prices in Cairo. Timbuktu, once a great centre
+    of trade and Islamic learning, still keeps its mud mosques and old manuscripts. A French colony, it became
+    independent in 1960. Its music, from the kora to the desert blues of Ali Farka Touré, is loved worldwide, and the
+    Dogon people live along the cliffs of Bandiagara.
+  fact: The Great Mosque of Djenné is the largest mud-brick building in the world, and the whole town re-plasters it every year.
+MLT:
+  about: >-
+    A small archipelago in the middle of the Mediterranean, south of Sicily, of which Malta, Gozo and tiny Comino are
+    inhabited. Phoenicians, Romans, Arabs and Normans all held it before the Knights of Saint John made it their home
+    in 1530, held off a great Ottoman siege in 1565 and built its fortified capital, Valletta. Britain ruled it from
+    1800 until independence in 1964, and its people were awarded the George Cross for their courage under bombing in
+    the Second World War. It joined the European Union in 2004 and is its smallest member. Maltese, the only Semitic
+    language written in the Latin alphabet and an official language of the EU, is spoken alongside English.
+  fact: Its stone temples, built more than 5,000 years ago, are older than Stonehenge and the pyramids of Egypt.
+MMR:
+  about: >-
+    The largest country of mainland South-East Asia, between India, China and Thailand, around the great Irrawaddy
+    River. Burmese kingdoms built Bagan and later Mandalay, and Theravada Buddhism shapes its life: the gilded
+    Shwedagon Pagoda in Yangon is its most sacred site. Britain conquered it in three wars in the 19th century and
+    ruled it at first as part of India; it became independent in 1948. The army has ruled it for most of the time
+    since 1962, and took power again in a coup in 2021, setting off a civil war. It has more than 100 ethnic groups,
+    and is a leading source of jade and rubies.
+  fact: Bagan, on the Irrawaddy, still has more than 2,000 Buddhist temples and pagodas from the 11th to 13th centuries.
+MNE:
+  about: >-
+    A small, mountainous country on the Adriatic, whose name means "black mountain". Its rulers, often prince-bishops,
+    kept it largely free of the Ottomans in its mountains, and it was recognised as independent in 1878. It joined
+    Yugoslavia after the First World War and stayed with Serbia until a referendum in 2006 restored its independence.
+    It joined NATO in 2017 and uses the euro. The old towns of Kotor and Budva, the Tara River Canyon, one of the
+    deepest in Europe, and the monastery of Ostrog, built into a cliff, are among its sights.
+  fact: The Bay of Kotor looks like a fjord, but it is a river canyon drowned by the sea.
+MNG:
+  about: >-
+    A vast, landlocked country between Russia and China, a land of steppe, mountains and the Gobi Desert. In the 13th
+    century Genghis Khan united its tribes and founded the Mongol Empire, the largest contiguous land empire in
+    history, reaching from Korea to Hungary. Later under Chinese Qing rule, it declared independence in 1911, became a
+    communist state allied with the Soviet Union in 1924, and turned to democracy in 1990. About a quarter of its
+    people still live as herders, moving with their gers, the round felt tents, and horses, sheep, goats, camels and
+    yaks far outnumber people. The Naadam festival every summer brings wrestling, horse racing and archery. Dinosaur
+    fossils, Velociraptor among them, have been found in the Gobi.
+  fact: It is the most sparsely populated country in the world, and its capital, Ulaanbaatar, is the coldest.
+MOZ:
+  about: >-
+    A long country on Africa's south-east coast, facing Madagascar across the Mozambique Channel. Swahili and Arab
+    traders worked its coast for centuries before the Portuguese arrived in 1498 and made Mozambique Island their
+    base; its old stone town is listed by UNESCO. Independent from Portugal since 1975, after a ten-year war, it then
+    suffered a civil war until 1992. The Zambezi crosses it to the sea, held back by the great Cahora Bassa dam. Its
+    coast of beaches, coral reefs and islands, such as the Bazaruto Archipelago, is home to dugongs, whale sharks and
+    manta rays. Portuguese is its official language, alongside many Bantu languages.
+  fact: Its flag is the only one in the world with a modern rifle on it.
+MRT:
+  about: >-
+    A large country in north-west Africa, on the Atlantic, where the Sahara meets the Sahel; desert covers most of its
+    land. Its people are Arab-Berber Moors and Black Africans, and many once lived as nomads. Its old caravan towns,
+    such as Chinguetti and Ouadane, kept libraries of manuscripts and were centres of learning on the routes across
+    the desert. A French colony, it became independent in 1960. Its iron ore travels to the coast on one of the
+    longest and heaviest trains in the world, and the Banc d'Arguin, off its coast, is a haven for millions of
+    migrating birds.
+  fact: The Richat Structure, the "Eye of the Sahara", is a ring of rock some 40 km wide, easy to see from space.
+MUS:
+  about: >-
+    A volcanic island in the Indian Ocean, east of Madagascar, ringed by coral reefs and lagoons. Uninhabited until
+    the Dutch settled it in 1638, it was then held by France and, from 1810, Britain, who brought workers from India
+    to its sugar plantations after slavery ended; their descendants are now most of its people. Independent since
+    1968, it has become one of Africa's most stable and prosperous democracies. Its people speak Mauritian Creole,
+    French and English, and Hindu, Christian and Muslim festivals all fill its calendar. Le Morne, a mountain where
+    escaped slaves took refuge, is listed by UNESCO, as is the Aapravasi Ghat, where indentured workers landed.
+  fact: It was the only home of the dodo, a flightless bird gone by the end of the 17th century.
+MWI:
+  about: >-
+    A narrow, landlocked country in south-east Africa, along the Great Rift Valley and the long lake that fills much
+    of it. As Nyasaland it was a British protectorate, a land David Livingstone helped open to missions, until
+    independence in 1964. Most of its people farm, and tobacco, tea and sugar are its main exports. It is known as
+    "the warm heart of Africa" for the friendliness of its people. Its national parks, such as Liwonde and Majete,
+    have brought back elephants, rhinos and lions.
+  fact: Lake Malawi has more species of fish than any other lake on Earth.
+MYS:
+  about: >-
+    A country in two parts, on the Malay Peninsula and in the north of Borneo, separated by the South China Sea.
+    Melaka grew into a great trading port in the 15th century, then fell to the Portuguese, the Dutch and the British,
+    who ruled the peninsula and later Sabah and Sarawak. Malaya became independent in 1957 and formed Malaysia in
+    1963, which Singapore left two years later. Malays, Chinese and Indians, and many Indigenous peoples of Borneo,
+    live side by side, and its food mixes all their traditions. Tin, rubber and palm oil made it rich, and today
+    electronics and services do. Kuala Lumpur's Petronas Towers were the tallest buildings in the world from 1998 to
+    2004, and Borneo's rainforests, home to orangutans, are among the oldest on Earth.
+  fact: Its rainforests grow the Rafflesia, the largest single flower on Earth, which smells of rotting meat.
+NAM:
+  about: >-
+    A large, dry country on Africa's south-west coast, between the Namib and the Kalahari deserts. A German colony
+    from 1884, it saw the genocide of the Herero and Nama peoples from 1904 to 1908, then was ruled by South Africa
+    from 1915. After a long struggle it won independence in 1990. It is one of the least densely populated countries
+    in the world, and among the first to write protection of the environment into its constitution. The red dunes of
+    Sossusvlei, the shipwrecks of the Skeleton Coast and Etosha's salt pan, where animals gather at waterholes, are
+    among its wonders. Its desert-adapted elephants and lions roam where little else lives.
+  fact: The Namib is thought to be the oldest desert in the world, dry for at least 55 million years.
+NER:
+  about: >-
+    A large, landlocked country in West Africa, most of it in the Sahara, named after the Niger River that crosses its
+    south-west, where most of its people live. Empires such as Songhai and Kanem-Bornu ruled parts of it, and Agadez,
+    with its towering mud-brick minaret, was a gateway for caravans across the desert. A French colony, it became
+    independent in 1960. It has one of the youngest and fastest-growing populations in the world. It is a major
+    producer of uranium, and the Aïr Mountains and the Ténéré desert hold dinosaur fossils and ancient rock art.
+  fact: The Ténéré Tree was once the most isolated tree on Earth, alone in the desert, until a truck knocked it down in 1973.
+NGA:
+  about: >-
+    The most populous country in Africa, on the Gulf of Guinea, where the Niger and Benue rivers meet. Its lands saw
+    the Nok culture's terracotta figures more than 2,000 years ago, and later the kingdoms of Benin, Oyo and Kano; the
+    Benin Bronzes are among Africa's great works of art. Britain joined its north and south into one colony in 1914,
+    and it became independent in 1960. A civil war over the breakaway state of Biafra, from 1967 to 1970, cost over a
+    million lives. Its hundreds of peoples, the largest the Hausa, Yoruba and Igbo, speak more than 500 languages,
+    with English as the official one. Oil made it one of Africa's largest economies, and Lagos is one of the largest
+    cities on the continent. Its Afrobeats music has conquered the world.
+  fact: Its film industry, Nollywood, makes more films a year than any other but India's.
+NIC:
+  about: >-
+    The largest country in Central America, between Honduras and Costa Rica, with lakes and volcanoes along its
+    Pacific side and rainforest towards the Caribbean. Spain founded Granada and León in 1524, and it became
+    independent in 1821. In the 20th century it lived through American occupation, the Somoza family's dictatorship, a
+    revolution in 1979 and a war in the 1980s. Lake Nicaragua, the largest in Central America, holds the volcanic
+    island of Ometepe, and the Masaya volcano has a lava lake you can look into. Its Caribbean coast is home to
+    Miskito and Creole communities, who speak English and their own languages.
+  fact: Bull sharks swim up the San Juan River from the Caribbean into Lake Nicaragua.
+NLD:
+  about: >-
+    A small, flat and densely populated country on the North Sea, on the deltas of the Rhine, the Meuse and the
+    Scheldt. After revolting against Spain in 1568, the Dutch Republic grew into the world's leading trading power in
+    the 17th century, its Golden Age, when Rembrandt and Vermeer painted and its ships sailed from New Amsterdam to
+    Indonesia. Its people have spent centuries reclaiming land from the sea as polders, and the Delta Works and the
+    Afsluitdijk now hold the sea back. It was a founder of what became the European Union, and The Hague hosts the
+    International Court of Justice. Windmills, tulips, cheese and bicycles, which outnumber its people, are its
+    symbols, and Amsterdam's canals are listed by UNESCO. Its port, Rotterdam, is the largest in Europe.
+  fact: About a quarter of it lies below sea level, kept dry by dikes, dunes and pumps.
+NOR:
+  about: >-
+    A long, mountainous country on the west of the Scandinavian Peninsula, its coast cut by deep fjords and reaching
+    far north of the Arctic Circle. The Vikings sailed from here, reaching Iceland, Greenland and North America. It
+    was joined with Denmark for some four centuries and with Sweden from 1814, before becoming fully independent in
+    1905. Oil and gas found in the North Sea in 1969 made it one of the richest countries in the world, and it saves
+    the profits in the world's largest sovereign wealth fund. In the north the Sámi keep their own language and
+    reindeer herding, the midnight sun shines in summer and the northern lights in winter. It is the home of modern
+    skiing, and has won more Winter Olympic medals than any other country.
+  fact: With all its fjords and islands, its coast is long enough to wrap around the Earth twice.
+NPL:
+  about: >-
+    A landlocked country in the Himalayas, between China and India, home to eight of the world's ten highest
+    mountains, Everest among them. Lumbini, in its south, was the birthplace of the Buddha, and Hindu and Buddhist
+    temples fill the Kathmandu Valley, whose old royal cities are listed by UNESCO. Prithvi Narayan Shah unified it in
+    the 18th century, and it was never colonised. A civil war ended in 2006, and in 2008 it abolished its monarchy and
+    became a republic. Its Sherpa people are famed as mountaineers, and its Gurkha soldiers have served in the British
+    and Indian armies for two centuries.
+  fact: Its flag, two stacked triangles, is the only national flag that is not a rectangle.
+NRU:
+  about: >-
+    A single raised coral island in the central Pacific, just south of the equator, the third-smallest country in the
+    world. Germany, then Australia on behalf of Britain and New Zealand, and Japan during the Second World War ruled
+    it before independence in 1968. Phosphate, laid down over ages from the droppings of seabirds, made its people
+    among the richest in the world in the 1970s and 1980s, but mining left most of the island a wasteland of coral
+    pinnacles. Most of its people live on the narrow coastal strip that rings it.
+  fact: It has no official capital; the government sits in the district of Yaren.
+NZL:
+  about: >-
+    An island country in the south-west Pacific, made of the North Island, the South Island and many smaller ones. It
+    was one of the last lands on Earth to be settled, by Polynesian Māori around 1300, and Māori culture, the haka
+    among it, remains central to its identity. The Treaty of Waitangi, signed with Māori chiefs in 1840, made it a
+    British colony, and it became fully independent step by step in the 20th century. Its landscapes, from the
+    Southern Alps and fjords to volcanoes and geysers, served as Middle-earth in the Lord of the Rings films. Sheep
+    outnumber people, and its kiwi, a flightless bird, gave New Zealanders their nickname. Its rugby team, the All
+    Blacks, is one of the most successful in sport.
+  fact: In 1893 it became the first self-governing country where women could vote in national elections.
+OMN:
+  about: >-
+    A country on the south-east corner of the Arabian Peninsula, facing the Arabian Sea and the Gulf of Oman, with the
+    Strait of Hormuz at its northern tip. Its frankincense was traded across the ancient world, and its sailors and
+    merchants built an empire reaching to East Africa and the coast of today's Pakistan. From 1970 Sultan Qaboos
+    turned it from one of the most isolated countries in the world into a modern state, while keeping its traditions.
+    Its rugged Hajar Mountains, desert dunes and forts, such as Nizwa and Bahla, draw visitors, and in summer monsoon
+    rains turn the Dhofar region green.
+  fact: In the 19th century its sultans also ruled Zanzibar, off East Africa, and moved their capital there.
+PAK:
+  about: >-
+    A country in South Asia, reaching from the Arabian Sea to the high Karakoram and Himalaya. The Indus Valley
+    civilisation built Mohenjo-daro and Harappa here more than 4,000 years ago, and later Persian, Greek, Buddhist and
+    Mughal rulers left their mark, from Taxila to Lahore's Badshahi Mosque. It was created in 1947, when British India
+    was partitioned, as a homeland for its Muslims, and its eastern wing became Bangladesh in 1971. It is the fifth
+    most populous country in the world. The Indus and its tributaries water the farmland of Punjab, one of the largest
+    irrigation systems in the world. Cricket is a national passion, and Urdu and English are its official languages,
+    alongside Punjabi, Pashto, Sindhi and Balochi.
+  fact: K2, the second-highest mountain on Earth, rises on its border with China.
+PAN:
+  about: >-
+    The narrow isthmus that joins Central and South America, between the Caribbean and the Pacific. Spain made it a
+    crossroads for the gold and silver of Peru, carried overland between its two coasts. Part of Colombia after
+    independence from Spain, it broke away in 1903 with American support, and the United States then built the Panama
+    Canal, opened in 1914, which it handed over to Panama in 1999. The canal, widened with new locks in 2016, carries
+    about 5% of the world's sea trade, and banking and shipping make Panama City a hub. Beyond the city lie
+    rainforests, the islands of Guna Yala, home to the Guna people, and the Darién Gap, where the Pan-American Highway
+    stops.
+  fact: Because the isthmus bends, the canal's Pacific entrance lies east of its Atlantic one.
+PER:
+  about: >-
+    A country on the Pacific coast of South America, from a desert coast across the high Andes to the Amazon
+    rainforest, which covers more than half its land. Caral, near its coast, is among the oldest cities in the
+    Americas, and later cultures left the Nazca Lines and the adobe city of Chan Chan. From Cusco the Inca ruled the
+    largest empire of the Americas, until Spain conquered it in the 1530s; their mountain city of Machu Picchu is one
+    of the wonders of the world. Lima became the capital of Spain's South American empire, and Peru declared
+    independence in 1821. Many of its people speak Quechua or Aymara, and its cuisine, from ceviche to thousands of
+    kinds of potato, is among the most celebrated in the world. Lake Titicaca lies on its border with Bolivia.
+  fact: The Amazon begins as meltwater on the slopes of Nevado Mismi, in the Andes of southern Peru.
+PHL:
+  about: >-
+    An archipelago of more than 7,000 islands in the western Pacific, between Taiwan and Borneo, grouped around Luzon,
+    the Visayas and Mindanao. Magellan arrived in 1521, and Spain ruled it for over three centuries and named it after
+    King Philip II, and it is now the largest mostly Christian country in Asia. After a revolution against Spain in
+    1896, the United States took it over in 1898, and it became independent in 1946. Its people speak Filipino and
+    English, with more than 170 other languages, and millions work abroad. It sits on the Ring of Fire, with active
+    volcanoes such as Mayon, and typhoons strike it every year. The rice terraces of the Cordilleras, the beaches of
+    Palawan and Boracay and the Chocolate Hills of Bohol are among its wonders.
+  fact: Its jeepneys, the brightly painted buses of its streets, began as US Army jeeps left behind after the Second World War.
+PLW:
+  about: >-
+    Some 340 islands in the western Pacific, east of the Philippines, of which only a few are inhabited. Its people,
+    who arrived at least 3,000 years ago, came under Spanish, German and Japanese rule; fierce battles were fought on
+    Peleliu in 1944, and the United States administered it after the war. Independent since 1994, it is in free
+    association with the United States. The Rock Islands, hundreds of green limestone domes rising from a turquoise
+    lagoon, are listed by UNESCO, and Jellyfish Lake is filled with millions of golden jellyfish with only a mild
+    sting. Visitors must sign a pledge, stamped in their passport, to protect its nature.
+  fact: In 2009 it made its waters the world's first shark sanctuary.
+PNG:
+  about: >-
+    The eastern half of New Guinea, the world's second-largest island, with hundreds of smaller islands, just north of
+    Australia. People have lived here for at least 50,000 years, and farmers in its highlands, at Kuk, were among the
+    first in the world to grow crops, some 7,000 to 10,000 years ago. The highland valleys were unknown to outsiders
+    until the 1930s, when explorers found about a million people living there. Germany and Britain divided it in 1884,
+    and Australia ran all of it from the First World War until independence in 1975. Most of its people live in rural
+    villages, on land held by their clans. Its rainforests and coral reefs are among the richest on Earth, home to
+    birds of paradise and tree kangaroos.
+  fact: More than 800 languages are spoken there, more than in any other country.
+POL:
+  about: >-
+    A country of the North European Plain, reaching from the Baltic coast to the Carpathian and Sudeten mountains. Its
+    history as a state begins in 966, when its ruler Mieszko I was baptised, and in union with Lithuania it later
+    became one of the largest states of Europe. Partitioned by Russia, Prussia and Austria in the late 18th century,
+    it vanished from the map for 123 years, until it was reborn in 1918. In 1939 the Second World War began with its
+    invasion by Germany and the Soviet Union; the war killed about a sixth of its people, among them some three
+    million Polish Jews, and Nazi Germany built Auschwitz and other death camps on its occupied land. After decades of
+    communist rule, the Solidarity movement led it to democracy in 1989, and it joined NATO in 1999 and the European
+    Union in 2004. Copernicus and Chopin were born here, and Kraków's old town and the Wieliczka salt mine are among
+    its treasures.
+  fact: Marie Curie, born in Warsaw, was the first person to win two Nobel Prizes.
+PRK:
+  about: >-
+    The northern half of the Korean Peninsula, a land of mountains between China, Russia and South Korea. Japan ruled
+    all of Korea from 1910 to 1945; after the Second World War the north came under Soviet control, and Kim Il Sung
+    founded a communist state in 1948. Its invasion of the south began the Korean War, which ended in 1953 with an
+    armistice but no peace treaty. The Kim family has ruled it ever since, under an ideology of self-reliance called
+    Juche, and it is one of the most closed and tightly controlled countries in the world. It has built nuclear
+    weapons despite international sanctions. Pyongyang is a showcase of monuments and wide avenues.
+  fact: Mount Paektu, on its border with China, erupted around the year 946 in one of the largest eruptions in recorded history.
+PRT:
+  about: >-
+    A country on the western edge of the Iberian Peninsula, facing the Atlantic, with the Azores and Madeira out in
+    the ocean. It became a kingdom in the 12th century, and in the 15th and 16th centuries its sailors led Europe's
+    age of discovery: Vasco da Gama reached India by sea, Cabral reached Brazil, and it built an empire from Brazil to
+    Macau. Lisbon was largely destroyed by an earthquake and tsunami in 1755. The peaceful Carnation Revolution ended
+    a long dictatorship in 1974, and it joined the European Community in 1986. Fado, its soulful song, port wine from
+    the Douro valley and the blue and white tiles called azulejos are its signatures, and the beaches of the Algarve
+    draw visitors from all over Europe.
+  fact: Its border with Spain, set in 1297, is one of the oldest in the world.
+PRY:
+  about: >-
+    A landlocked country in the heart of South America, divided by the Paraguay River into the wetter east and the dry
+    Chaco in the west. Jesuit missions organised Guarani communities here in the 17th and 18th centuries, and their
+    ruins, such as Trinidad, are listed by UNESCO. Independent since 1811, it lost a huge share of its people in the
+    War of the Triple Alliance against Brazil, Argentina and Uruguay, from 1864 to 1870, and fought Bolivia over the
+    Chaco in the 1930s. The Itaipú dam, which it shares with Brazil, is one of the largest hydroelectric plants in the
+    world and makes most of Paraguay's electricity. Its people drink tereré, a cold version of mate.
+  fact: Guarani, the language of its first peoples, is spoken by most Paraguayans and is official beside Spanish.
+QAT:
+  about: >-
+    A small peninsula jutting north into the Persian Gulf from Arabia, mostly flat, dry desert. Pearl diving and
+    fishing sustained it until oil was found in 1939; it has been ruled by the Al Thani family since the 19th century,
+    and became independent from British protection in 1971. Its natural gas, from the largest field in the world,
+    which it shares with Iran, has made it one of the richest countries in the world per person. Most people living
+    there are foreign workers. Doha's skyline, the Museum of Islamic Art and the stadiums of the 2022 World Cup, the
+    first held in the Arab world, are among its landmarks.
+  fact: Its maroon flag is the only national flag more than twice as wide as it is tall.
+ROU:
+  about: >-
+    A country in south-eastern Europe, ringed by the Carpathian Mountains, with a coast on the Black Sea. Its people
+    trace their roots to the Dacians and to the Romans who conquered them in 106, and Romanian is the only major
+    Romance language of Eastern Europe. The principalities of Wallachia and Moldavia united in 1859 and became
+    independent in 1878, and Transylvania joined them in 1918. After the Second World War it was a communist state,
+    until a revolution in 1989 overthrew Nicolae Ceaușescu. It joined NATO in 2004 and the European Union in 2007.
+    Transylvania's castles, such as Bran, linked with the legend of Dracula, the painted monasteries of Bukovina and
+    the Danube Delta, one of Europe's largest wetlands, are among its treasures.
+  fact: The Palace of the Parliament in Bucharest is the heaviest building in the world.
+RUS:
+  about: >-
+    The largest country in the world, covering much of Eastern Europe and all of northern Asia, across eleven time
+    zones. The princes of Moscow, who threw off Mongol rule in 1480, built a state that grew under the tsars into an
+    empire from the Baltic to the Pacific. Peter the Great opened it to the West and founded Saint Petersburg in 1703.
+    The revolution of 1917 brought the Bolsheviks to power and made it the heart of the Soviet Union, which lost some
+    27 million people in the Second World War and became a superpower, sending the first satellite and the first human
+    into space. The Soviet Union broke up in 1991; in 2014 Russia annexed Crimea, and in 2022 it launched a full-scale
+    invasion of Ukraine. It is rich in oil, gas, timber and minerals, and Siberia's taiga is part of the largest
+    forest on Earth. Tolstoy, Dostoevsky, Tchaikovsky and the Bolshoi Ballet are among its gifts to the world, and the
+    Kremlin and Red Square stand at the heart of Moscow.
+  fact: Lake Baikal, in Siberia, holds about a fifth of the fresh water in all the world's lakes and rivers.
+RWA:
+  about: >-
+    A small, landlocked country of green hills in the Great Lakes region of Africa, called the land of a thousand
+    hills. A kingdom for centuries, it came under German and then Belgian rule, which hardened the divide between Hutu
+    and Tutsi, and it became independent in 1962. In 1994, in about a hundred days, hundreds of thousands of people,
+    most of them Tutsi, were murdered in the genocide against the Tutsi. Since then it has rebuilt itself into one of
+    Africa's fastest-growing economies. Its mountain gorillas, in the volcanoes of the Virunga range, draw visitors
+    from all over the world.
+  fact: It banned plastic bags in 2008, and on the last Saturday of each month people work together to clean their towns.
+SAU:
+  about: >-
+    The largest country of the Arabian Peninsula, most of it desert, including the Rub' al Khali, the largest
+    continuous sand desert in the world. Islam was born here in the 7th century: Mecca, the birthplace of the Prophet
+    Muhammad, and Medina are its holiest cities, and millions of pilgrims come every year for the Hajj. The Al Saud
+    family united most of the peninsula and founded the kingdom in 1932. Oil, found in 1938, made it one of the
+    world's largest producers and exporters, and one of its richest countries. Since 2016 it has begun to open up to
+    tourism and entertainment, and the Nabataean tombs of Hegra, at AlUla, are among its sights. Arabic is its
+    language, and its laws are based on Islam.
+  fact: It is the largest country in the world without a river.
+SDN:
+  about: >-
+    A large country in north-east Africa, where the Blue and White Niles meet at Khartoum. The kingdom of Kush ruled
+    here, and for a time over Egypt too, as its 25th dynasty of pharaohs. Christian kingdoms followed, then Islamic
+    sultanates, and from 1899 joint British and Egyptian rule, until independence in 1956. Long civil wars between
+    north and south led to South Sudan's independence in 2011, and Darfur in the west saw mass killings in the 2000s.
+    A war that broke out in 2023 has driven millions from their homes. Most of its people are Arabic-speaking Muslims,
+    alongside many other peoples and languages.
+  fact: It has more pyramids than Egypt, built by the kings of Kush at Meroe and elsewhere.
+SEN:
+  about: >-
+    The westernmost country of mainland Africa, on the Atlantic, where Dakar sits on the Cap-Vert peninsula. Parts of
+    it belonged to the empires of Ghana and Mali, and its Wolof kingdoms traded with Europeans on the coast. Gorée
+    Island, off Dakar, became a symbol of the Atlantic slave trade, and Saint-Louis was the first capital of French
+    West Africa. Independent since 1960, it is one of Africa's most stable democracies and has never had a military
+    coup; its first president, Léopold Sédar Senghor, was a celebrated poet. Most of its people are Muslim, many in
+    Sufi brotherhoods such as the Mourides, whose holy city is Touba, and its music, mbalax, and teranga, its spirit
+    of hospitality, are its pride.
+  fact: Lake Retba, near Dakar, is pink, coloured by algae in its very salty water.
+SGP:
+  about: >-
+    A city-state on an island at the southern tip of the Malay Peninsula, on one of the world's busiest sea lanes.
+    Stamford Raffles founded a British trading post here in 1819, and it grew into a great port. Occupied by Japan in
+    the Second World War, it joined Malaysia in 1963 but left two years later to become independent. Under Lee Kuan
+    Yew it turned from a poor port into one of the richest countries in the world, a hub of finance, trade and
+    shipping. Its Chinese, Malay and Indian communities live side by side, with English, Mandarin, Malay and Tamil as
+    official languages. It is famous for its order and cleanliness, its hawker food centres and its gardens, from the
+    Botanic Gardens to the Supertrees of Gardens by the Bay.
+  fact: Land won from the sea has made it about a quarter larger than it was in the 1960s.
+SLB:
+  about: >-
+    A double chain of nearly a thousand islands in the south-west Pacific, east of Papua New Guinea. Melanesian
+    peoples have lived here for thousands of years, and Britain made it a protectorate in the 1890s. In 1942 and 1943
+    Guadalcanal was the scene of one of the fiercest campaigns of the Pacific war. Independent since 1978, it went
+    through years of ethnic unrest from 1998 to 2003. Most of its people live in villages and speak some 70 languages,
+    linked by Solomons Pijin, and its seas hold coral reefs and wrecks from the war.
+  fact: Rennell Island, a raised coral atoll, holds Lake Tegano, the largest lake of the Pacific islands.
+SLE:
+  about: >-
+    A country on the Atlantic coast of West Africa, of mangrove coasts, forested hills and plateaus. Freetown was
+    founded in 1792 as a home for freed slaves, among them Black Loyalists from North America, and became a British
+    colony. Their descendants, the Krio, gave the country its common language, Krio. Independent since 1961, it
+    suffered a brutal civil war from 1991 to 2002, fuelled by diamonds, and an Ebola epidemic from 2014 to 2016. Its
+    beaches, the primates of Tiwai Island and the chimpanzee sanctuary of Tacugama are among its sights.
+  fact: Its name comes from the Portuguese for "lion mountains", given to the hills around Freetown in 1462.
+SLV:
+  about: >-
+    The smallest and most densely populated country of mainland Central America, and the only one without a Caribbean
+    coast. Its land is a chain of volcanoes along the Pacific, with fertile soil that made it a land of coffee. It
+    became independent from Spain in 1821, and a civil war from 1980 to 1992 cost some 75,000 lives. In 2001 it
+    adopted the US dollar, and in 2021 it was the first country to make Bitcoin legal tender, a step it scaled back in
+    2025. Pupusas, stuffed corn tortillas, are its national dish, and its Pacific coast is known for surfing.
+  fact: Joya de Cerén, a farming village buried by volcanic ash around the year 600, is called the Pompeii of the Americas.
+SMR:
+  about: >-
+    A tiny, landlocked republic on the slopes of Monte Titano, entirely surrounded by Italy. By tradition it was
+    founded in 301 by Marinus, a Christian stonemason who fled persecution, and it kept its independence even through
+    Italy's unification. Its three towers, perched on the cliffs, appear on its coat of arms and flag, and its
+    historic centre is listed by UNESCO. It is led by two Captains Regent, elected every six months. Tourism, banking
+    and its postage stamps and coins, prized by collectors, support its economy.
+  fact: It claims to be the oldest republic in the world still standing.
+SOM:
+  about: >-
+    A country on the Horn of Africa with the longest coastline of mainland Africa, on the Gulf of Aden and the Indian
+    Ocean. Its ports traded with Arabia, Persia and India for centuries, and Mogadishu was a rich trading city in the
+    Middle Ages. Divided between British and Italian rule, its two parts united at independence in 1960. Since the
+    fall of its government in 1991 it has suffered civil war, famine and insurgency, and Somaliland in the north has
+    declared itself independent, though most countries do not recognise it. Most Somalis share one language, Somali,
+    and one faith, Islam, and herding is a way of life: it has more camels than any other country.
+  fact: It is often called a nation of poets, for the place verse holds in everyday life.
+SSD:
+  about: >-
+    The world's youngest country, a landlocked land of savanna, swamp and forest in east-central Africa, crossed by
+    the White Nile. Its peoples, among them the Dinka, Nuer and Shilluk, are mostly herders and farmers, for whom
+    cattle are wealth. Ruled with Sudan by Britain and Egypt, it fought two long civil wars against the north before
+    voting for independence in 2011, and a civil war from 2013 to 2018 followed. Each year one of the largest animal
+    migrations on Earth, of antelopes such as the white-eared kob, crosses its plains.
+  fact: The Sudd, a swamp of the White Nile, can spread over a seventh of the country in the rainy season.
+STP:
+  about: >-
+    Two volcanic islands in the Gulf of Guinea, off the coast of Gabon, the second-smallest country in Africa.
+    Uninhabited until the Portuguese arrived around 1470, they became a hub of sugar and the slave trade, then of
+    cocoa, of which they were for a time the world's largest producer. Independent since 1975, it has been a
+    multiparty democracy since 1991. Its rainforests, below dramatic volcanic peaks such as the Pico Cão Grande,
+    shelter birds and plants found nowhere else, and Príncipe is a UNESCO biosphere reserve.
+  fact: The equator crosses the islet of Rolas, just off São Tomé's southern tip.
+SUR:
+  about: >-
+    The smallest country in South America, on its north-east coast, with rainforest covering more than nine-tenths of
+    its land. Dutch planters grew sugar here with enslaved Africans, some of whom escaped into the forest and founded
+    the Maroon communities that still live there. After slavery ended in 1863, workers came from India, Java and
+    China, making its people among the most diverse in the world. Independent since 1975, it is the only independent
+    country in the Americas with Dutch as its official language, and Sranan Tongo is its common tongue. Its Central
+    Suriname Nature Reserve is one of the largest protected tropical forests on Earth.
+  fact: In 1667 the Dutch kept it in exchange for New Amsterdam, today's New York.
+SVK:
+  about: >-
+    A landlocked country in Central Europe, mountainous in the north, where the High Tatras rise, and fertile along
+    the Danube in the south. For a thousand years its lands were part of the Kingdom of Hungary, and Bratislava, then
+    known as Pressburg or Pozsony, was where Hungary's kings were crowned for more than 250 years. It joined the
+    Czechs in Czechoslovakia in 1918, lived under communism after the Second World War, and became independent
+    peacefully in 1993. It joined NATO and the European Union in 2004, and uses the euro. It has hundreds of castles
+    and castle ruins, Spiš Castle among the largest in Central Europe, and its caves are among the finest in Europe.
+  fact: It makes more cars per person than any other country.
+SVN:
+  about: >-
+    A small country where the Alps, the Pannonian plain, the Dinaric karst and the Adriatic meet, with a short coast
+    on the Gulf of Trieste. For centuries its lands were ruled by the Habsburgs, and it was part of Yugoslavia from
+    1918. It became independent in 1991 after a ten-day war, and joined the European Union and NATO in 2004. More than
+    half of its land is forest, and Lake Bled, with its island church, and the Škocjan and Postojna caves are among
+    its sights. Its Kras plateau gave its name to karst, the landscape of limestone caves and sinkholes.
+  fact: Its caves are home to the olm, a blind salamander that can live for a hundred years.
+SWE:
+  about: >-
+    The most populous Nordic country, on the eastern side of the Scandinavian Peninsula, from the Baltic to the
+    mountains along Norway, with forests covering most of its land. Vikings sailed east from here, down the rivers of
+    what are now Russia and Ukraine, and in the 17th century Sweden was a great power ruling much of the Baltic. It
+    has not fought a war since 1814 and stayed neutral in both world wars, before joining the European Union in 1995
+    and NATO in 2024. It is known for its welfare state, its design, companies such as IKEA, Volvo and Spotify, and
+    pop music from ABBA onwards. Alfred Nobel founded the Nobel Prizes, most of them awarded in Stockholm every
+    December. In the far north, where the midnight sun shines in summer, Sámi herders keep reindeer.
+  fact: Under the "everyman's right", anyone may walk, camp and pick berries on almost any land.
+SWZ:
+  about: >-
+    A small, landlocked kingdom in southern Africa, between South Africa and Mozambique, known as Swaziland until
+    2018. The Swazi nation took shape in the 18th and 19th centuries, kept its king under British protection, and
+    became independent in 1968. Its culture is alive in great ceremonies such as the Umhlanga, the reed dance, and the
+    Incwala, the kingship ceremony. Its landscapes range from highland forest to lowland bush, where reserves such as
+    Hlane shelter rhinos, elephants and lions.
+  fact: It is the last absolute monarchy in Africa.
+SYC:
+  about: >-
+    An archipelago of 115 islands in the Indian Ocean, north-east of Madagascar, the smallest country in Africa.
+    Uninhabited until the 18th century, it was settled by the French with enslaved Africans, passed to Britain in 1814
+    and became independent in 1976. Its granite islands, such as Mahé, Praslin and La Digue, are rare among ocean
+    islands, and Aldabra, one of the largest coral atolls in the world, is home to some 100,000 giant tortoises.
+    Tourism and tuna fishing drive its economy, and its people speak Seychellois Creole, English and French.
+  fact: The coco de mer, a palm of its islands, grows the largest seed in the world.
+SYR:
+  about: >-
+    A country on the eastern Mediterranean, between Türkiye, Iraq, Jordan, Israel and Lebanon, much of it steppe and
+    desert, crossed by the Euphrates. Some of the world's first farmers lived here, and Ugarit, on its coast, used one
+    of the first alphabets. Aleppo grew rich on the trade routes between the Mediterranean and the East, and Palmyra,
+    a caravan city of the desert, flourished under Rome. Damascus was the capital of the Umayyad caliphate, whose
+    Great Mosque still stands. After Ottoman rule and a French mandate it became independent in 1946, and the Assad
+    family ruled it from 1970 until 2024. A civil war that began in 2011 killed hundreds of thousands of people and
+    forced millions to flee.
+  fact: Damascus, its capital, is thought to be one of the oldest cities in the world still lived in.
+TCD:
+  about: >-
+    A large, landlocked country in north-central Africa, reaching from the Sahara in the north through the Sahel to
+    savanna in the south. Toumaï, a skull some seven million years old found in its desert, may belong to one of the
+    oldest known members of the human family. The kingdoms of Kanem-Bornu, Baguirmi and Wadai ruled its lands before
+    France made it a colony, and it became independent in 1960. It has more than 200 ethnic groups, and French and
+    Arabic are its official languages. The Ennedi Plateau, with its sandstone arches and rock art, and the lakes of
+    Ounianga in the desert are listed by UNESCO, and Zakouma National Park has brought its elephants back from the
+    brink.
+  fact: Lake Chad is what is left of Lake Mega-Chad, which some 7,000 years ago was about as large as the Caspian Sea.
+TGO:
+  about: >-
+    A narrow strip of West Africa between Ghana and Benin, reaching more than 500 km inland from a short coast on the
+    Gulf of Guinea. Its coast was part of the Slave Coast, from which Europeans shipped enslaved Africans across the
+    Atlantic. Germany made it the colony of Togoland in 1884; after the First World War it was split between Britain
+    and France, and the French part became independent as Togo in 1960, while the British part joined Ghana.
+    Gnassingbé Eyadéma and then his son Faure Gnassingbé have led it since 1967. Lomé, its capital and port, sits
+    right on the border with Ghana. Many of its people follow Vodun, alongside Christianity and Islam, and cocoa,
+    coffee, cotton and phosphates are among its main exports.
+  fact: In its Koutammakou valley the Batammariba people still build tall tower-houses of earth.
+THA:
+  about: >-
+    A kingdom at the heart of mainland South-East Asia, from the mountains of the north through the rice-growing
+    plains of the Chao Phraya to the long Malay Peninsula in the south. The kingdoms of Sukhothai and Ayutthaya, whose
+    temple ruins are listed by UNESCO, shaped its culture, and after Ayutthaya fell in 1767 a new capital rose at
+    Bangkok in 1782. It is the only country of South-East Asia never colonised by a European power, and was known as
+    Siam until 1939. It has been a constitutional monarchy since 1932, and its kings are deeply revered. Most Thais
+    are Theravada Buddhists, and tens of thousands of temples, or wats, dot the land. Its cuisine, from green curry to
+    pad thai, is loved around the world, and the beaches and limestone islands of Phuket and Krabi make it one of the
+    most visited countries on Earth. Muay Thai, its kickboxing, is its national sport.
+  fact: The full ceremonial name of Bangkok is the longest place name in the world.
+TJK:
+  about: >-
+    A landlocked country of Central Asia, more than nine-tenths of it mountains, including much of the Pamirs, called
+    the Roof of the World. Its people speak Tajik, a form of Persian, unlike the Turkic languages of most of their
+    neighbours. Cities such as Panjakent belonged to Sogdiana, whose merchants traded along the Silk Road, and the
+    Samanid dynasty of the 9th and 10th centuries is honoured as the founder of the Tajik nation. Part of the Soviet
+    Union from the 1920s, it became independent in 1991 and suffered a civil war from 1992 to 1997. Glaciers such as
+    the Fedchenko, one of the longest outside the polar regions, feed rivers that make it rich in hydropower, and its
+    Nurek dam is one of the tallest in the world. The Pamir Highway, one of the highest roads on Earth, crosses its
+    east.
+  fact: Ismoil Somoni Peak, once called Communism Peak, was the highest mountain of the Soviet Union.
+TKM:
+  about: >-
+    A country of Central Asia between the Caspian Sea and the Amu Darya river, most of it covered by the Karakum
+    Desert. Merv, one of the great cities of the Silk Road, and the Parthian fortresses of Nisa are among its ruins,
+    and its Turkmen people were long nomads famed for their horses and carpets. Part of the Russian Empire and then
+    the Soviet Union, it became independent in 1991 and declared itself permanently neutral in 1995, a status
+    recognised by the United Nations. It holds some of the world's largest reserves of natural gas, and is one of the
+    world's most closed countries. Ashgabat, its capital, holds a world record for the number of its buildings clad in
+    white marble. The Akhal-Teke, its golden horses, appear on its coat of arms, and the patterns of its carpets on
+    its flag.
+  fact: The Darvaza gas crater, the "Door to Hell", has been burning since the 1970s.
+TLS:
+  about: >-
+    The eastern half of the island of Timor, with the enclave of Oecusse in the west, between Indonesia and Australia.
+    Portugal ruled it for centuries, and it is mostly Catholic, with Tetum and Portuguese as its official languages.
+    When Portugal left in 1975, Indonesia invaded and annexed it, and the occupation that followed cost the lives of
+    more than 100,000 people. After a vote organised by the United Nations in 1999 chose independence, it became, in
+    2002, the first new sovereign state of the 21st century. Oil and gas under the Timor Sea fund most of its budget.
+    The waters around Atauro Island have some of the richest reef life ever recorded, and it joined ASEAN in 2025.
+  fact: It is the only country in Asia that lies entirely in the Southern Hemisphere.
+TON:
+  about: >-
+    An archipelago of some 170 islands in the South Pacific, of which only a few dozen are inhabited. The Tu'i Tonga,
+    its sacred kings, once held sway over islands across the Pacific, from Samoa to Fiji. Captain Cook called them the
+    Friendly Islands, and Tonga is the only Pacific nation never colonised: it was a British protected state from 1900
+    to 1970 but kept its own king. It is the last kingdom of Polynesia, and most Tongans are devout Christians,
+    keeping Sunday as a day of rest by law. Humpback whales come to its waters each year to breed, and visitors can
+    swim beside them.
+  fact: The 2022 eruption of its Hunga Tonga volcano was heard as far away as Alaska.
+TTO:
+  about: >-
+    Two islands at the southern end of the Caribbean, just off the coast of Venezuela: Trinidad, the larger, and
+    Tobago. Columbus reached Trinidad in 1498, and after Spanish rule it passed to Britain, which brought enslaved
+    Africans and later indentured workers from India to its sugar and cocoa estates. Their descendants make up most of
+    its people, and its culture blends Africa, India, Europe and China. Independent since 1962, it is one of the
+    richest countries in the Caribbean thanks to oil and natural gas, and the Pitch Lake, the largest natural deposit
+    of asphalt in the world, lies on Trinidad. Its Carnival, with calypso and soca music and masquerade bands, is one
+    of the greatest in the world. Tobago's reefs and its Main Ridge rainforest, protected since 1776, draw nature
+    lovers.
+  fact: The steelpan, tuned from old oil drums, was invented here in the 1930s and 1940s.
+TUN:
+  about: >-
+    The northernmost country of Africa, on the Mediterranean, from the green north to the Sahara in the south.
+    Carthage, founded by Phoenicians near today's Tunis, became a great sea power and fought three wars with Rome,
+    which destroyed it in 146 BC. The Romans left the vast amphitheatre of El Jem, and after the Arab conquest
+    Kairouan became one of the holiest cities of Islam. After Ottoman rule and a French protectorate it became
+    independent in 1956. Protests that began in December 2010 toppled its president and set off the Arab Spring across
+    the Arab world. Its old medinas, its olive groves, which make it one of the largest producers of olive oil, and
+    the salt flats of Chott el Djerid make it a land of contrasts.
+  fact: Luke Skywalker's desert planet, Tatooine, is named after its town of Tataouine, and parts of Star Wars were filmed here.
+TUR:
+  about: >-
+    A country that bridges Europe and Asia: a small part, Eastern Thrace, lies in Europe, and the rest, the great
+    plateau of Anatolia, in Asia, between the Black Sea and the Mediterranean. Anatolia was home to Çatalhöyük, one of
+    the first towns, to the Hittites and to Troy, and later to Greek cities such as Ephesus. Constantinople, now
+    Istanbul, was the capital of the Byzantine Empire for more than a thousand years, until the Ottoman Turks took it
+    in 1453; their empire then ruled much of south-eastern Europe, the Middle East and North Africa. After the
+    empire's defeat in the First World War, Mustafa Kemal Atatürk founded the modern Turkish republic in 1923 and made
+    it a secular state. Istanbul, astride the Bosporus, is its largest city, and Ankara its capital. Cappadocia's
+    fairy chimneys and cave churches, the white terraces of Pamukkale and the beaches of the Turquoise Coast draw
+    millions of visitors. Its cuisine, from kebabs to baklava, and its tea and coffee are famous.
+  fact: Göbekli Tepe, its rings of carved stone pillars, was raised some 11,000 years ago, long before Stonehenge.
+TUV:
+  about: >-
+    A chain of nine small reef islands and atolls in the South Pacific, midway between Hawaii and Australia, the
+    fourth-smallest country in the world. Its highest point is less than 5 m above the sea, which makes it one of the
+    countries most threatened by rising seas. Britain ruled its Polynesian people as the Ellice Islands, together with
+    the Gilbert Islands, now Kiribati, and it separated and became independent in 1978. In 2023 it signed a treaty
+    with Australia that offers Tuvaluans a path to move there as the climate changes. On Funafuti, its capital atoll,
+    the airport's runway doubles as a playing field. Fishing licences and a trust fund support its economy.
+  fact: Its internet ending, .tv, earns it money from television and streaming sites.
+TZA:
+  about: >-
+    A large country of East Africa on the Indian Ocean, including the islands of Zanzibar. Kilimanjaro, the highest
+    mountain in Africa, rises in its north, and it borders Africa's three largest lakes, Victoria, Tanganyika and
+    Nyasa (Malawi). Swahili traders built coastal towns such as Kilwa, and Zanzibar, ruled by the sultans of Oman,
+    became a great market for spices and enslaved people. Tanganyika, a German and then British colony, became
+    independent in 1961 and united with Zanzibar in 1964 to form Tanzania. Its first president, Julius Nyerere, made
+    Swahili the language of the whole nation, helping its more than 120 peoples live together in peace. The Serengeti,
+    where more than a million wildebeest migrate each year, and the Ngorongoro Crater are among the greatest wildlife
+    reserves on Earth.
+  fact: Olduvai Gorge holds some of the oldest stone tools and fossils of early humans, nearly two million years old.
+UGA:
+  about: >-
+    A landlocked country of East Africa, on the equator, sitting on a high plateau around the northern shores of Lake
+    Victoria. Winston Churchill called it the Pearl of Africa for its green beauty. The kingdom of Buganda, which gave
+    the country its name, was one of several kingdoms that came under British rule in the 1890s, and they still have
+    kings today as cultural leaders. Independent since 1962, it suffered under the rule of Idi Amin in the 1970s and
+    through later wars, and the Lord's Resistance Army terrorised its north until the 2000s. The Nile flows north out
+    of Lake Victoria at Jinja, and the Rwenzori Mountains, the Mountains of the Moon, rise on its western border with
+    glaciers almost on the equator. Its parks are home to tree-climbing lions, chimpanzees and more than 1,000 kinds
+    of birds.
+  fact: Almost half of the world's mountain gorillas live in its Bwindi forest.
+UKR:
+  about: >-
+    The largest country wholly in Europe, stretching from the Carpathian Mountains across wide steppes to the Black
+    Sea and the Sea of Azov. Its black soil is among the most fertile on Earth, making it one of the world's great
+    exporters of wheat, maize and sunflower oil, and the blue and yellow of its flag recall a sky over fields of
+    grain. Kyiv was the heart of Kyivan Rus, a great medieval state of the East Slavs, whose Saint Sophia Cathedral
+    still stands. Its lands were later divided between Poland-Lithuania, Russia and Austria, and the Cossacks of the
+    steppes became a symbol of Ukrainian freedom. As part of the Soviet Union it suffered the Holodomor, the famine of
+    1932 and 1933 that killed millions, the devastation of the Second World War and the Chernobyl disaster of 1986. It
+    became independent in 1991. Russia annexed Crimea in 2014, backed separatists in the east, and in 2022 launched a
+    full-scale invasion, which Ukraine has resisted.
+  fact: Arsenalna, in Kyiv, is the deepest metro station in the world, more than 100 m underground.
+URY:
+  about: >-
+    The second-smallest country of South America, between Brazil, Argentina and the Atlantic, a land of rolling
+    grasslands and low hills. Its gauchos herded cattle on the pampas, and beef, grilled at the asado, and mate,
+    sipped all day from a gourd, are central to its life. Fought over by Spain and Portugal, then by Argentina and
+    Brazil, it became independent in 1828 with British mediation. Montevideo, its capital, holds almost half of its
+    people, and Colonia del Sacramento, an old Portuguese town across the river from Buenos Aires, is listed by
+    UNESCO. It is one of the most stable democracies in Latin America, an early welfare state and a pioneer of social
+    laws: in 2013 it became the first country to make the cannabis market legal. Almost all of its electricity comes
+    from renewable sources such as wind and hydropower.
+  fact: It hosted and won the first football World Cup, in 1930.
+USA:
+  about: >-
+    A federal republic of 50 states that spans North America from the Atlantic to the Pacific, with Alaska in the far
+    north-west and Hawaii in the middle of the Pacific. Native American peoples lived across the continent for
+    thousands of years before European settlers arrived. Thirteen British colonies on the Atlantic coast declared
+    independence in 1776, and their constitution of 1787 is the oldest written national constitution still in use. The
+    nation grew westward across the continent, often at the expense of Native peoples, and a civil war from 1861 to
+    1865 ended slavery. By 1900 it was the world's largest economy, after the Second World War it became a superpower,
+    and in 1969 its astronauts were the first to walk on the Moon. Its people come from every part of the world, and
+    its films, music, technology companies and universities shape life far beyond its borders. Its landscapes range
+    from the Grand Canyon and the Rocky Mountains to the swamps of the Everglades, and New York, Los Angeles and
+    Chicago are among the world's great cities.
+  fact: Yellowstone, created in 1872, was the first national park in the world.
+UZB:
+  about: >-
+    A doubly landlocked country of Central Asia, one of only two in the world: to reach the sea you must cross two
+    other countries. Its cities were jewels of the Silk Road: Samarkand, with its tiled Registan square, Bukhara and
+    the walled town of Khiva. Timur, known in the West as Tamerlane, built an empire from Samarkand in the 14th
+    century, and his grandson Ulugh Beg built one of the great observatories of the Middle Ages there. Later ruled by
+    khanates, then by the Russian Empire and the Soviet Union, it became independent in 1991. It is the most populous
+    country of Central Asia, and cotton, gold and natural gas are among its riches. Its bazaars, its plov, a rice dish
+    cooked in great pots, and its blue-tiled domes are its pride.
+  fact: The Aral Sea, on its border, has shrunk to a tenth of its size since the 1960s, when its rivers were turned to water cotton.
+VAT:
+  about: >-
+    The smallest country in the world, a walled city-state of less than half a square kilometre inside Rome, ruled by
+    the Pope as head of the Catholic Church. It became an independent state in 1929, by the Lateran Treaty with Italy,
+    as the last remnant of the Papal States that once covered much of central Italy. Saint Peter's Basilica, by
+    tradition built over the tomb of the apostle Peter and crowned by Michelangelo's dome, is one of the largest
+    churches in the world. The Sistine Chapel, whose ceiling Michelangelo painted, is where the cardinals meet in
+    conclave to elect a new pope. The Vatican Museums hold one of the world's greatest art collections, and its
+    library and archives guard manuscripts from across the centuries. The Swiss Guard, in their striped uniforms, have
+    protected the popes since 1506.
+  fact: It has a cash machine with instructions in Latin.
+VCT:
+  about: >-
+    Saint Vincent, a volcanic island, and the 32 islands and cays of the Grenadines, in the eastern Caribbean. The
+    Kalinago and the Garifuna, descendants of Caribs and Africans, held Saint Vincent long after other islands were
+    colonised, until Britain defeated them and deported most of the Garifuna to Central America in 1797. British sugar
+    estates followed, and independence came in 1979. La Soufrière, its volcano, erupted in 1979 and again in 2021,
+    forcing thousands to flee. The Grenadines, such as Bequia, Mustique and the Tobago Cays, are known for their
+    sailing, beaches and reefs. Breadfruit, brought by Captain Bligh in 1793, is part of its national dish, roasted
+    and served with fried jackfish.
+  fact: Pirates of the Caribbean was filmed at Wallilabou Bay, on Saint Vincent.
+VEN:
+  about: >-
+    A country on the Caribbean coast of South America, from the Andes in the west across the plains of the Llanos to
+    the Orinoco and the highlands of Guayana, where flat-topped table mountains, the tepuis, rise from the forest.
+    Columbus reached its coast in 1498, and its name, little Venice, is said to come from houses on stilts that
+    explorers saw on Lake Maracaibo. Simón Bolívar, born in Caracas, led the wars that freed much of South America
+    from Spain, and Venezuela became a separate republic in 1830. It holds the largest proven oil reserves in the
+    world, which made it one of the richest countries in Latin America. Since the 2010s an economic collapse and
+    political crisis have driven millions of Venezuelans abroad. Baseball is its favourite sport, arepas, corn cakes
+    with fillings, are eaten every day, and lightning flickers over Lake Maracaibo on up to 260 nights a year.
+  fact: Angel Falls, dropping from a table mountain, is the highest uninterrupted waterfall in the world.
+VNM:
+  about: >-
+    A long, S-shaped country on the eastern edge of mainland South-East Asia, from the Red River delta in the north to
+    the Mekong delta in the south. China ruled the north for about a thousand years, until Vietnam won its
+    independence in 938, and Vietnamese dynasties later expanded south down the coast. France made it part of French
+    Indochina in the 19th century. After the Second World War it fought France and was divided in two; the Vietnam
+    War, between the communist north and the US-backed south, ended in 1975, and the country was reunited under
+    communist rule. Since economic reforms began in 1986 it has become one of the fastest-growing economies in Asia,
+    and a major exporter of electronics, clothing and coffee. Ha Long Bay, with its thousands of limestone islands,
+    the old town of Hoi An and the imperial city of Hue are among its treasures, and pho, its noodle soup, is loved
+    around the world.
+  fact: Son Doong is the largest cave passage in the world, with its own jungle and clouds inside.
+VUT:
+  about: >-
+    A Y-shaped chain of about 80 volcanic islands in the South Pacific, east of Australia. Melanesian peoples settled
+    it some 3,000 years ago, and with more than 100 languages it has the most languages per person of any country.
+    Britain and France ruled it jointly as the New Hebrides, a condominium with two of everything, from police to
+    prisons, until independence in 1980. Bislama, a creole made mostly of English words, is spoken across the islands
+    alongside English and French. Mount Yasur on Tanna, one of the most accessible active volcanoes in the world, has
+    been erupting for centuries. Its sand drawings, traced in a single unbroken line, are listed by UNESCO.
+  fact: The land divers of Pentecost Island, who leap from tall towers tied by vines, inspired bungee jumping.
+WSM:
+  about: >-
+    Two large volcanic islands, Upolu and Savai'i, with a few smaller ones, in the heart of Polynesia in the South
+    Pacific. Polynesians have lived here for some 3,000 years, and fa'a Samoa, the Samoan way, built on extended
+    families led by chiefs called matai, still shapes daily life. Germany ruled it from 1900 and New Zealand from
+    1914, and in 1962 it became the first Pacific island nation of the 20th century to gain independence. The writer
+    Robert Louis Stevenson spent his last years here, and is buried on Mount Vaea above Apia. Rugby is a passion, and
+    the pe'a, the traditional tattoo of Samoan men, covers the body from the waist to the knees.
+  fact: In 2011 it skipped 30 December, moving west of the date line to share its days with Australia and New Zealand.
+YEM:
+  about: >-
+    A country at the south-western corner of the Arabian Peninsula, on the Red Sea and the Gulf of Aden, with
+    mountains rising to cool, green highlands. Ancient kingdoms such as Saba, the biblical Sheba, grew rich here on
+    the trade in frankincense and myrrh, and the great dam of Marib was one of the engineering marvels of the ancient
+    world. The old city of Sana'a, with its tall brick houses decorated with white patterns, has been lived in for
+    more than 2,500 years. Coffee was first traded from its port of Mocha, which gave its name to a kind of coffee.
+    North and South Yemen united in 1990. A civil war that began in 2014 has caused one of the worst humanitarian
+    crises in the world. Socotra, its island in the Arabian Sea, has dragon's blood trees and plants found nowhere
+    else.
+  fact: Shibam, a walled town of mud-brick tower houses, is called the Manhattan of the desert.
+ZAF:
+  about: >-
+    The southernmost country of Africa, where the Atlantic and Indian Oceans meet, from the deserts of the west to the
+    high Drakensberg mountains and the subtropical east. Fossils from the Cradle of Humankind, near Johannesburg, are
+    among the oldest of human ancestors, and its San people left rock paintings thousands of years old. The Dutch East
+    India Company founded Cape Town in 1652, and Britain later took the Cape; gold and diamonds, found in the 19th
+    century, made it the most industrialised country of Africa. From 1948 its white minority government enforced
+    apartheid, a system of racial segregation, until it was dismantled after years of struggle. Nelson Mandela, freed
+    after 27 years in prison, became its first democratically elected president in 1994. It has twelve official
+    languages, including sign language, and calls itself the rainbow nation. Table Mountain, the Cape of Good Hope and
+    Kruger National Park, home to the big five, draw visitors from around the world.
+  fact: "It has three capitals: Pretoria for the government, Cape Town for parliament and Bloemfontein for the courts."
+ZMB:
+  about: >-
+    A landlocked country on a high plateau in southern Africa, named after the Zambezi river, which forms much of its
+    southern border. Victoria Falls, called Mosi-oa-Tunya, the smoke that thunders, lies on its border with Zimbabwe.
+    Once the British colony of Northern Rhodesia, it became independent in 1964 under Kenneth Kaunda, and has been one
+    of Africa's more peaceful countries, with democratic changes of government. Copper, mined in the Copperbelt, has
+    long been the backbone of its economy. South Luangwa, home to leopards and the birthplace of walking safaris, and
+    Kafue are among its great national parks, and every year some ten million straw-coloured fruit bats gather at
+    Kasanka, one of the largest mammal migrations on Earth. It has more than 70 ethnic groups, and English is its
+    official language.
+  fact: Lake Kariba, on its border with Zimbabwe, is the largest reservoir in the world by volume.
+ZWE:
+  about: >-
+    A landlocked country of southern Africa between the Zambezi and the Limpopo rivers, mostly a high plateau. Great
+    Zimbabwe, a stone city built between the 11th and 15th centuries, was the capital of a trading kingdom and gave
+    the country its name, which means houses of stone. It was the British colony of Southern Rhodesia; its white
+    minority government declared independence in 1965, and after a long war of liberation it became independent as
+    Zimbabwe in 1980. Robert Mugabe led it from then until 2017, years that saw a fast-track land reform and, in 2008,
+    one of the worst bouts of hyperinflation ever recorded. Its national parks, such as Hwange and Mana Pools, are
+    home to great herds of elephants. The soapstone Zimbabwe Bird, found at Great Zimbabwe, appears on its flag.
+  fact: Victoria Falls, on its border with Zambia, is the largest curtain of falling water in the world.
+SRB:
+  about: >-
+    A landlocked country in the central Balkans, where the Pannonian plain of the north meets the mountains of the
+    south, crossed by the Danube and the Sava, which meet at Belgrade. The medieval Serbian kingdom of the Nemanjić
+    dynasty built monasteries such as Studenica, but fell to the Ottomans after the Battle of Kosovo in 1389 and the
+    fall of Smederevo in 1459. Uprisings in 1804 and 1815 began its road to independence, recognised in 1878. It was
+    the core of Yugoslavia from 1918, and after the wars of the 1990s that broke Yugoslavia up, it became a separate
+    state again in 2006. Kosovo declared independence from it in 2008, which Serbia does not recognise. Belgrade, one
+    of the oldest cities in Europe, is known for its nightlife, and Serbian is written in both Cyrillic and Latin
+    letters.
+  fact: Nikola Tesla's ashes are kept in a golden sphere at his museum in Belgrade.

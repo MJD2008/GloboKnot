@@ -6,16 +6,23 @@ import { readFileSync, readdirSync } from 'node:fs';
 const AUDIO_FILES = (() => {
   try { return readdirSync('public/audio').filter(n => /\.(mp3|m4a|ogg|wav)$/i.test(n)).sort(); } catch { return []; }
 })();
-// James's photos of the countries (docs/PHOTOS.md): every image in public/photos named by the country's code (fra.jpg),
-// with a line under it from public/photos/credits.json if he writes one. Listed into the page like the sounds.
+// Photos of the countries (docs/PHOTOS.md): every image in public/photos named by the country's code, one (fra.jpg)
+// or several (fra-1.webp, fra-2.webp...), shown in that order; a line under each from public/photos/credits.json
+// (keyed by the file name without its extension: "fra-1", or "fra"). Listed into the page like the sounds.
+type Credit = string | { place?: string; credit?: string; link?: string };
 const PHOTOS = (() => {
   try {
-    let credits: Record<string, string> = {};
+    let credits: Record<string, Credit> = {};
     try { credits = JSON.parse(readFileSync('public/photos/credits.json', 'utf8')); } catch { /* none */ }
-    return Object.fromEntries(readdirSync('public/photos').filter(n => /^[a-z]{3}\.(jpe?g|webp|png|avif)$/i.test(n)).sort().map(n => {
-      const id = n.slice(0, 3).toUpperCase(), credit = credits[id.toLowerCase()] ?? credits[id];
-      return [id, credit ? { src: `photos/${n}`, credit } : { src: `photos/${n}` }];
-    }));
+    const out: Record<string, { src: string; place?: string; credit?: string; link?: string }[]> = {};
+    const names = readdirSync('public/photos').filter(n => /^[a-z]{3}(-\d+)?\.(jpe?g|webp|png|avif)$/i.test(n))
+      .sort((a, b) => a.localeCompare(b, 'en', { numeric: true }));
+    for (const n of names) {
+      const stem = n.replace(/\.\w+$/, '').toLowerCase(), id = n.slice(0, 3).toUpperCase();
+      const c = credits[stem];
+      (out[id] ??= []).push({ src: `photos/${n}`, ...(typeof c === 'string' ? { credit: c } : c ?? {}) });
+    }
+    return out;
   } catch { return {}; }
 })();
 const X = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg>';
@@ -99,10 +106,10 @@ const INFO = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12
         <canvas id="globe" class="globe" aria-label="A globe: drag to turn it, pinch or scroll to zoom, point at a country to see its name"></canvas>
         <Fragment set:html={GLOBE_ROPE} />
       </div>
-      <h1 class="hero">Our world <em>in a knot.</em></h1>
+      <!-- No tagline on screen (James, 22 Nov 2026): the globe takes its room. The heading stays for screen readers. -->
+      <h1 class="sr-only">Globoknot, a geography quiz</h1>
       <!-- A country's sheet: tap a country on the globe (scripts/sheet.ts). -->
       <aside id="country-sheets" class="cs-stack" aria-label="Countries" hidden>
-        <nav class="cs-tabs" aria-label="Open countries" hidden></nav>
         <div class="cs-row"></div>
       </aside>
       <!-- The level, and under it what, where and how many in one grey line that opens the configuration. -->
@@ -128,6 +135,9 @@ const INFO = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12
           <span>Practice</span>
         </button>
       </div>
+      <!-- The credits that must be seen (James, 22 Nov 2026: "in fine print in grey at the bottom"): the country data's
+           licence (ODbL asks for it), the maps, and the photos (each is also credited under it). The rest is in About. -->
+      <button id="credits-line" class="credits-line" type="button" aria-haspopup="dialog">Country data: mledoze/countries (ODbL) · Maps: Natural Earth · Photos: Wikimedia Commons</button>
     </section>
 
     <section id="quiz" class="screen quiz" hidden>
@@ -189,18 +199,14 @@ const INFO = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12
       <p id="results-note" class="results-note" hidden></p>
       <p id="versus" class="versus" hidden></p>
       <p id="best" class="best" hidden></p>
-      <p id="next-level" class="next-level" hidden><span id="next-why">Too easy?</span> <button id="next-go" class="link" type="button"></button></p>
-      <!-- A great Monkey's fist round opens Atlas, the hidden fourth level: it waits in the configuration, not on the home screen. -->
-      <div id="unlock" class="unlock" hidden>
-        <b>Atlas is open.</b>
-        <span>The hidden level: lesser-known places, always typed. It waits in the configuration, with The Gordian Knot under it.</span>
-        <button id="unlock-go" class="link" type="button">Try Atlas</button>
-      </div>
+      <p id="next-level" class="next-level" hidden><span id="next-why">Next level:</span> <button id="next-go" class="link" type="button"></button></p>
       <!-- The Gordian Knot at 100%, every answer right the first time: a badge like no other. -->
       <div id="untied" class="alexander" hidden>
         <Fragment set:html={MEDAL} />
         <div><b>Better than Alexander</b><span>He cut the Gordian Knot. You untied it.</span><small id="untied-time"></small></div>
       </div>
+      <!-- Master: a name for The Gordian Knot's board (About); the server checks the run before it goes on (online.ts). -->
+      <div id="master" class="master" hidden></div>
       <div class="actions">
         <button id="again" class="btn primary" type="button">New round</button>
         <button id="share" class="btn" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="18" cy="5.5" r="2.5" /><circle cx="6" cy="12" r="2.5" /><circle cx="18" cy="18.5" r="2.5" /><path d="m8.2 10.8 7.6-4.1M8.2 13.2l7.6 4.1" /></svg>Share</button>
@@ -245,6 +251,11 @@ const INFO = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12
     </section>
   </main>
   <p id="toast" class="toast" role="status" hidden></p>
+  <!-- Something new unlocked (a reward, or Atlas: a good Monkey's fist round or a perfect Bowline round opens it): for a
+       moment at the top; a tap opens where it lives, lit up there (unlocks.ts). -->
+  <div class="unlock-live" aria-live="polite">
+    <button id="unlock-pop" class="unlock-pop" type="button" hidden><svg class="spark" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5c.7 4.6 2.6 6.9 7.5 9.5-4.9 2.6-6.8 4.9-7.5 9.5-.7-4.6-2.6-6.9-7.5-9.5 4.9-2.6 6.8-4.9 7.5-9.5Z" /></svg><b>New unlock!</b><span></span><svg class="chev" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6" /></svg></button>
+  </div>
   <script is:inline id="audio-files" type="application/json" set:html={JSON.stringify(AUDIO_FILES)} />
   <script is:inline id="photos" type="application/json" set:html={JSON.stringify(PHOTOS)} />
 
@@ -350,18 +361,24 @@ const INFO = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12
         <button class="icon-btn close" type="button" aria-label="Close" set:html={X} />
       </header>
       <div class="sheet-body">
-        <!-- Three volumes: everything, the effects, and the music (shown once there is music in the build). -->
+        <!-- Three volumes: everything, the sound effects, and the music (shown once there is music in the build). The
+             effects' own name since 24 Nov 2026, when Effects became the switch for The Gordian Knot's effects below. -->
         <div class="setting volume">
           <span>Volume</span>
           <input id="set-master" type="range" min="0" max="100" step="5" aria-label="Volume" />
         </div>
         <div class="setting volume">
-          <span>Effects</span>
-          <input id="set-effects" type="range" min="0" max="100" step="5" aria-label="Effects" />
+          <span>Sound effects</span>
+          <input id="set-effects" type="range" min="0" max="100" step="5" aria-label="Sound effects" />
         </div>
         <div id="set-music-row" class="setting volume" hidden>
           <span>Music</span>
           <input id="set-music" type="range" min="0" max="100" step="5" aria-label="Music" />
+        </div>
+        <!-- Which music: only once Sound Collector is earned (a round in each part of the day); never shown before. -->
+        <div id="set-pick-row" class="setting pick" hidden>
+          <span>Track</span>
+          <div id="set-pick" class="seg small" role="group" aria-label="Which music plays"></div>
         </div>
         <div class="setting">
           <span>Auto-submit <button class="info" type="button" aria-label="What Auto-submit does" aria-expanded="false" aria-controls="auto-about" set:html={INFO} /></span>
@@ -376,6 +393,12 @@ const INFO = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12
           <span>Colour</span>
           <div id="set-accent" class="swatches" role="group" aria-label="Accent colour"></div>
         </div>
+        <!-- The Gordian Knot's effects anywhere (embers, the logo on fire, Play charged), one switch (James, 24 Nov
+             2026: "put them into one toggle; effects"): only once a quarter of it has been answered right. -->
+        <div id="set-fx-row" class="setting" hidden>
+          <span>Effects</span>
+          <button id="set-fx" class="switch" type="button" role="switch" aria-checked="true" aria-label="Effects"><i></i></button>
+        </div>
       </div>
     </div>
   </dialog>
@@ -387,10 +410,10 @@ const INFO = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12
         <button class="icon-btn close" type="button" aria-label="Close" set:html={X} />
       </header>
       <div class="sheet-body about">
-        <p class="lead">A geography quiz on checked facts.</p>
+        <p class="lead">A geography quiz on verified facts.</p>
         <!-- The numbers first, counted from the facts themselves once they load (these are the counts at the time of writing). -->
         <div class="numbers">
-          <div class="big"><b id="n-facts">1,417</b><span>checked facts</span></div>
+          <div class="big"><b id="n-facts">1,417</b><span>verified facts</span></div>
           <div><b id="n-countries">194</b><span>countries</span></div>
           <div><b id="n-capitals">198</b><span>capitals</span></div>
           <div><b id="n-languages">129</b><span>languages</span></div>
@@ -400,29 +423,37 @@ const INFO = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12
         </div>
         <h3>How a fact gets in</h3>
         <ol class="steps">
-          <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5.5A1.5 1.5 0 0 1 5.5 4H11v13H5.5A1.5 1.5 0 0 1 4 15.5zM20 5.5A1.5 1.5 0 0 0 18.5 4H13v13h5.5a1.5 1.5 0 0 0 1.5-1.5z" /><path d="M6.5 8h2M6.5 11h2M15.5 8h2M15.5 11h2M12 17v3" /></svg><span>Two independent sources are read.</span></li>
-          <li><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5" /><path d="M8 12.5l2.5 2.5L16 9.5" /></svg><span>They agree: the fact is in.</span></li>
-          <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9a2.1 2.1 0 0 0-3-3L5 17z" /><path d="M14 8l2 2M13 20h7" /></svg><span>They don't: a person decides, and writes down why.</span></li>
+          <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5.5A1.5 1.5 0 0 1 5.5 4H11v13H5.5A1.5 1.5 0 0 1 4 15.5zM20 5.5A1.5 1.5 0 0 0 18.5 4H13v13h5.5a1.5 1.5 0 0 0 1.5-1.5z" /><path d="M6.5 8h2M6.5 11h2M15.5 8h2M15.5 11h2M12 17v3" /></svg><span>Each fact is read in two independent sources.</span></li>
+          <li><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5" /><path d="M8 12.5l2.5 2.5L16 9.5" /></svg><span>Where they agree, it is included.</span></li>
+          <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9a2.1 2.1 0 0 0-3-3L5 17z" /><path d="M14 8l2 2M13 20h7" /></svg><span>Where they differ, it is decided by hand, and the reason recorded.</span></li>
         </ol>
         <h3>How to play</h3>
         <ul class="how">
-          <li><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="7" width="18" height="10" rx="3" /><path d="m14 11 2 2 2-2" /></svg><span>Pick a knot: Overhand, Bowline or Monkey's fist. Tap the grey line under it to change what, where and how many.</span></li>
-          <li><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="6" width="18" height="12" rx="2" /><path d="M7 10h1M11 10h1M15 10h1M8 14h8" /></svg><span>Type the answer or pick one of four. Small typos are fixed for you.</span></li>
-          <li><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="13" r="8" /><path d="M12 9v4l2.5 2M10 3h4" /></svg><span>20 seconds a question. Wrong? Try again until the time runs out.</span></li>
-          <li><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5" width="16" height="15" rx="3" /><path d="M4 10h16M9 3v4M15 3v4" /><path d="M8 17l2.5-2.5 2 1.5 3.5-3.5" /></svg><span>The Daily: eight questions, the same for everyone, from easy to very hard.</span></li>
-          <li class="knots"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12h4.5M16.5 12H21" /><circle cx="12" cy="12" r="4.5" /></svg><span>Every answer ties a knot. All right the first time, and the rope closes into a ring.<Fragment set:html={ROPE} /></span></li>
+          <li><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="7" width="18" height="10" rx="3" /><path d="m14 11 2 2 2-2" /></svg><span>Choose a knot: Overhand, Bowline or Monkey's fist. Select optional data from the index.</span></li>
+          <li><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="6" width="18" height="12" rx="2" /><path d="M7 10h1M11 10h1M15 10h1M8 14h8" /></svg><span>Type the answer, or choose one of four. Minor typos are accepted automatically.</span></li>
+          <li><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="13" r="8" /><path d="M12 9v4l2.5 2M10 3h4" /></svg><span>20 seconds per question. A wrong answer can be retried until the time runs out.</span></li>
+          <li><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5" width="16" height="15" rx="3" /><path d="M4 10h16M9 3v4M15 3v4" /><path d="M8 17l2.5-2.5 2 1.5 3.5-3.5" /></svg><span>The Daily: eight questions, identical for everyone, in rising difficulty.</span></li>
+          <li class="knots"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12h4.5M16.5 12H21" /><circle cx="12" cy="12" r="4.5" /></svg><span>Each answer ties a knot. All correct at the first attempt, and the rope closes into a ring.<Fragment set:html={ROPE} /></span></li>
         </ul>
         <p class="keys"><kbd>Enter</kbd> answer · <kbd>&rarr;</kbd> skip · <kbd>1</kbd>–<kbd>4</kbd> pick · <kbd>Esc</kbd> stop</p>
+        <!-- The Gordian Knot's board, from the server (online.ts, worker/board.ts): this edition's places, fastest first. -->
+        <h3 id="board-title">The Gordian Knot</h3>
+        <p class="board-lead">Every question in the game, typed, each right the first time. One place per player; each run is checked by the server.</p>
+        <div id="board-mine" class="master" hidden></div>
+        <ol id="board" class="board"></ol>
+        <p id="board-note" class="board-note">…</p>
         <h3>Sources</h3>
         <ul class="sources">
           <li><a href="https://github.com/mledoze/countries">mledoze/countries</a> <span>ODbL 1.0</span></li>
-          <li><a href="https://www.cia.gov/the-world-factbook/">CIA World Factbook</a> <span>public domain</span></li>
+          <li><a href="https://www.cia.gov/the-world-factbook/">CIA World Factbook</a>: facts, and the texts on the country sheets <span>public domain</span></li>
           <li><a href="https://github.com/datasets/country-codes">UN country codes</a> <span>ODC-PDDL</span></li>
           <li><a href="https://www.naturalearthdata.com/">Natural Earth</a>: maps, peaks, rivers, city lights <span>public domain</span></li>
           <li><a href="https://www.ohchr.org/en/human-rights/universal-declaration/universal-declaration-human-rights/about-universal-declaration-human-rights-translation-project">Universal Declaration of Human Rights</a>: language texts (OHCHR translations)</li>
           <li><a href="https://github.com/lipis/flag-icons">flag-icons</a> <span>MIT</span></li>
+          <li><a href="https://commons.wikimedia.org/">Wikimedia Commons</a>: the photos on the country sheets, each credited under it <span>CC0, CC BY, CC BY-SA</span></li>
         </ul>
         <p class="fine">Data edition <span id="edition">…</span></p>
+        <p class="fine">While a page is open, the server counts it by country, from the connection; this is not stored. The board keeps what it shows, and a code from your browser that marks your place.</p>
       </div>
     </div>
   </dialog>

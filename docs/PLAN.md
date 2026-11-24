@@ -45,3 +45,19 @@ Positioning: the one end-all geography site, unique in its connections and dedic
 - Pick a name, buy the domain (~EUR 10/yr, Cloudflare Registrar at cost).
 - Free Cloudflare account; empty GitHub repo.
 - Later: AdSense account; spot-check facts.
+
+## Rewards, and what stays hidden (James, 22 Nov 2026)
+Understated, not achievement-driven. Each reward opens one thing, in the place it belongs, and stays (gk-rewards); nothing
+earned opens anything else, and nothing locked shows (no greyed-out options).
+
+| Earned by | Opens |
+| --- | --- |
+| A round in each part of the day (morning, day, evening, night): Sound Collector | the music choice in Settings (Auto, the four day parts, Space) |
+| A first try at The Gordian Knot (Atlas + All): First encounter | crimson among the colours |
+| 25% of all its questions right in one Gordian Knot (unanswered count as wrong): Initiate | the Effects switch in Settings (the embers, the logo on fire and Play charged, in the colour picked; one switch since 24 Nov 2026) |
+| Every question right first time: Master | multicolour, a place on the board (About; needs the server, see DEPLOY.md) |
+
+The unlock sound plays once for whatever was earned together. All is there on every level; only under Atlas is it The
+Gordian Knot (red, charged, its own music). A country's photo can be the background: the button on a sheet's photo
+(backdrop.ts); no picker in Settings, the night sky stays the default. Once one is picked, the site opens on it, with
+no sky first (Base.astro puts it in place before the page is drawn).

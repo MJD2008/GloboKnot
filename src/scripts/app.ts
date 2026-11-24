@@ -15,14 +15,24 @@ import { initFill } from './fill';
 import { initPractice } from './practice';
 import { initSheets, type Photo, type Sheets } from './sheet';
 import type { Practice } from './sets';
-import { ACCENTS, ATLAS_AT, GOLD_AT, TIME, applySettings, atlasOpen, better, dailyResult, dailyRope, endTrial, nextDailyIn, saveDaily, saveSelection, saveSettings, saveStats, saveTied, selection, setLevel, settings, stats, tie, tied, today, type Accent, type Theme } from './prefs';
-import { ALL_KINDS, ANSWERS, CATS, DAILY, GORDIAN, LEVELS, LEVEL_IDS, available, buildRound, codeOf, dailyRound, isCustom, levelAsk, rebuildRound, remember, levelOf, type Answers, type Ask, type Level, type Pool, type Question, type Selection, type Tempt } from './questions';
+import { ACCENTS, ATLAS_AT, GOLD_AT, TIME, accentsOpen, type Reward, applySettings, atlasOpen, better, collectPart, dailyResult, dailyRope, earn, earned, endTrial, fxOn, nextDailyIn, saveDaily, saveSelection, saveSettings, saveStats, saveTied, selection, setLevel, settings, stats, tie, tied, today, type Accent, type Theme, type Unlock } from './prefs';
+import { ALL_KINDS, ANSWERS, CATS, DAILY, GORDIAN, LEVELS, LEVEL_IDS, available, buildRound, codeOf, dailyRound, isCustom, isGordian, levelAsk, rebuildRound, remember, levelOf, type Answers, type Ask, type Level, type Pool, type Question, type Selection, type Tempt } from './questions';
 import { flash } from './press';
 import { zoomable, type Zoom } from './zoom';
-import { sound } from './sound';
+import { PICKS, dayPart, sound, type Pick } from './sound';
+import { charge } from './spark';
+import { initFire } from './fire';
+import { initUnlocks } from './unlocks';
+import { initPreviewTools } from './preview-tools';
+import { backdrop, initBackdrop } from './backdrop';
+import { board as fetchBoard, gordianEnd, gordianStart, initLive, keepUntied, myId, rename as renameOnBoard, untied } from './online';
+import { NAME_MAX } from './board-name';
 
 const $ = <T extends HTMLElement = HTMLElement>(sel: string) => document.querySelector(sel) as T;
-const url = (path: string) => new URL(path, document.baseURI).href;
+/** A file's address, next to the page. The private preview carries some files inside the page instead (an Artifact
+ *  version holds at most 511 files, so the flags go in as data: URLs and leave room for photos): window.__gkPacked. */
+const packed = (window as unknown as { __gkPacked?: Record<string, string> }).__gkPacked;
+const url = (path: string) => packed?.[path] ?? new URL(path, document.baseURI).href;
 
 applySettings();
 
@@ -72,13 +82,13 @@ const ui = {
   nextLevel: $('#next-level'),
   nextGo: $<HTMLButtonElement>('#next-go'),
   nextWhy: $('#next-why'),
-  unlockGo: $<HTMLButtonElement>('#unlock-go'),
   untied: $('#untied'),
   untiedTime: $('#untied-time'),
+  master: $('#master'),
   resultsTitle: $('#results-title'),
   versus: $('#versus'),
   best: $('#best'),
-  unlock: $('#unlock'),
+  unlockPop: $<HTMLButtonElement>('#unlock-pop'),
   share: $<HTMLButtonElement>('#share'),
   shareNote: $('#share-note'),
   summary: $('#summary'),
@@ -117,7 +127,11 @@ let reviewAt = 0;                   // the answer being looked at
 let pools: Record<Pool, Entity[]>;
 let globe: Globe | null = null;
 const sky = new Sky($<HTMLCanvasElement>('#sky'));
-if (!screens.start.hidden) sky.play();
+// A country's photo can take the night sky's place (backdrop.ts): the stars rest while it shows.
+initBackdrop(url, photoList());
+const skyOn = () => { if (!screens.start.hidden && !backdrop.now) sky.play(); else sky.pause(); };
+backdrop.onChange(skyOn);
+skyOn();
 let menu: { paint(): void } | null = null;
 let practiceSheet: { paint(): void } | null = null;
 let fill: ReturnType<typeof initFill> | null = null;
@@ -183,6 +197,7 @@ const state = {
   stopped: false,                      // Esc or Stop: the answers so far, without a score
   planned: 0,                          // questions in the round as it began (a stop cuts it short)
   seed: '',
+  run: null as string | null,          // The Gordian Knot: its id on the server, once the server has noted its start
   round: [] as Question[],
   i: 0,
   results: [] as Result[],
@@ -201,6 +216,7 @@ const state = {
   auto: 0,        // auto-submit, waiting for a pause in typing
   last: null as { pct: number; ms: number; rank: string; knots: Knot[] } | null,
   freshTies: [] as string[], // countries tied in the round just played: they pulse on the home globe, once
+  won: [] as Reward[],       // rewards earned in this round, said at its end (crimson is earned as The Gordian Knot begins)
 };
 
 // ---------------------------------------------------------------- loading
@@ -211,9 +227,13 @@ async function load() {
     globe.chainNear = chainNear;
     globe.countryAt = countryAt;
     globe.onTap = hit => { if (hit.id) countrySheets?.open(hit.id); };
+    // Zoomed in, the day's music; back in its rope it goes on: space comes back only after a round (James, 23 Nov 2026:
+    // "The ambient space music should only come back if you're returning from a quiz").
+    globe.onZoom = zoomed => { if (zoomed && !screens.start.hidden) sound.scene('globe'); countrySheets?.relayout(); };
     globe.detail = () => world?.detail ?? null;
     globe.shapeOf = num => world?.shape(num) ?? null;
     paintTied();
+    paintOnline();
     if (!screens.start.hidden) globe.play();
     // The lights of the night side come a moment later; the globe doesn't wait for them.
     fetch(url('data/lights.json')).then(r => r.json()).then(d => globe?.setLights(d)).catch(() => {});
@@ -231,10 +251,11 @@ async function load() {
   ui.edition.textContent = data.edition;
   paintNumbers(data);
   menu = initMenu(kb, ui.menu, paintHome);
-  fill = initFill(screens.fill, { kb, world, pools, url, loadRivers, askLeave, home: () => show('start') });
+  fill = initFill(screens.fill, { kb, world, pools, url, loadRivers, askLeave, home: () => show('start'), done: practiced });
   practiceSheet = initPractice(kb, ui.practiceSheet, startPractice);
   countrySheets = initSheets($('#country-sheets'), { kb, world, url, loadRivers, photos: photoList(), onFront: frontSheet });
   [ui.play, ui.daily, ui.practice].forEach(b => (b.disabled = false));
+  paintOnline();
   paintHome();
   document.body.classList.add('ready');
   if (!screens.start.hidden) globe?.play();
@@ -254,8 +275,20 @@ function countryAt(p: [number, number]) {
   return c ? { name: c.name, shape: hit.shape, id: c.id } : null;
 }
 
+/** Players on the site now by country (two-letter codes, from the server), on the globe. */
+let online: Record<string, number> = {};
+let byIso2: Map<string, Country> | null = null;
+function paintOnline() {
+  if (!globe || !kb) return;
+  byIso2 ??= new Map(kb.countries.map(c => [c.iso2, c]));
+  globe.setOnline(Object.entries(online).flatMap(([cc, n]) => {
+    const c = byIso2!.get(cc);
+    return c && n > 0 ? [{ id: c.id, num: c.num, ll: c.ll, n }] : [];
+  }));
+}
+
 /** James's photos of the countries, listed into the page when it is built (docs/PHOTOS.md). */
-function photoList(): Record<string, Photo> {
+function photoList(): Record<string, Photo[]> {
   try { return JSON.parse(document.getElementById('photos')?.textContent || '{}'); } catch { return {}; }
 }
 
@@ -298,13 +331,17 @@ function paintHome() {
   paintLevels();
   paintConfig();
   if (!kb) return;
-  const n = available(kb, selection.size === 0 ? GORDIAN : selection);
+  const gordian = isGordian(selection);
+  const n = available(kb, gordian ? GORDIAN : selection);
   ui.play.disabled = !n;
   // A challenge link waits on the Play button until it is taken or put aside.
   ui.playLabel.textContent = challenge ? 'Take the challenge' : 'Play';
   ui.playSub.innerHTML = challenge ? [`Beat ${challenge.pct}%`, challenge.level ? levelTag(challenge.level) : '', `${challenge.items.length} questions`].filter(Boolean).join(' · ')
-    : selection.size === 0 ? 'The Gordian Knot' : '';
+    : gordian ? 'The Gordian Knot' : '';
   ui.playSub.hidden = !ui.playSub.innerHTML;
+  // The Gordian Knot picked: Play in its crimson, beating, with sparks (spark.ts).
+  ui.play.classList.toggle('gordian', !challenge && gordian);
+  charge(ui.play, !challenge && (gordian || fxOn()));
   ui.notNow.hidden = !challenge;
   paintDaily();
   paintTied();
@@ -336,6 +373,12 @@ function untilNextDaily() {
 }
 // The countdown on the Daily button stays right while the home screen is open, and a new day brings a new Daily.
 setInterval(() => { if (kb && !screens.start.hidden) paintDaily(); }, 30_000);
+// Multicolour turns the accent's hue all the time (global.css); the globe and the sky, drawn on canvases, follow it.
+setInterval(() => {
+  if (!document.documentElement.classList.contains('multicolour') || screens.start.hidden || document.hidden) return;
+  sky.readAccent();
+  globe?.refresh();
+}, 1500);
 
 /** Tie the world (experiment): the countries tied so far light up on the home globe, gold once right in three
  *  categories. The ones tied in the round just played pulse once, when the home screen comes back. The count is on the
@@ -365,11 +408,11 @@ function paintLevels() {
 /** The configuration in one line: the categories as icons (half-lit when only some of their questions are picked),
  *  where, how many, and how to answer when that isn't the level's own way. */
 function paintConfig() {
-  const all = selection.size === 0, view = all ? GORDIAN : selection;
+  const all = selection.size === 0, view = isGordian(selection) ? GORDIAN : selection;
   const cats = CATS.map(c => ({ ...c, on: catOn(c.id, view.kinds, levelOf(view)) })).filter(c => c.on !== 'none');
   ui.configWhat.innerHTML = cats.map(c => `<span class="${c.on}" title="${c.label}">${icon(c.id)}</span>`).join('');
-  const where = all || !selection.places.length ? 'World' : kb ? placesLabel(kb) : '';
-  const how = !all && selection.answers ? ANSWERS.find(a => a.id === selection.answers)?.label ?? '' : '';
+  const where = isGordian(selection) || !selection.places.length ? 'World' : kb ? placesLabel(kb) : '';
+  const how = !isGordian(selection) && selection.answers ? ANSWERS.find(a => a.id === selection.answers)?.label ?? '' : '';
   const atlas = levelOf(view) === 'impossible';
   ui.configRest.innerHTML = [atlas ? levelTag('impossible') : '', esc(where), all ? 'All' : `${selection.size}<span class="wide"> questions</span>`, how].filter(Boolean).join(' · ');
   ui.config.setAttribute('aria-label', `${[atlas ? 'Atlas' : '', cats.map(c => c.label).join(', '), where, all ? 'every question' : `${selection.size} questions`, how].filter(Boolean).join(' · ')}. Change`);
@@ -377,6 +420,7 @@ function paintConfig() {
 
 // ---------------------------------------------------------------- screens and sheets
 function show(name: keyof typeof screens) {
+  const was = (Object.keys(screens) as (keyof typeof screens)[]).find(k => !screens[k].hidden);
   for (const [k, el] of Object.entries(screens)) el.hidden = k !== name;
   // The home screen is a night sky; the quiz and the results follow the theme.
   document.body.classList.toggle('home', name === 'start');
@@ -386,8 +430,11 @@ function show(name: keyof typeof screens) {
   const lv = name === 'start' || name === 'fill' ? null : state.gordian ? 'impossible' : state.level ?? state.challenge?.level ?? null;
   if (lv) document.body.dataset.lv = lv; else delete document.body.dataset.lv;
   themeColor();
-  if (name === 'start') { globe?.play(); sky.play(); paintHome(); } else { globe?.pause(); sky.pause(); countrySheets?.closeAll(); }
-  sound.scene(name === 'quiz' || name === 'fill' ? 'music-quiz' : 'music-home');
+  if (name === 'start') { globe?.play(); skyOn(); paintHome(); } else { globe?.pause(); sky.pause(); countrySheets?.closeAll(); }
+  // The music: space on the home screen when you come back to it (the day's own if the globe is still grown), the
+  // day's in a round, The Gordian Knot's own in it, none on the results. Home already (a challenge link opened there),
+  // whatever plays goes on.
+  if (name !== 'start' || was !== 'start') sound.scene(name === 'start' ? (globe?.zoomed ? 'globe' : 'home') : name === 'results' ? 'results' : name === 'quiz' && state.gordian ? 'gordian' : 'round');
   if (name !== 'results') clearKnotSounds();
   window.scrollTo({ top: 0 });
 }
@@ -402,8 +449,29 @@ function open(d: HTMLDialogElement) {
   if (d === ui.menu) menu?.paint();
   if (d === ui.practiceSheet) practiceSheet?.paint();
   if (d === ui.settings) paintSettings();
-  if (!d.open) d.showModal();
+  if (d === ui.about) void paintBoard();
+  if (!d.open) { d.showModal(); sound.open(); }
+  // Something unlocked and not yet seen: lit up where it lives, the first time (unlocks.ts).
+  if (d === ui.settings) unlocks.shown('settings', ui.settings);
+  if (d === ui.menu) unlocks.shown('config', ui.menu);
 }
+/** New unlocks: a popup at the top; "New unlock!" opens Settings (or the configuration, for Atlas). */
+const unlocks = initUnlocks(ui.unlockPop, where => open(where === 'settings' ? ui.settings : ui.menu));
+// The preview's badge opens tools to unlock things by hand, to try them out (James, 23 Nov 2026). Not at launch.
+const previewBadge = document.querySelector<HTMLButtonElement>('#preview-tools');
+if (previewBadge) initPreviewTools(previewBadge, {
+  announce: list => unlocks.announce(list, 0.35),
+  refresh: () => {
+    applySettings();
+    themeColor();
+    sky.readAccent();
+    menu?.paint();
+    paintTied();
+    globe?.refresh();
+    if (!screens.start.hidden) paintHome();
+  },
+  countries: () => kb?.countries.map(c => c.id) ?? [],
+});
 for (const d of sheets) {
   d.addEventListener('click', e => {
     // A click on the backdrop (the dialog box itself, outside its panel) or a close button closes it.
@@ -416,6 +484,7 @@ for (const d of sheets) {
 function startPractice(p: Practice) {
   if (!fill) return;
   ui.practiceSheet.close();
+  sound.start();
   show('fill');
   void fill.start(p);
 }
@@ -425,7 +494,7 @@ async function start(sel: Selection, daily = false, ch: Challenge | null = null)
   state.sel = sel;
   state.daily = daily;
   state.challenge = ch;
-  state.gordian = !daily && !ch && sel.size === 0;
+  state.gordian = !daily && !ch && isGordian(sel);
   if (state.gordian) state.sel = sel = GORDIAN; // every question in the game, whatever else was picked
   state.level = daily || ch || state.gordian ? null : levelOf(sel);
   state.stopped = false;
@@ -436,6 +505,9 @@ async function start(sel: Selection, daily = false, ch: Challenge | null = null)
   if (!state.round.length) return;
   state.planned = state.round.length;
   if (state.gordian && !stats.gordianSeen) { stats.gordianSeen = true; saveStats(); }
+  // The Gordian Knot begun: crimson, for trying it, whatever the score (James, 22 Nov 2026: "First encounter").
+  state.won = [];
+  if (state.gordian && earn('crimson')) { state.won.push('crimson'); applySettings(); }
   if (ch) { challenge = null; history.replaceState(null, '', location.pathname + location.search); }
   if (state.round.some(q => q.media.kind === 'map' && q.media.river)) {
     try { await loadRivers(); } catch { state.round = state.round.filter(q => !(q.media.kind === 'map' && q.media.river)); }
@@ -446,6 +518,9 @@ async function start(sel: Selection, daily = false, ch: Challenge | null = null)
   state.streak = state.best = 0;
   state.timed = true; // every round, the Daily too
   state.started = performance.now();
+  // The Gordian Knot begun: the server notes the time, for its board (online.ts).
+  state.run = null;
+  if (state.gordian) askRun(++runs, state.started);
   // The Daily's knots grow with its levels, so the climb shows before it starts.
   ui.beads.innerHTML = state.round.map(q => (q.level ? `<i class="lv-${q.level}"></i>` : '<i></i>')).join('');
   ui.trail.innerHTML = '';
@@ -453,6 +528,7 @@ async function start(sel: Selection, daily = false, ch: Challenge | null = null)
   ui.beads.classList.toggle('lots', state.round.length > 30); // too many to show apart: one rope, coloured as it goes
   ui.clock.hidden = state.round.length <= 20; // long rounds also count: "12/50"
   clearInterval(state.clock);
+  sound.start();
   show('quiz');
   ask();
 }
@@ -737,7 +813,13 @@ function quit() {
   clearTimeout(state.auto);
   cancelAnimationFrame(state.low);
   clearInterval(state.clock);
-  if (!state.results.length) { show('start'); return; }
+  if (!state.results.length) {
+    // Nothing answered: home at once. The Gordian Knot still ends with its sound, and a first try still earns crimson.
+    if (state.gordian) sound.gordianStop();
+    unlocks.announce(state.won, state.gordian ? 1.9 : 1.1);
+    show('start');
+    return;
+  }
   state.round = state.round.slice(0, state.results.length);
   end(true);
 }
@@ -868,8 +950,9 @@ const RANKS: [number, string][] = [
   [0, 'Loose end'],
 ];
 const rankOf = (pct: number) => RANKS.find(([min]) => pct >= min)!;
-/** After a great round (90% or more) of a level's own questions, the next level is offered ("Too easy? Try Bowline").
- *  Monkey's fist leads to Atlas only once Atlas is open. */
+/** After a great round (90% or more) of a level's own questions, the next level is offered ("Next level: Bowline";
+ *  James, 23 Nov 2026: "Maybe say next level (harder version) after a round instead of too easy?"). Monkey's fist leads
+ *  to Atlas only once Atlas is open. */
 const NEXT_AT = 90;
 /** Two rounds in a row under 40% on a level's own questions offer the level below (experiment, A first round that
  *  lands): a way down before frustration. Atlas, who carries the world, gets a pun of its own. */
@@ -890,7 +973,14 @@ function levelUp(): Level | null {
 
 /** The end of a round. A stopped round (Esc or Stop) shows the answers so far and nothing else: no score, no knot,
  *  no record, nothing to share, and it doesn't count towards what opens up after a few rounds. */
+/** A Practice ended: it counts for Sound Collector too. */
+function practiced() {
+  if (collectPart(dayPart())) unlocks.announce(['music'], 1.1);
+}
+
 function end(stopped = false) {
+  /** What this round unlocked besides The Gordian Knot's rewards (state.won): said by the popup (unlocks.ts). */
+  const fresh: Unlock[] = [];
   clearInterval(state.clock);
   cancelAnimationFrame(state.low);
   const ms = performance.now() - state.started;
@@ -903,11 +993,18 @@ function end(stopped = false) {
   remember(state.round.map(q => q.key));
   state.stopped = stopped;
   screens.results.classList.toggle('stopped', stopped);
+  // The Gordian Knot, Initiate: a quarter of all its questions right, stopped or not (those not reached count as
+  // wrong). Its effects (the embers, the logo on fire, Play charged), anywhere, in the colour picked.
+  if (state.gordian && state.results.filter(r => r.ok).length >= Math.ceil(state.planned * 0.25) && earn('effects')) {
+    state.won.push('effects');
+    applySettings();
+  }
+  let master = false;
   // Above the score: what was played. A level as its knot, in its colour; the Daily or The Gordian Knot.
   const lv = state.level ?? state.challenge?.level;
   ui.resultsTitle.innerHTML = stopped ? 'Stopped' : state.gordian ? 'The Gordian Knot' : state.daily ? 'Daily' : lv ? levelTag(lv) : '';
   ui.resultsTitle.hidden = !ui.resultsTitle.innerHTML;
-  ui.versus.hidden = ui.best.hidden = ui.unlock.hidden = ui.nextLevel.hidden = ui.untied.hidden = ui.resultsNote.hidden = true;
+  ui.versus.hidden = ui.best.hidden = ui.nextLevel.hidden = ui.untied.hidden = ui.resultsNote.hidden = true;
   ui.shareNote.hidden = true;
   if (stopped) {
     state.last = null;
@@ -928,8 +1025,9 @@ function end(stopped = false) {
     const up = pct >= NEXT_AT ? levelUp() : null, down = levelDown(pct), next = up ?? down;
     if (next) {
       ui.nextLevel.hidden = false;
-      ui.nextWhy.textContent = up ? 'Too easy?' : DOWN_WHY[state.level!] ?? 'Too hard?';
-      ui.nextGo.textContent = `Try ${LEVELS[next].label}`;
+      ui.nextWhy.textContent = up ? 'Next level:' : DOWN_WHY[state.level!] ?? 'Too hard?';
+      ui.nextGo.textContent = up ? LEVELS[next].label : `Try ${LEVELS[next].label}`;
+      ui.nextGo.setAttribute('aria-label', up ? `Play the next level, ${LEVELS[next].label}: harder questions` : `Play ${LEVELS[next].label}, the level below`);
       ui.nextGo.dataset.level = next;
       ui.nextGo.className = `link lv-${next}`;
     }
@@ -951,7 +1049,7 @@ function end(stopped = false) {
       saveTied();
       if (fresh || gilded) {
         notes.push([fresh ? `<b>+${fresh}</b> tied` : '', gilded ? `<b>${gilded}</b> turned gold` : '',
-          `${Object.keys(tied).filter(id => kb!.country(id)).length} of ${kb.countries.length}`].filter(Boolean).join(' · '));
+          `${Object.keys(tied).filter(id => kb!.country(id)).length}/${kb.countries.length} countries explored`].filter(Boolean).join(' · '));
       }
     }
     if (EXPERIMENTS.dailyRope && state.daily) {
@@ -983,20 +1081,34 @@ function end(stopped = false) {
         if (!stats.untied || ms < stats.untied.ms) stats.untied = { ms, day: today() };
         ui.untied.hidden = false;
         ui.untiedTime.textContent = `Untied in ${clockOf(ms)}`;
+        // Master: the multicolour theme and a place on the board, with a celebration. The run is kept until it has a
+        // name on the board (the page may close first); one begun without the server can't go on it.
+        master = true;
+        if (earn('multicolour')) state.won.push('multicolour');
+        if (state.run) keepUntied({ run: state.run, ms: Math.round(ms), answers: state.results.map(r => [r.q.key, r.typed]), edition: kb.edition });
       }
     }
 
-    // A great Monkey's fist round of the level's own questions opens Atlas, the hidden fourth level, with The Gordian Knot
-    // under it. Once.
+    // A good Monkey's fist round or a perfect Bowline round of the level's own questions opens Atlas, the hidden fourth
+    // level, with The Gordian Knot under it (ATLAS_AT). Once.
     stats.rounds++;
     endTrial(); // a new player's first round was 8 questions; from now on, 13
-    if (!atlasOpen() && state.level === 'hard' && !isCustom(state.sel) && total >= 8 && pct >= ATLAS_AT) {
+    const atlasAt = state.level ? ATLAS_AT[state.level] : undefined;
+    if (!atlasOpen() && atlasAt !== undefined && !isCustom(state.sel) && pct >= atlasAt) {
       stats.atlas = true;
-      ui.unlock.hidden = false;
-      ui.nextLevel.hidden = true; // the opening says it, with its own button
+      fresh.push('atlas');
     }
     saveStats();
+    // Sound Collector: a round in each part of the day (by the player's clock) opens the choice of music.
+    if (collectPart(dayPart())) fresh.push('music');
   }
+
+  // The Gordian Knot's end has a sound of its own as its music fades: its celebration when every question was right,
+  // else its stop sound. Anything unlocked has the popup at the top with its twinkle, once however many came together,
+  // right after the end or stop sound (never over it); under the celebration, the popup alone (James, 23 Nov 2026:
+  // instead of lines under the results).
+  if (state.gordian) { if (master) sound.celebrate(); else sound.gordianStop(); }
+  unlocks.announce([...state.won, ...fresh], state.gordian ? 1.9 : 1.1, master);
 
   ui.answers.innerHTML = '';
   state.results.forEach((r, j) => {
@@ -1008,10 +1120,101 @@ function end(stopped = false) {
     li.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openReview(j); } });
     ui.answers.append(li);
   });
-  if (!stopped) sound.done(share);
+  if (!stopped && !state.gordian) sound.done(share);
   show('results');
   ui.again.focus({ preventScroll: true });
+  // Master: a name for the board, straight away (or why this run can't go on it).
+  ui.master.hidden = !master;
+  if (master) {
+    if (state.run) nameForm(ui.master, !matchMedia('(pointer: coarse)').matches);
+    else ui.master.innerHTML = '<p class="master-note">This run began without a connection to the board, so it can\u2019t go on it.</p>';
+  }
 }
+
+// ---- The Gordian Knot's board (online.ts; on the server, worker/board.ts)
+let runs = 0; // Gordian Knots begun on this page: a late answer from the server for an earlier one is ignored
+/** Asks the server to note a Gordian Knot's start, again a few times over its first minutes if it can't be reached. */
+function askRun(id: number, begun: number, tries = 0) {
+  void gordianStart(performance.now() - begun).then(run => {
+    if (id !== runs || !state.gordian) return;
+    if (run) state.run = run;
+    else if (tries < 3) setTimeout(() => { if (id === runs) askRun(id, begun, tries + 1); }, [20_000, 90_000, 300_000][tries]);
+  });
+}
+const WHY: Record<'name' | 'taken' | 'offline' | 'refused', string> = {
+  name: `Letters, digits and spaces, up to ${NAME_MAX}.`,
+  taken: 'That name is taken.',
+  offline: 'The board can\u2019t be reached just now. Your run is kept; try again later.',
+  refused: 'This run can\u2019t go on the board.',
+};
+/** The name box for an untied run waiting for its name (on the results, and in About while it waits). */
+function nameForm(box: HTMLElement, focus = false) {
+  const u = untied();
+  box.hidden = !u;
+  if (!u) { box.innerHTML = ''; return; }
+  box.innerHTML = `<form class="master-form" novalidate><label for="${box.id}-name">Your name on the board</label>
+    <div class="master-row"><input id="${box.id}-name" type="text" maxlength="${NAME_MAX}" autocomplete="nickname" spellcheck="false" enterkeyhint="done" />
+    <button class="btn primary" type="submit">Add</button></div><p class="master-note" aria-live="polite"></p></form>`;
+  const form = box.querySelector('form')!, input = form.querySelector('input')!, go = form.querySelector('button')!, note = form.querySelector('.master-note')!;
+  if (focus) input.focus({ preventScroll: true });
+  form.addEventListener('submit', async e => {
+    e.preventDefault();
+    go.disabled = true;
+    note.textContent = '';
+    const r = await gordianEnd(u, input.value);
+    go.disabled = false;
+    if (r.ok) {
+      keepUntied(null);
+      const here = box.closest('dialog') === ui.about; // in About, the board is right under it
+      box.innerHTML = `<p class="master-done">${r.place === 1 ? 'First' : ordinal(r.place)} on the board.${here ? '' : ' <button class="link" type="button" data-see-board>See the board</button>'}</p>`;
+      if (ui.about.open) void paintBoard(false);
+      return;
+    }
+    note.textContent = WHY[r.why];
+    if (r.why === 'refused') { keepUntied(null); input.disabled = go.disabled = true; }
+    else input.focus();
+  });
+}
+const dayOf = (d: string) => new Date(`${d}T12:00:00Z`).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+const PENCIL = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9a2.1 2.1 0 0 0-3-3L5 17z" /><path d="M14 8l2 2" /></svg>';
+/** The board in About: this edition's places, fastest first (the player's own can be renamed), then earlier editions'. */
+async function paintBoard(form = true) {
+  if (form) nameForm($('#board-mine'));
+  const list = $('#board'), note = $('#board-note');
+  const [b, me] = await Promise.all([fetchBoard(), myId()]);
+  if (!b) { list.innerHTML = ''; note.textContent = 'The board can\u2019t be reached just now.'; return; }
+  const now = b.entries.filter(e => !b.edition || e.edition === b.edition), before = b.entries.filter(e => b.edition && e.edition !== b.edition);
+  const row = (e: (typeof b.entries)[number], i: number, old: boolean) => `<li${e.id === me ? ' class="mine"' : ''}>
+    <span class="b-place">${i + 1}</span><span class="b-name">${esc(e.name)}</span>
+    ${e.id === me && !b.sample ? `<button class="icon-btn b-edit" type="button" aria-label="Rename" title="Rename">${PENCIL}</button>` : ''}
+    <span class="b-time">${clockOf(e.ms)}</span><span class="b-day">${dayOf(e.day)}${old ? ` · edition ${esc(e.edition)}` : ''}</span></li>`;
+  list.innerHTML = now.map((e, i) => row(e, i, false)).join('')
+    + (before.length ? `<li class="b-sub">Earlier editions</li>${before.map((e, i) => row(e, i, true)).join('')}` : '');
+  note.textContent = b.sample ? 'Sample rows: the preview has no server.'
+    : now.length ? `Edition ${b.edition} · ${b.n.toLocaleString('en-GB')} questions` : 'Not yet untied.';
+}
+/** Renaming one's place: the name becomes a box, Enter keeps it, Esc leaves it. */
+function renameRow(li: HTMLElement) {
+  const name = li.querySelector<HTMLElement>('.b-name')!, was = name.textContent ?? '';
+  const form = document.createElement('form');
+  form.className = 'b-rename';
+  form.innerHTML = `<input type="text" maxlength="${NAME_MAX}" aria-label="New name" spellcheck="false" /><button class="btn primary" type="submit">Save</button><small aria-live="polite"></small>`;
+  const input = form.querySelector('input')!, small = form.querySelector('small')!;
+  input.value = was;
+  name.replaceWith(form);
+  li.querySelector('.b-edit')?.remove();
+  input.focus();
+  input.select();
+  input.addEventListener('keydown', e => { if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); void paintBoard(); } });
+  form.addEventListener('submit', async e => {
+    e.preventDefault();
+    if (input.value.trim() === was) { void paintBoard(); return; }
+    const r = await renameOnBoard(input.value);
+    if (r.ok) void paintBoard();
+    else small.textContent = WHY[r.why];
+  });
+}
+
 
 // ---- looking back: an answer on a big map (or its text), with the right answer lit up and the countries around it
 // named, and a card about what the question was about.
@@ -1123,7 +1326,7 @@ function openReview(j: number) {
   paintCard(q);
   ui.reviewPrev.disabled = j === 0;
   ui.reviewNext.disabled = j === state.results.length - 1;
-  if (!ui.review.open) ui.review.showModal();
+  if (!ui.review.open) { ui.review.showModal(); sound.open(); }
   // The map is drawn once the dialog shows, so the names on it can be sized for the width it is shown at.
   if (v.map) {
     world.render(ui.reviewMap, v.map);
@@ -1284,23 +1487,37 @@ function paintNumbers(data: KBData) {
 }
 
 // ---------------------------------------------------------------- settings
+/** The multicolour swatch: every hue the colour turns through. */
+const SPECTRUM = 'conic-gradient(#ff4d6d, #ffb02e, #f2e94e, #3ee483, #2cc7c7, #6b8fff, #a184ff, #ff4d6d)';
+const PICK_LABEL: Record<Pick, string> = { auto: 'Auto', morning: 'Morning', afternoon: 'Day', evening: 'Evening', night: 'Night', space: 'Space' };
 function paintSettings() {
   const v = sound.levels;
   $<HTMLInputElement>('#set-master').value = String(v.master);
   $<HTMLInputElement>('#set-effects').value = String(v.effects);
   $<HTMLInputElement>('#set-music').value = String(v.music);
   $('#set-music-row').hidden = !sound.hasMusic;
+  // Sound Collector's reward: which music plays. Not there at all until it is earned.
+  $('#set-pick-row').hidden = !sound.hasMusic || !earned('music');
+  if (earned('music')) {
+    $('#set-pick').innerHTML = PICKS.map(p => `<button type="button" data-pick="${p}" aria-pressed="${v.pick === p}"${p === 'auto' ? ' title="By the time of day"' : ''}>${PICK_LABEL[p]}</button>`).join('');
+  }
   for (const r of ui.settings.querySelectorAll<HTMLInputElement>('input[type="range"]')) r.style.setProperty('--fill', `${r.value}%`);
   $('#set-auto').setAttribute('aria-checked', String(settings.auto));
   $('#set-theme').innerHTML = (['light', 'dark'] as const).map(t => `<button type="button" data-theme="${t}" aria-pressed="${settings.theme === t}">${t[0].toUpperCase() + t.slice(1)}</button>`).join('');
   // The colour belongs to the theme shown: each theme keeps its own.
   const mine = settings.accents[settings.theme];
-  $('#set-accent').innerHTML = (Object.keys(ACCENTS) as Accent[]).map(a => `<button type="button" data-accent="${a}" aria-pressed="${mine === a}" title="${ACCENTS[a].label}" aria-label="${ACCENTS[a].label}" style="--sw:${settings.theme === 'dark' ? ACCENTS[a].dark : ACCENTS[a].light}"></button>`).join('');
+  // The five, then any colour earned in The Gordian Knot (crimson, multicolour), only once earned.
+  $('#set-accent').innerHTML = accentsOpen().map(a => `<button type="button" data-accent="${a}" aria-pressed="${mine === a}" title="${ACCENTS[a].label}" aria-label="${ACCENTS[a].label}" style="--sw:${a === 'multicolour' ? SPECTRUM : settings.theme === 'dark' ? ACCENTS[a].dark : ACCENTS[a].light}"></button>`).join('');
+  // The Gordian Knot's effects, anywhere: only once a quarter of it has been answered right.
+  $('#set-fx-row').hidden = !earned('effects');
+  $('#set-fx').setAttribute('aria-checked', String(fxOn()));
 }
 ui.settings.addEventListener('click', e => {
   const t = (e.target as HTMLElement).closest<HTMLButtonElement>('button');
   if (!t) return;
+  if (t.dataset.pick) { sound.set({ pick: t.dataset.pick as Pick }); paintSettings(); return; }
   if (t.id === 'set-auto') settings.auto = !settings.auto;
+  else if (t.id === 'set-fx') settings.fx = !fxOn();
   else if (t.dataset.theme) settings.theme = t.dataset.theme as Theme;
   else if (t.dataset.accent) settings.accents[settings.theme] = t.dataset.accent as Accent;
   else return;
@@ -1310,6 +1527,7 @@ ui.settings.addEventListener('click', e => {
   globe?.refresh();
   sky.readAccent();
   menu?.paint();
+  if (!screens.start.hidden) paintHome();
 });
 
 // The volumes change as the slider moves; the effects play a sample once it is let go.
@@ -1345,6 +1563,14 @@ ui.flag.addEventListener('click', () => ui.media.classList.toggle('big'));
 ui.daily.addEventListener('click', () => start(DAILY, true));
 $('#open-settings').addEventListener('click', () => open(ui.settings));
 $('#open-about').addEventListener('click', () => open(ui.about));
+// The board: "See the board" (after a place on it), and renaming one's own place.
+document.addEventListener('click', e => {
+  const t = e.target as Element;
+  if (t.closest('[data-see-board]')) { open(ui.about); requestAnimationFrame(() => $('#board-title').scrollIntoView({ block: 'start' })); return; }
+  const edit = t.closest('.b-edit');
+  if (edit) renameRow(edit.closest('li')!);
+});
+$('#credits-line').addEventListener('click', () => { open(ui.about); ui.about.querySelector('.sources')?.scrollIntoView({ block: 'start' }); });
 $('#menu-play').addEventListener('click', () => start(selection));
 ui.form.addEventListener('submit', e => { e.preventDefault(); flash(ui.form.querySelector('.go')); if (state.locked) next(); else answer(ui.input.value); });
 ui.input.addEventListener('input', () => autoSubmit());
@@ -1365,14 +1591,9 @@ document.addEventListener('click', e => {
 for (const d of document.querySelectorAll('dialog')) d.addEventListener('close', () => {
   for (const b of d.querySelectorAll<HTMLButtonElement>('button.info[aria-expanded="true"]')) b.click();
 });
-// "Too easy? Try Monkey's fist": the next level, at once. So does "Try Atlas" when Atlas opens.
+// "Next level: Monkey's fist" (or, after two hard rounds, "Too hard? Try Overhand"): that level, at once.
 ui.nextGo.addEventListener('click', () => {
   setLevel(ui.nextGo.dataset.level as Level);
-  saveSelection();
-  start(selection);
-});
-ui.unlockGo.addEventListener('click', () => {
-  setLevel('impossible');
   saveSelection();
   start(selection);
 });
@@ -1414,8 +1635,12 @@ ui.card.addEventListener('click', e => {
 document.addEventListener('keydown', e => {
   if (document.querySelector('dialog[open]')) return;
   if (!screens.fill.hidden && e.key === 'Escape') { e.preventDefault(); fill?.leave(); return; }
-  // On the home screen, Esc closes the country sheet in front, then puts a grown globe back into its rope.
-  if (!screens.start.hidden && e.key === 'Escape' && (countrySheets?.back() || globe?.back())) { e.preventDefault(); return; }
+  // On the home screen, Esc brings everything back (James, 22 Nov 2026): every country sheet closes and a grown globe
+  // goes back into its rope, at once.
+  if (!screens.start.hidden && e.key === 'Escape') {
+    const sheets = countrySheets?.back() ?? false, grown = globe?.back() ?? false;
+    if (sheets || grown) { e.preventDefault(); return; }
+  }
   if (screens.quiz.hidden) return;
   // Esc stops the round, as the X button does, once it is confirmed (a second Esc). → skips, but only with nothing
   // typed, so it still moves the cursor through a typed answer; after an answer, → and Enter both go on.
@@ -1437,7 +1662,11 @@ document.addEventListener('keydown', e => {
 });
 
 paintHome();
-sound.scene('music-home');
+sound.scene('home');
+// Players on the site now, by country, glowing on the globe (online.ts).
+initLive(counts => { online = counts; paintOnline(); });
+// The logo on fire, in The Gordian Knot and for those who earned its animation (fire.ts).
+initFire($('.brand'));
 // The Gordian Knot's heartbeat at the edges of the screen gets its sound, beat for beat, while a question is open.
 document.body.addEventListener('animationiteration', e => {
   if (e.animationName === 'heartbeat' && !screens.quiz.hidden) sound.heartbeat();

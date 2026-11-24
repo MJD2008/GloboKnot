@@ -4,11 +4,13 @@
 // question types), where (the whole world, continents or single countries) and how many questions. Every change is
 // kept at once; Play starts it. Something always stays selected: the last ticked box can't be unticked until another
 // one is ticked. Atlas, the hidden fourth level, is only here (not on the home screen), locked until a Monkey's fist round
-// of 75% or more. Atlas is everything, typed: every question type it asks (no flag to pick), the whole world, so only the
-// count can change (James, 16 Nov 2026). All, under Atlas, is The Gordian Knot: every question in the game.
+// of 50% or more or a Bowline round of 100% (James, 23 Nov 2026). Atlas is everything, typed: every question type it asks (no flag to pick), the whole world, so only the
+// count can change (James, 16 Nov 2026). All is there under every level (22 Nov 2026): every question the selection can
+// ask; under Atlas it is The Gordian Knot, every question in the game, in crimson.
 import { CONTINENTS, type Knowledge } from './kb';
-import { ANSWERS, CATS, GORDIAN, LEVELS, LEVEL_IDS, TEMPLATES, answersOf, available, canAsk, isCustom, levelOf, type Answers, type Cat, type Level } from './questions';
+import { ANSWERS, CATS, GORDIAN, LEVELS, LEVEL_IDS, TEMPLATES, answersOf, available, canAsk, isCustom, isGordian, levelOf, type Answers, type Cat, type Level } from './questions';
 import { ATLAS_AT, MAX_SIZE, SIZES, atlasOpen, clampSize, endTrial, saveSelection, saveStats, selection, setLevel, stats } from './prefs';
+import { charge } from './spark';
 
 export const ICONS: Record<Cat | 'world', string> = {
   locations: '<path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2zM9 4v14M15 6v14"/>',
@@ -34,7 +36,7 @@ export const levelIcon = (l: Level | 'locked') => `<svg class="lv-icon" viewBox=
 /** A level's name with its knot, in its colour: on the results, a challenge and the configuration line. */
 export const levelTag = (l: Level) => `<span class="lv-tag lv-${l}">${levelIcon(l)}${LEVELS[l].label}</span>`;
 /** Atlas stays shut until a Monkey's fist round of the level's own questions scores this well; then it is in the configuration. */
-export const ATLAS_LOCKED = `Score ${ATLAS_AT}% or more in a ${LEVELS.hard.label} round to open Atlas.`;
+export const ATLAS_LOCKED = `Score ${ATLAS_AT.hard}% or more in a ${LEVELS.hard.label} round, or ${ATLAS_AT.medium}% in a ${LEVELS.medium.label} round, to open Atlas.`;
 const CHEVRON = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg>';
 
 const esc = (s: string) => s.replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]!);
@@ -115,10 +117,10 @@ export function initMenu(kb: Knowledge, root: HTMLElement, onChange: () => void)
       </div>
     </div>`).join('')}`;
 
-  // ---- length: four presets, a box for any other number, and under Atlas All: The Gordian Knot
+  // ---- length: four presets, a box for any other number, and All (under Atlas: The Gordian Knot)
   sizes.innerHTML = SIZES.map(n => `<button type="button" data-size="${n}">${n}</button>`).join('')
     + `<label class="custom"><input id="size-custom" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="${String(MAX_SIZE).length}" placeholder="Custom" aria-label="Custom number of questions" autocomplete="off" /></label>`
-    + `<button type="button" data-size="0" class="all" title="The Gordian Knot: every question in the game" hidden>All</button>`;
+    + `<button type="button" data-size="0" class="all">All</button>`;
   const custom = sizes.querySelector<HTMLInputElement>('#size-custom')!;
   const all = sizes.querySelector<HTMLButtonElement>('.all')!;
   custom.addEventListener('input', () => {
@@ -162,7 +164,7 @@ export function initMenu(kb: Knowledge, root: HTMLElement, onChange: () => void)
     if (size) {
       endTrial(true); // a count picked is the player's own, 8 too
       selection.size = Number(size.dataset.size);
-      if (selection.size === 0 && !stats.gordianSeen) { stats.gordianSeen = true; saveStats(); }
+      if (isGordian(selection) && !stats.gordianSeen) { stats.gordianSeen = true; saveStats(); }
       changed();
     }
   });
@@ -197,7 +199,7 @@ export function initMenu(kb: Knowledge, root: HTMLElement, onChange: () => void)
 
   function paintLevel() {
     for (const b of levels.querySelectorAll<HTMLButtonElement>('button')) b.setAttribute('aria-pressed', String(b.dataset.level === selection.level));
-    // Atlas is shut until a great Monkey's fist round: a padlock, and a tap says how to open it.
+    // Atlas is shut until a good Monkey's fist round or a perfect Bowline round: a padlock, and a tap says how to open it.
     const shut = !atlasOpen() && selection.level !== 'impossible';
     if (atlas.classList.contains('locked') !== shut) {
       atlas.classList.toggle('locked', shut);
@@ -210,7 +212,7 @@ export function initMenu(kb: Knowledge, root: HTMLElement, onChange: () => void)
     // Under the levels, words only when something needs saying: All, or a mix of the player's own (with Reset).
     const untied = stats.untied ? ` <span class="untied-note">Untied in ${clockOf(stats.untied.ms)}.</span>` : '';
     const hint = lockedTap && shut ? ATLAS_LOCKED
-      : selection.size === 0 ? `The Gordian Knot: every question in the game, typed, in one go.${untied}`
+      : isGordian(selection) ? `The Gordian Knot: every question in the game, typed, in one go.${untied}`
         : selection.level === 'impossible' ? 'Atlas asks everything, about the whole world, typed. Only the count is yours.'
           : isCustom(selection) ? `Your own mix <button type="button" class="link" data-level="${selection.level}">Reset</button>` : '';
     if (levelHint.innerHTML !== hint) levelHint.innerHTML = hint; // only when it changes, so it is read out once
@@ -220,7 +222,7 @@ export function initMenu(kb: Knowledge, root: HTMLElement, onChange: () => void)
   function paint() {
     paintLevel();
     // Under Atlas (and All, The Gordian Knot) the rest shows what it asks, and can't be changed.
-    const all = selection.size === 0, view = all ? GORDIAN : selection, locked = all || selection.level === 'impossible';
+    const gordian = isGordian(selection), view = gordian ? GORDIAN : selection, locked = gordian || selection.level === 'impossible';
     for (const f of fixed) { f.inert = locked; f.classList.toggle('fixed', locked); }
     const how = answersOf(view), level = levelOf(view), typedOnly = !!LEVELS[level].typedOnly;
     // Atlas is always typed: Choose and Both can't be picked.
@@ -266,11 +268,19 @@ export function initMenu(kb: Knowledge, root: HTMLElement, onChange: () => void)
   }
 
   function paintSizes(typing = false) {
-    all.hidden = !atlasOpen() || selection.level !== 'impossible';
-    all.classList.toggle('untied', !!stats.untied);
-    all.classList.toggle('new', !stats.gordianSeen);
+    // All: every question the selection can ask; under Atlas, in crimson, The Gordian Knot.
+    const atlas = selection.level === 'impossible' && atlasOpen();
+    all.classList.toggle('gordian', atlas);
+    all.title = atlas ? 'The Gordian Knot: every question in the game' : 'Every question you picked';
+    all.classList.toggle('untied', atlas && !!stats.untied);
+    all.classList.toggle('new', atlas && !stats.gordianSeen);
     const preset = selection.size === 0 || (SIZES as readonly number[]).includes(selection.size);
     for (const b of sizes.querySelectorAll<HTMLButtonElement>('[data-size]')) b.setAttribute('aria-pressed', String(Number(b.dataset.size) === selection.size));
+    // The Gordian Knot picked: All and the Play under it in crimson, with a heartbeat and sparks (spark.ts).
+    const gordian = atlas && selection.size === 0, go = root.querySelector<HTMLButtonElement>('#menu-play')!;
+    charge(all, gordian);
+    go.classList.toggle('gordian', gordian);
+    charge(go, gordian);
     custom.closest('.custom')!.classList.toggle('on', !preset);
     if (!typing) custom.value = preset ? '' : String(selection.size);
   }

@@ -25,8 +25,8 @@ green, gold, orange and crimson, with a knot drawn beside its name. A level pick
 to answer, which the player can still change in the configuration, and decides how well known the places asked about
 are. Atlas is everything, typed: every question type it asks, about the whole world, and only the count can change
 (James, 16 Nov: "Atlas mode is locked in with everything, and in type mode"). Atlas is not on the home screen: it waits in the configuration
-behind a padlock until a Monkey's fist round of the level's own questions, 8 or more, scores 75% or more (whoever played
-three rounds before 14 Nov keeps it open). The ids stay `easy`, `medium`, `hard` and `impossible`: saved selections
+behind a padlock until a round of the level's own questions scores 50% or more on Monkey's fist or 100% on Bowline, whatever
+the count (James, 23 Nov; it was 75% on Monkey's fist before; whoever played three rounds before 14 Nov keeps it open). The ids stay `easy`, `medium`, `hard` and `impossible`: saved selections
 and links use them.
 
 | Level | Question types | Answers | Places |
@@ -130,8 +130,9 @@ cities (Natural Earth's populated places of 10,000 people or more, `lights.json`
 across the night side, bigger and brighter for bigger places.
 
 Tapping a country on the home globe opens its sheet beside the globe (James, 16 Nov; a double tap zooms instead, so
-a tap waits 0.3 s for a second one) and picks the country out in green: its photo (James's own, in `public/photos`, see [docs/PHOTOS.md](docs/PHOTOS.md); until there is one, the
-private preview shows where it goes), a map with the capital, the major rivers and the notable peaks named and the
+a tap waits 0.3 s for a second one) and picks the country out in green: up to three photos to swipe through (free
+photos from Wikimedia Commons, each credited under it with a link to its licence; `public/photos`, see
+[docs/PHOTOS.md](docs/PHOTOS.md)), a map with the capital, the major rivers and the notable peaks named and the
 neighbours around it, and the capital, languages, highest point, peaks, rivers and neighbours. A neighbour, by its name
 or its shape on the map, opens its own sheet without closing the first: a wide screen shows the last two side by side
 and slides the menu over, a narrower one shows one at a time with a tab for each open sheet (up to six). × or Esc
@@ -145,9 +146,14 @@ the questions still ask approved facts only.
 A few words are only shown when asked for, behind an ⓘ (what the levels mean, what Practice is, what
 Auto-submit does). About opens with the numbers (194 countries, 1,417 checked facts...), counted from the facts as they
 load, then how a fact gets in, how to play, and the sources. Settings has three volumes (Volume, Effects, Music); the
-sounds and music go in named slots, listed in [docs/AUDIO.md](docs/AUDIO.md).
+sounds and music go in named slots, listed in [docs/AUDIO.md](docs/AUDIO.md). The music is James's own: space on the
+home screen, and once the globe is zoomed or a round starts, the music of the time of day by the player's own clock
+(morning, afternoon, evening, night), blended in as space fades; The Gordian Knot has its own. Nothing starts or stops
+abruptly: every change is a crossfade, a track overlaps its own start to loop, and the music dips under each effect.
 Under Atlas, once it is open, is All: The Gordian Knot, every question in the game that can be typed (1,828 of 2,022:
-each flag is asked to be named, not to be found), in crimson, with one record (best score, then fastest). Untying it,
+each flag is asked to be named, not to be found), in crimson, with one record (best score, then fastest). Once it is
+picked, All and Play turn crimson, beat like a heart and throw small sparks off their edges (none with reduced
+motion; James, 22 Nov). Untying it,
 100% with every answer right the first time, earns a badge like no other: Better than Alexander ("He cut the Gordian
 Knot. You untied it."), a gold medal with a laurel wreath round a globe, the best time under All in the
 configuration, and the ropes round the home globe and the logo turn gold for good.
@@ -200,14 +206,16 @@ src/scripts/press.ts      a press you can feel: the press on every button, held 
 src/scripts/questions.ts  question templates (12 kinds, one clue each, given/asked tags), the levels and the round builder: approved facts in, questions out
 src/scripts/kb.ts         the knowledge base as the site reads it
 src/scripts/map.ts        the map: a globe turned and zoomed to the asked country, capital, peak or river
-src/scripts/sheet.ts      a country's sheet, opened from the home globe: photo, map, facts, neighbours side by side
+src/scripts/sheet.ts      a country's sheet, opened from the home globe: photos to swipe, map, facts, neighbours side by side
 src/scripts/globe.ts      the globe on the start screen: turns by itself, can be dragged, grows over the screen when zoomed, names the country under the pointer, lights the countries tied, shows day, night and city lights
 src/scripts/sun.ts        where the sun stands overhead at a moment, for day and night on the globe
 src/scripts/sky.ts        the night sky behind the start screen: stars that light up and tie together when touched
 src/scripts/sound.ts      sounds and music in named slots (docs/AUDIO.md): a file in public/audio per slot, else a
-                          small synthesised placeholder; the three volumes in Settings
+                          small synthesised placeholder; music by scene and time of day, crossfaded; the three volumes
+src/scripts/spark.ts      The Gordian Knot picked: All and Play beat like a heart and throw small sparks
 public/data/              countries.json (npm run build:data), rivers.json (npm run import), world.json (1:50m) and globe.json (1:110m countries; npm run build:map), lights.json (npm run build:lights), sheets.json (npm run build:sheets)
-public/photos/            James's photos for the country sheets, one per country (docs/PHOTOS.md)
+public/photos/            photos for the country sheets, up to three per country, with credits.json (docs/PHOTOS.md)
+public/audio/             James's music and sound effects, one file per slot (docs/AUDIO.md)
 public/flags/             flags from flag-icons (npm run build:flags)
 ```
 

@@ -3,12 +3,14 @@
   "private": true,
   "type": "module",
   "devDependencies": {
+    "@cloudflare/workers-types": "5.20261104.1",
     "@types/d3-geo": "3.1.1",
     "@types/geojson": "7946.0.16",
     "@types/topojson-client": "3.1.5",
     "flag-icons": "7.6.0",
     "topojson-simplify": "3.0.3",
     "world-atlas": "2.0.2",
+    "wrangler": "4.158.0",
     "yaml": "2.9.1"
   },
   "scripts": {

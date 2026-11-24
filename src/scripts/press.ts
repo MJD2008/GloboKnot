@@ -1,7 +1,8 @@
 // A press you can feel (James, 14 Nov 2026: "so you really feel like it's clicked"). Every button goes down the
 // moment a finger or the mouse does, and springs back up when it lifts; the look is in global.css ("a press you can
 // feel"). The press holds for a moment at least, so even the quickest tap shows it, and a button worked from the
-// keyboard shows it too. On a phone that can, a click also gives the lightest buzz, unless Effects is off.
+// keyboard shows it too. On a phone that can, a click also gives the lightest buzz, unless Effects is off; and every
+// press makes James's click (the select sound) the moment it goes down.
 import { sound } from './sound';
 
 const HOLD = 110; // ms a press shows, at the least
@@ -16,6 +17,7 @@ function down(el: Element) {
   held = el;
   since = performance.now();
   el.classList.add('pressed');
+  sound.select();
 }
 function up() {
   if (!held) return;

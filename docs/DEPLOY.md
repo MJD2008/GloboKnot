@@ -1,11 +1,14 @@
 # Putting Globoknot online
 
 The site is static: `npx astro build` writes plain files into `dist/`, and Cloudflare serves them for free from a
-Worker. The repository already has the settings file it needs, `wrangler.jsonc`, and `public/_headers` (the build's
-hashed files are kept by browsers for a year; everything else is checked again on each visit).
+Worker. Since 23 Nov 2026 the same Worker also runs a small server under `/api/`: The Gordian Knot's board and the
+count of players online (section 5). The repository already has the settings file it needs, `wrangler.jsonc`, and
+`public/_headers` (the build's hashed files are kept by browsers for a year; everything else is checked again on each
+visit).
 
 Checked on 16 Nov 2026: a fresh clone of the branch builds on Node 24 (Cloudflare's default) with `npm ci` and
-`npx astro build`, and `npx wrangler deploy --dry-run` accepts the result (220 files, no bindings).
+`npx astro build`. Checked on 23 Nov 2026: `npx wrangler deploy --dry-run` accepts the result (778 files, and the
+server with its two Durable Objects, BOARD and LIVE).
 
 ## 1. Put the site in `main`
 
@@ -48,6 +51,48 @@ The preview is hidden from search engines on purpose. When the site should be fo
 - `public/robots.txt`: replace `Disallow: /` with `Allow: /`.
 - `CREDITS.md`: check OHCHR's terms of use for the UDHR quotes (the language texts).
 
+## 5. The server: the board and players online
+
+Nothing to set up for it: `wrangler.jsonc` describes it, and the first deploy of `main` that has it creates it. The
+Deploy command stays `npx wrangler deploy`; before it uploads, it runs `node scripts/build-answers.mjs`, which writes
+the answer key the server checks a run against (Node 22.18 or newer; Cloudflare's default is newer).
+
+**What it is.** The code is in `worker/`. Two Durable Objects (small, long-lived programs, each with its own little
+database), both on Cloudflare's Free plan:
+
+- `BOARD` holds The Gordian Knot's board. A run is noted when it begins; when it ends, every answer is checked against
+  the answer key, and the time against the server's own clock (and no faster than 0.7 seconds a question). One place
+  per player, at most 50 new places a day. A person who writes a program to fake a run could still get one on; the
+  secret below takes it off.
+- `LIVE` counts open pages by country. Each page keeps a connection open while it is in view.
+
+**What it costs.** Nothing on the Free plan, within these limits a day: 100,000 requests to Durable Objects, 13,000
+GB-seconds of running time, 5 million rows read, 100,000 rows written, 5 GB stored. An open page is about one request,
+plus one for each update of the counts (at most one every 8 seconds, for everyone at once); a Gordian Knot is two; the
+board is one each time About opens. Over a limit, the board and the glow stop answering until the next day. The quiz
+itself keeps working: static files don't count. If the site ever outgrows that, the Workers Paid plan ($5 a month)
+lifts the limits.
+
+**One secret, to take a name off the board.** In the Worker's **Settings > Variables and Secrets**, add a **Secret**
+named `ADMIN_KEY` with a long random value (a password manager can make one). Or, on your computer:
+`npx wrangler secret put ADMIN_KEY`. Then:
+
+```
+curl https://globoknot.com/api/board
+curl -X DELETE https://globoknot.com/api/board/<id> -H "Authorization: Bearer <ADMIN_KEY>"
+```
+
+The first lists the places with their ids (12 characters); the second takes one place off. Without the secret, nothing
+can be taken off. A player taken off can come back only with a new run.
+
+**What is kept about players.** For each player: the SHA-256 of a random key made in their browser (the key comes
+with each request; only its hash is kept), the name they chose, their time, the date, and the edition of the data. A run begun is kept for 30
+days. Their country is Cloudflare's guess from the connection; it is held in memory while their page is open, to count
+it, and never written down. No addresses, no cookies. About says this in one line.
+
+**Pull requests.** Cloudflare builds other branches too (the check on a pull request), but makes no preview link for
+a Worker with Durable Objects. The site only changes when `main` does.
+
 ## Checking a build on your own computer
 
 ```
@@ -55,4 +100,5 @@ npm install
 npm run dev      # the site at http://localhost:4321, reloads as you edit
 npm run build    # the files Cloudflare will serve, in dist/
 npm run preview  # serves dist/ to check the real build
+npx wrangler dev # dist/ and the server, at http://localhost:8787 (run npm run build first)
 ```

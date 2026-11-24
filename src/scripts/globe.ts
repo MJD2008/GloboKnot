@@ -46,6 +46,7 @@ const DOUBLE_TAP = 300; // a tap waits this long for a second one before the cou
 const MAX_COVER = 4;   // zoomed all the way in, the globe is four times as big as it takes to cover the screen
 const FADE_BY = 0.35;  // the rope round it is gone by a zoom of 1.35
 const TIE = '#f2c14e'; // the gold of a tied country (and of the rope, once The Gordian Knot is untied)
+const LIVE = '#7fdcff'; // the glow of a country with players on the site now
 const PULSE = 3600;    // ms the countries tied in the last round pulse
 const FACE = 1400;     // ms to turn and face them
 const DETAIL_AT = 1.3; // zoomed in this far, the 1:50m countries and their borders are drawn instead of the land
@@ -64,6 +65,8 @@ const clamp = (x: number, a: number, b: number) => Math.min(b, Math.max(a, x));
 /** 0 at a, 1 at b (either way round), smooth in between. */
 const smoothstep = (a: number, b: number, x: number) => { const t = clamp((x - a) / (b - a), 0, 1); return t * t * (3 - 2 * t); };
 export interface Hit { name: string; shape: GeoPermissibleObjects; id?: string }
+/** Players on the site now in a country: its id, numeric code and position [lat, lng] (a dot where it has no shape). */
+export interface Online { id: string; num: string; ll: [number, number]; n: number }
 
 export class Globe {
   private readonly ctx: CanvasRenderingContext2D;
@@ -133,6 +136,9 @@ export class Globe {
   countryAt: ((p: LonLat) => Hit | null) | null = null;
   /** A tap or a click on a country: its sheet opens. */
   onTap: ((hit: Hit) => void) | null = null;
+  /** The globe grew out of its rope (true), or went back into it (false): the music comes down from space. */
+  onZoom: ((zoomed: boolean) => void) | null = null;
+  private wasZoomed = false;
   /** A tap waiting to see whether a second one follows: a double tap zooms, and opens no sheet. */
   private tapWait = 0;
   /** The quiz's map, once it has loaded: drawn when zoomed in. */
@@ -230,6 +236,23 @@ export class Globe {
     this.canvas.dataset.tied = String(list.length);
     this.dirty = true;
     this.redraw();
+  }
+
+  /** Players on the site now, by country (James, 22 Nov 2026): their countries glow, brighter for more players, and
+   *  pointing at one says how many. */
+  private online: Online[] = [];
+  private onlineById = new Map<string, number>();
+  setOnline(list: Online[]) {
+    this.online = list;
+    this.onlineById = new Map(list.map(p => [p.id, p.n]));
+    this.canvas.dataset.online = list.map(p => `${p.id}:${p.n}`).join(',');
+    if (this.hover) this.labelOf(this.hover);
+    this.dirty = true;
+    this.redraw();
+  }
+  private labelOf(hit: Hit) {
+    const n = hit.id ? this.onlineById.get(hit.id) ?? 0 : 0;
+    this.label.textContent = n ? `${hit.name} · ${n} online` : hit.name;
   }
 
   /** The lights of the night side. */
@@ -399,15 +422,20 @@ export class Globe {
     zin.disabled = this.zoomTo >= max * 0.999;
     zout.disabled = home.hidden = this.zoomTo <= 1;
     document.body.classList.toggle('globe-big', this.zoomTo > 1);
+    if (this.wasZoomed !== this.zoomTo > 1) { this.wasZoomed = this.zoomTo > 1; this.onZoom?.(this.wasZoomed); }
     this.setBig(this.zoom > 1 || this.zoomTo > 1);
     this.dirty = true;
     this.redraw();
   }
 
-  /** Where the globe in its rope is on the screen (css px). */
+  /** Where the globe in its rope is on the screen (css px), with the menu in its place: when the menu steps aside
+   *  (sheet.ts: to the left while the globe is grown, James 23 Nov 2026, or for a sheet), the grown globe stays put. */
   private measure() {
     const b = this.canvas.getBoundingClientRect();
-    if (b.width) this.homeAt = { x: b.left + b.width / 2, y: b.top + b.height / 2, r: b.width / 2 - 2 };
+    if (!b.width) return;
+    const start = this.canvas.closest<HTMLElement>('.start');
+    const aside = start ? parseFloat(getComputedStyle(start).left) || 0 : 0;
+    this.homeAt = { x: b.left - aside + b.width / 2, y: b.top + b.height / 2, r: b.width / 2 - 2 };
   }
 
   /** Grown, the globe is drawn on the layer over the whole screen; back at its size, in its rope again. */
@@ -469,7 +497,7 @@ export class Globe {
     const same = hit?.name === this.hover?.name;
     this.hover = hit;
     if (hit) {
-      this.label.textContent = hit.name;
+      this.labelOf(hit);
       this.label.style.left = `${x}px`;
       this.label.style.top = `${y}px`;
     }
@@ -667,6 +695,27 @@ export class Globe {
       const p = this.still ? 1 : 0.5 - 0.5 * Math.cos((age / PULSE) * 6 * Math.PI);
       ctx.globalAlpha = 0.65 * p; ctx.fillStyle = '#fff3c9'; ctx.beginPath(); path(groups.fresh); ctx.fill();
       ctx.globalAlpha = p; ctx.strokeStyle = TIE; ctx.lineWidth = 1.6 * k; ctx.stroke();
+      ctx.globalAlpha = 1;
+    }
+    // Players on the site now: their countries glow, brighter for more of them, breathing slowly; over the night too.
+    if (this.online.length) {
+      const breathe = this.still ? 1 : 0.8 + 0.2 * Math.sin(t / 700);
+      ctx.fillStyle = ctx.strokeStyle = LIVE;
+      for (const p of this.online) {
+        const a = Math.min(0.6, 0.2 + 0.13 * Math.log2(1 + p.n)) * breathe;
+        const shape = (detail ? this.shapeOf?.(p.num) : null) ?? this.shapes.get(p.num);
+        if (shape) {
+          ctx.globalAlpha = a; ctx.beginPath(); path(shape); ctx.fill();
+          ctx.globalAlpha = Math.min(1, a * 1.6); ctx.lineWidth = 1.1 * k; ctx.stroke();
+          continue;
+        }
+        const pt: LonLat = [p.ll[1], p.ll[0]];
+        if (geoDistance(pt, center) > 89 * RAD) continue;
+        const xy = this.projection(pt);
+        if (!xy) continue;
+        ctx.globalAlpha = Math.min(1, a * 1.8);
+        ctx.beginPath(); ctx.arc(xy[0], xy[1], (2 + Math.log2(1 + p.n)) * k * Math.sqrt(this.zoom), 0, 2 * Math.PI); ctx.fill();
+      }
       ctx.globalAlpha = 1;
     }
     if (this.picked) {
