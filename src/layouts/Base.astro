@@ -20,6 +20,25 @@ const PREVIEW = true;
     <link rel="icon" href="favicon.svg" type="image/svg+xml" />
   </head>
   <body class="home">
+    <!-- The background (backdrop.ts): the night sky, unless a country's photo was picked; then that photo is put in
+         place here, before the page is first drawn, so the site opens on it rather than on the sky first (James, 24 Nov
+         2026: "the start screen is space in general ... only once you change it to something else do you load up with
+         the picture ready"). -->
+    <div class="backdrop" aria-hidden="true"><i></i><i></i></div>
+    <script is:inline>
+      try {
+        var gkB = JSON.parse(localStorage.getItem('gk-background') || 'null');
+        if (gkB && /^[A-Z]{3}$/.test(gkB.id) && /^photos\/[a-z]{3}(-\d+)?\.(webp|jpe?g|png|avif)$/.test(gkB.src)) {
+          var gkL = document.querySelector('.backdrop'), gkI = gkL.querySelector('i');
+          gkL.dataset.src = gkB.src;
+          gkI.style.backgroundImage = 'url("' + gkB.src + '")';
+          gkI.style.transition = 'none';
+          gkI.className = 'on';
+          document.documentElement.classList.add('has-backdrop');
+          document.documentElement.dataset.backdrop = gkB.id;
+        }
+      } catch (e) { /* private mode, or nothing kept */ }
+    </script>
     <header class="top">
       <a class="brand" href="./" aria-label="Globoknot home">
         <!-- The mark: the world in a loop of rope whose ends cross below it, as in a knot. -->

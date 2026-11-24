@@ -361,14 +361,15 @@ const INFO = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12
         <button class="icon-btn close" type="button" aria-label="Close" set:html={X} />
       </header>
       <div class="sheet-body">
-        <!-- Three volumes: everything, the effects, and the music (shown once there is music in the build). -->
+        <!-- Three volumes: everything, the sound effects, and the music (shown once there is music in the build). The
+             effects' own name since 24 Nov 2026, when Effects became the switch for The Gordian Knot's effects below. -->
         <div class="setting volume">
           <span>Volume</span>
           <input id="set-master" type="range" min="0" max="100" step="5" aria-label="Volume" />
         </div>
         <div class="setting volume">
-          <span>Effects</span>
-          <input id="set-effects" type="range" min="0" max="100" step="5" aria-label="Effects" />
+          <span>Sound effects</span>
+          <input id="set-effects" type="range" min="0" max="100" step="5" aria-label="Sound effects" />
         </div>
         <div id="set-music-row" class="setting volume" hidden>
           <span>Music</span>
@@ -392,14 +393,11 @@ const INFO = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12
           <span>Colour</span>
           <div id="set-accent" class="swatches" role="group" aria-label="Accent colour"></div>
         </div>
-        <!-- The Gordian Knot's texture and animation anywhere: only once a quarter of it has been answered right. -->
-        <div id="set-fx-texture-row" class="setting" hidden>
-          <span>Texture <small>Embers, from The Gordian Knot</small></span>
-          <button id="set-fx-texture" class="switch" type="button" role="switch" aria-checked="true" aria-label="Texture"><i></i></button>
-        </div>
-        <div id="set-fx-animation-row" class="setting" hidden>
-          <span>Animation <small>The logo on fire, Play charged</small></span>
-          <button id="set-fx-animation" class="switch" type="button" role="switch" aria-checked="true" aria-label="Animation"><i></i></button>
+        <!-- The Gordian Knot's effects anywhere (embers, the logo on fire, Play charged), one switch (James, 24 Nov
+             2026: "put them into one toggle; effects"): only once a quarter of it has been answered right. -->
+        <div id="set-fx-row" class="setting" hidden>
+          <span>Effects</span>
+          <button id="set-fx" class="switch" type="button" role="switch" aria-checked="true" aria-label="Effects"><i></i></button>
         </div>
       </div>
     </div>

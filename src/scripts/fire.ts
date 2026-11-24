@@ -1,9 +1,12 @@
 // The logo on fire (James, 22 Nov 2026: "When playing the Gordian Knot, make the Globoknot logo in the top-left corner
 // appear to be on fire"; kept anywhere by those who earned The Gordian Knot's animation). Since 23 Nov 2026 only the
 // globe burns ("only come out of the globe ... little flames coming out of the globe", in the red of the page): small
-// tongues of flame born on the globe's rim, mostly its upper half, rising and fading from a light red through the
-// page's crimson to a deep red, drawn on a little canvas behind the mark. Never yellow or orange: drawn over each other
-// plainly (not added up, which would turn them yellow). With less motion asked for: nothing moves (a still glow, CSS).
+// tongues of flame born on the globe's rim, mostly its upper half, rising and fading from a light shade through the
+// colour to a deep one, drawn on a little canvas behind the mark. The colour is The Gordian Knot's crimson in its round,
+// and the accent picked in Settings anywhere else (James, 24 Nov 2026: "if you unlock the electric color and flame
+// effect it should be shown in the selected color too"); Multicolour's turning hue is followed. Drawn over each other
+// plainly (not added up, which would wash them out to white or yellow). With less motion asked for: nothing moves (a
+// still glow, CSS).
 
 const PAD = 16;   // px of canvas to each side of the mark
 const RISE = 22;  // px of canvas above it, for the flames to rise into
@@ -11,19 +14,19 @@ const RISE = 22;  // px of canvas above it, for the flames to rise into
 interface Flame { x: number; y: number; vx: number; vy: number; age: number; life: number; size: number }
 
 type RGB = [number, number, number];
-/** "#d0202c" (or "rgb(...)") as numbers; the page's crimson when it can't be read. */
+/** "#d0202c" or "rgb(208, 32, 44)" (a computed colour) as numbers; the page's crimson when it can't be read. */
 function rgbOf(css: string): RGB {
   const hex = css.trim().match(/^#([0-9a-f]{6})$/i);
   if (hex) return [0, 2, 4].map(i => parseInt(hex[1].slice(i, i + 2), 16)) as RGB;
-  const rgb = css.match(/(\d+)\D+(\d+)\D+(\d+)/);
-  return rgb ? [Number(rgb[1]), Number(rgb[2]), Number(rgb[3])] : [208, 32, 44];
+  const rgb = css.match(/(\d+(?:\.\d+)?)\D+?(\d+(?:\.\d+)?)\D+?(\d+(?:\.\d+)?)/);
+  return rgb ? [Math.round(Number(rgb[1])), Math.round(Number(rgb[2])), Math.round(Number(rgb[3]))] : [208, 32, 44];
 }
 const mix = (a: RGB, b: RGB, t: number): RGB => a.map((v, i) => Math.round(v + (b[i] - v) * t)) as RGB;
 
-/** Sprites from just born to dying: a soft round light, from a lighter red through the crimson to a deep red. */
-function sprites(red: RGB): HTMLCanvasElement[] {
+/** Sprites from just born to dying: a soft round light, from a lighter shade through the colour to a deep shade. */
+function sprites(c: RGB): HTMLCanvasElement[] {
   const steps = 10, out: HTMLCanvasElement[] = [];
-  const stops: RGB[] = [mix(red, [255, 236, 232], 0.35), red, mix(red, [40, 0, 4], 0.55)];
+  const stops: RGB[] = [mix(c, [255, 236, 232], 0.35), c, mix(c, [8, 2, 4], 0.55)];
   for (let i = 0; i < steps; i++) {
     const k = (i / (steps - 1)) * (stops.length - 1), j = Math.min(stops.length - 2, Math.floor(k));
     const [r, g, b] = mix(stops[j], stops[j + 1], k - j);
@@ -51,13 +54,13 @@ export function initFire(brand: HTMLElement) {
   const ctx = canvas.getContext('2d');
   if (!ctx) return;
   const still = matchMedia('(prefers-reduced-motion: reduce)');
-  let flames: Flame[] = [], raf = 0, last = 0, w = 0, h = 0, dpr = 1, red = '', looks: HTMLCanvasElement[] = [];
+  let flames: Flame[] = [], raf = 0, last = 0, looked = 0, w = 0, h = 0, dpr = 1, red = '', looks: HTMLCanvasElement[] = [];
   // the globe in the mark (Base.astro: a circle at 16,14 of r 8.4 in a 32-wide box), in canvas px
   let cx = 0, cy = 0, r = 0;
 
   const burning = () => {
     const b = document.body.classList, root = document.documentElement.classList;
-    return (b.contains('gordian') && !b.contains('home')) || root.contains('fx-animation');
+    return (b.contains('gordian') && !b.contains('home')) || root.contains('fx');
   };
   function size() {
     dpr = Math.min(2, window.devicePixelRatio || 1);
@@ -75,8 +78,9 @@ export function initFire(brand: HTMLElement) {
     cy = RISE + 14 * k;
     r = 8.4 * k;
   }
+  /** The flames' colour, as the page has it now (global.css: .brand .fire's color, --flame). */
   function look() {
-    const now = getComputedStyle(brand).getPropertyValue('--crimson');
+    const now = getComputedStyle(canvas).color;
     if (now !== red || !looks.length) { red = now; looks = sprites(rgbOf(now)); }
   }
   /** New flames on the globe's rim: mostly over its top, a few down its sides, leaning outwards as they rise. */
@@ -98,6 +102,8 @@ export function initFire(brand: HTMLElement) {
     if (!burning() || document.hidden) { stop(); return; }
     const dt = Math.min(0.05, last ? (t - last) / 1000 : 0.016);
     last = t;
+    // Multicolour's hue turns by itself (no class or style changes to watch): looked at twice a second.
+    if (t - looked > 500) { looked = t; look(); }
     spawn(dt);
     ctx!.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx!.clearRect(0, 0, w, h);
@@ -138,7 +144,8 @@ export function initFire(brand: HTMLElement) {
   }
   const watch = new MutationObserver(check);
   watch.observe(document.body, { attributes: true, attributeFilter: ['class'] });
-  watch.observe(document.documentElement, { attributes: true, attributeFilter: ['class', 'data-theme'] });
+  // the accent is set on the root's style (prefs.ts applySettings)
+  watch.observe(document.documentElement, { attributes: true, attributeFilter: ['class', 'data-theme', 'style'] });
   document.addEventListener('visibilitychange', check);
   addEventListener('resize', () => { if (raf) size(); });
   still.addEventListener?.('change', check);

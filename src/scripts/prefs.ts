@@ -113,12 +113,14 @@ export interface Settings {
   theme: Theme;      // on a first visit, the device's own (light or dark); after that, the page never switches by itself
   accents: Record<Theme, Accent>;
   auto: boolean;     // send a typed answer as soon as it is exactly right
-  /** The Gordian Knot's effects anywhere, once earned (a quarter of it right): its texture (embers) and its animation
-   *  (the logo on fire, Play charged). On from the moment they are earned; either can be switched off. */
-  fx?: { texture: boolean; animation: boolean };
+  /** The Gordian Knot's effects anywhere, once earned (a quarter of it right): its texture (embers), the logo on fire
+   *  and Play charged, in the colour picked. On from the moment they are earned; one switch turns them all off (James,
+   *  24 Nov 2026: "put them into one toggle; effects"; until then texture and animation had a switch each). */
+  fx?: boolean;
 }
 const SET_KEY = 'gk-settings';
-type SavedSettings = Partial<Settings> & { theme?: string; accent?: Accent; time?: number }; // time: a setting until v3 C
+// time: a setting until v3 C; fx as { texture, animation } until 24 Nov 2026
+type SavedSettings = Omit<Partial<Settings>, 'fx'> & { theme?: string; accent?: Accent; time?: number; fx?: boolean | { texture?: boolean; animation?: boolean } };
 const savedSettings = load<SavedSettings>(SET_KEY, {});
 /** A first visit (nothing saved yet): the colour is one of the five at random, the same in both themes, and the theme
  *  is the device's own, so a phone in dark mode gets Dark in Settings too (James, 22 Nov 2026). Both are saved at once,
@@ -136,7 +138,8 @@ export const settings: Settings = {
   theme: savedSettings.theme === 'dark' || (firstVisit && deviceDark()) ? 'dark' : 'light', // 'auto' (before v3) becomes Light
   accents: firstAccent ? { light: firstAccent, dark: firstAccent } : { ...PRESETS, ...savedSettings.accents },
   auto: savedSettings.auto ?? true,
-  ...(savedSettings.fx ? { fx: savedSettings.fx } : {}),
+  // the two old switches: the effects stay on if either was
+  ...(savedSettings.fx === undefined ? {} : { fx: typeof savedSettings.fx === 'boolean' ? savedSettings.fx : savedSettings.fx.texture !== false || savedSettings.fx.animation !== false }),
 };
 // Before v3 there was one colour for both themes, coral by default: a colour picked on purpose is kept for both.
 if (!savedSettings.accents && savedSettings.accent && savedSettings.accent !== 'coral' && savedSettings.accent in ACCENTS) {
@@ -160,11 +163,10 @@ export function applySettings() {
   root.style.setProperty('--a-deep', a.deep);
   root.style.setProperty('--a-dark', a.dark);
   root.classList.toggle('multicolour', id === 'multicolour');
-  root.classList.toggle('fx-texture', fxOn('texture'));
-  root.classList.toggle('fx-animation', fxOn('animation'));
+  root.classList.toggle('fx', fxOn());
 }
-/** One of The Gordian Knot's effects, earned and switched on. */
-export const fxOn = (k: 'texture' | 'animation') => earned('effects') && (settings.fx?.[k] ?? true);
+/** The Gordian Knot's effects, earned and switched on. */
+export const fxOn = () => earned('effects') && (settings.fx ?? true);
 
 // ---------- progress: rounds played, Atlas (the hidden fourth level, with The Gordian Knot under it) and the record
 // in The Gordian Knot (every question in the game at once).

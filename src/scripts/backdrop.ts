@@ -33,17 +33,23 @@ export const backdrop = {
   onChange(f: () => void) { listeners.push(f); },
 };
 
-/** The layer behind the page: two photos, so one can fade into the next. */
+/** The layer behind the page: two photos, so one can fade into the next. The page brings it (Base.astro), with the
+ *  photo picked already showing, so the site opens on it (James, 24 Nov 2026); made here when it isn't there. */
 export function initBackdrop(url: (path: string) => string, photos: Record<string, Photo[]>) {
-  // A photo no longer in the list (a later edition, or the preview's smaller set) is forgotten.
-  if (saved && !photos[saved.id]?.some(p => p.src === saved!.src)) backdrop.set(null);
-  const el = document.createElement('div');
-  el.className = 'backdrop';
-  el.setAttribute('aria-hidden', 'true');
-  const layers = [document.createElement('i'), document.createElement('i')];
-  el.append(...layers);
-  document.body.prepend(el);
+  let el = document.querySelector<HTMLElement>('.backdrop');
+  if (!el) {
+    el = document.createElement('div');
+    el.className = 'backdrop';
+    el.setAttribute('aria-hidden', 'true');
+    el.append(document.createElement('i'), document.createElement('i'));
+    document.body.prepend(el);
+  }
+  const layers = [...el.querySelectorAll<HTMLElement>(':scope > i')].slice(0, 2);
   let showing: string | null = null, top = 0;
+  // The photo the page put in place before it was first drawn: kept as it is, no fading in again.
+  const early = el.dataset.src;
+  if (early && layers[0].classList.contains('on')) showing = url(early);
+  layers[0].style.transition = ''; // it came in at once (Base.astro); it fades like the rest from here on
   paint = () => {
     const want = saved ? url(saved.src) : null;
     if (want === showing) return;
@@ -69,5 +75,13 @@ export function initBackdrop(url: (path: string) => string, photos: Record<strin
     img.onerror = () => { if (showing === want) backdrop.set(null); };
     img.src = want;
   };
-  paint();
+  // A photo no longer in the list (a later edition, or the preview's smaller set) is forgotten: the sky comes back.
+  if (saved && !photos[saved.id]?.some(p => p.src === saved!.src)) backdrop.set(null);
+  else paint();
+  // The early one's file gone: the sky comes back too.
+  if (showing && saved) {
+    const was = showing, check = new Image();
+    check.onerror = () => { if (showing === was) backdrop.set(null); };
+    check.src = was;
+  }
 }

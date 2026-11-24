@@ -1539,30 +1539,34 @@ body.globe-big .globe-box { margin-bottom: calc(var(--gw) * 0.28 + 6px + var(--s
 
 /* ---------- The Gordian Knot picked (Atlas, All): Play turns crimson, and it and All beat like the round's heart
    (lub-dub, every 1.3 s) while small sparks leap off their edges (spark.ts). James, 22 Nov 2026: "Could the red colour
-   when you select atlas + all, also make a heartbeat and/or have electric effects bulging out where possible?" */
+   when you select atlas + all, also make a heartbeat and/or have electric effects bulging out where possible?" With
+   the effects earned and on (Settings: Effects), Play beats and sparks anywhere, in the colour picked in Settings (its
+   bright shade on the night sky), while The Gordian Knot's own stay red (James, 24 Nov 2026: "if you unlock the
+   electric color and flame effect it should be shown in the selected color too"). --charge is that colour. */
 :is(#play, #menu-play).gordian { --accent: var(--crimson); --accent-deep: var(--crimson-deep); }
-.charged { position: relative; --beat: 0.05; animation: charged 1.3s ease-out infinite; }
+.charged { position: relative; --beat: 0.05; --charge: var(--glow, var(--accent)); animation: charged 1.3s ease-out infinite; }
+.charged.gordian { --charge: #e82424; }
 :is(#play, #menu-play).charged { --beat: 0.018; }
 @keyframes charged {
-  0%, 55%, 100% { scale: 1; filter: drop-shadow(0 0 0 rgba(232, 36, 36, 0)); }
-  8% { scale: calc(1 + var(--beat)); filter: drop-shadow(0 0 12px rgba(232, 36, 36, 0.75)); }
-  20% { scale: calc(1 + var(--beat) * 0.2); filter: drop-shadow(0 0 4px rgba(232, 36, 36, 0.3)); }
-  30% { scale: calc(1 + var(--beat) * 0.6); filter: drop-shadow(0 0 9px rgba(232, 36, 36, 0.55)); }
+  0%, 55%, 100% { scale: 1; filter: drop-shadow(0 0 0 transparent); }
+  8% { scale: calc(1 + var(--beat)); filter: drop-shadow(0 0 12px color-mix(in srgb, var(--charge) 75%, transparent)); }
+  20% { scale: calc(1 + var(--beat) * 0.2); filter: drop-shadow(0 0 4px color-mix(in srgb, var(--charge) 30%, transparent)); }
+  30% { scale: calc(1 + var(--beat) * 0.6); filter: drop-shadow(0 0 9px color-mix(in srgb, var(--charge) 55%, transparent)); }
 }
-.sparks { --spark-core: #fff2ee; --spark-glow: rgba(236, 46, 40, 0.8); position: absolute; left: -40px; top: -40px; width: calc(100% + 80px); height: calc(100% + 80px); overflow: visible; pointer-events: none; z-index: 1; }
-/* On a light page (the configuration in the Light theme) the spark is crimson itself, its glow paler. */
-:root:not([data-theme="dark"]) dialog .sparks { --spark-core: #c8141c; --spark-glow: rgba(232, 64, 52, 0.45); }
+.sparks { --spark-core: color-mix(in srgb, var(--charge) 7%, #fff); --spark-glow: color-mix(in srgb, var(--charge) 80%, transparent); position: absolute; left: -40px; top: -40px; width: calc(100% + 80px); height: calc(100% + 80px); overflow: visible; pointer-events: none; z-index: 1; }
+/* On a light page (the configuration in the Light theme) the spark is the colour itself, a little deeper, its glow paler. */
+:root:not([data-theme="dark"]) dialog .sparks { --spark-core: color-mix(in srgb, var(--charge) 86%, #000); --spark-glow: color-mix(in srgb, var(--charge) 45%, transparent); }
 .sparks path { fill: none; stroke-linecap: round; stroke-linejoin: round; }
 .sparks .glow { stroke: var(--spark-glow); stroke-width: 7; filter: blur(2.6px); }
 .sparks .core { stroke: var(--spark-core); stroke-width: 2; }
 .sparks g { animation: zap 0.26s steps(5, end) forwards; }
 @keyframes zap { 0%, 20% { opacity: 1; } 40% { opacity: 0.4; } 60% { opacity: 1; } 80% { opacity: 0.6; } 100% { opacity: 0; } }
-@media (prefers-reduced-motion: reduce) { .charged { animation: none; filter: drop-shadow(0 0 8px rgba(232, 36, 36, 0.5)); } }
+@media (prefers-reduced-motion: reduce) { .charged { animation: none; filter: drop-shadow(0 0 8px color-mix(in srgb, var(--charge) 50%, transparent)); } }
 
 
 /* ---------- Rewards from The Gordian Knot (James, 22 Nov 2026): crimson for trying it (a plain colour, in prefs.ts),
-   its texture and animation anywhere for a quarter of it right (Settings: Texture, Animation), multicolour for all of
-   it. Each shows only once earned. */
+   its effects anywhere for a quarter of it right (Settings: Effects, one switch since 24 Nov 2026: the embers, the logo
+   on fire and Play charged), multicolour for all of it. Each shows only once earned. */
 
 /* Multicolour: the accent's hue turns through the spectrum, once every 72 s. It steps every half second rather than
    every frame, so the page is restyled twice a second, not sixty times; a step of 2.5 degrees is too small to see. */
@@ -1574,18 +1578,21 @@ body.globe-big .globe-box { margin-bottom: calc(var(--gw) * 0.28 + 6px + var(--s
 }
 @media (prefers-reduced-motion: reduce) { :root.multicolour { animation: none; } }
 
-/* The logo on fire: during The Gordian Knot (its round and its results), and anywhere with Animation earned and on.
-   Small red flames rise off the globe in the mark, drawn on a canvas behind it (fire.ts, which places it); the word
-   stays as it is (James, 23 Nov 2026: "only come out of the globe"). With less motion asked for: a still red glow. */
-.brand { position: relative; isolation: isolate; }
-.brand .fire { position: absolute; z-index: -1; pointer-events: none; }
+/* The logo on fire: during The Gordian Knot (its round and its results), and anywhere with the effects earned and on.
+   Small flames rise off the globe in the mark, drawn on a canvas behind it (fire.ts, which places it and takes their
+   colour from its `color`); the word stays as it is (James, 23 Nov 2026: "only come out of the globe"). Crimson in The
+   Gordian Knot, the colour picked in Settings anywhere else (James, 24 Nov 2026). With less motion asked for: a still
+   glow. */
+.brand { position: relative; isolation: isolate; --flame: var(--accent); }
+body.gordian:not(.home) .brand { --flame: var(--crimson); }
+.brand .fire { position: absolute; z-index: -1; pointer-events: none; color: var(--flame); }
 @media (prefers-reduced-motion: reduce) {
-  :is(body.gordian:not(.home), :root.fx-animation body) .logo circle { filter: drop-shadow(0 0 3px var(--crimson)); }
+  :is(body.gordian:not(.home), :root.fx body) .logo circle { filter: drop-shadow(0 0 3px var(--flame)); }
 }
 
 /* Texture: embers. A fine grain over everything, and a low warm glow along the bottom of the screen, in the accent
-   (crimson in The Gordian Knot). During The Gordian Knot, and anywhere with Texture earned and on. */
-:is(body.gordian:not(.home), :root.fx-texture body)::after {
+   (crimson in The Gordian Knot). During The Gordian Knot, and anywhere with the effects earned and on. */
+:is(body.gordian:not(.home), :root.fx body)::after {
   content: '';
   position: fixed;
   inset: 0;
@@ -1597,7 +1604,7 @@ body.globe-big .globe-box { margin-bottom: calc(var(--gw) * 0.28 + 6px + var(--s
   opacity: 0.16;
   mix-blend-mode: overlay;
 }
-:root[data-theme="dark"] :is(body.gordian:not(.home), :root.fx-texture body)::after, :root.fx-texture body.home::after { opacity: 0.22; mix-blend-mode: screen; }
+:root[data-theme="dark"] :is(body.gordian:not(.home), :root.fx body)::after, :root.fx body.home::after { opacity: 0.22; mix-blend-mode: screen; }
 
 /* ---------- a country's photo as the background (backdrop.ts) */
 /* Behind everything, the page's own colour under it. On the home screen it takes the night sky's place, sharp and

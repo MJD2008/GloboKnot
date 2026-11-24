@@ -11,7 +11,7 @@ export const UNLOCKS: Record<Unlock, { name: string; what: string; where: Where 
   atlas: { name: 'Atlas', what: 'The hidden level', where: 'config' },
   music: { name: 'Sound Collector', what: 'Choose the music', where: 'settings' },
   crimson: { name: 'First encounter', what: 'Crimson', where: 'settings' },
-  effects: { name: 'Initiate', what: 'Texture and animation', where: 'settings' },
+  effects: { name: 'Initiate', what: 'Effects', where: 'settings' },
   multicolour: { name: 'Master', what: 'Multicolour', where: 'settings' },
 };
 /** What to light up for each, in Settings or the configuration. */
@@ -19,7 +19,7 @@ const SPOTS: Record<Unlock, string> = {
   atlas: '#menu-level [data-level="impossible"]',
   music: '#set-pick-row',
   crimson: '#set-accent [data-accent="crimson"]',
-  effects: '#set-fx-texture-row, #set-fx-animation-row',
+  effects: '#set-fx-row',
   multicolour: '#set-accent [data-accent="multicolour"]',
 };
 const SHOW_MS = 3000; // on screen this long, longer while pointed at or focused

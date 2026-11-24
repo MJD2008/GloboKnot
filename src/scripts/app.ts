@@ -341,7 +341,7 @@ function paintHome() {
   ui.playSub.hidden = !ui.playSub.innerHTML;
   // The Gordian Knot picked: Play in its crimson, beating, with sparks (spark.ts).
   ui.play.classList.toggle('gordian', !challenge && gordian);
-  charge(ui.play, !challenge && (gordian || fxOn('animation')));
+  charge(ui.play, !challenge && (gordian || fxOn()));
   ui.notNow.hidden = !challenge;
   paintDaily();
   paintTied();
@@ -994,7 +994,7 @@ function end(stopped = false) {
   state.stopped = stopped;
   screens.results.classList.toggle('stopped', stopped);
   // The Gordian Knot, Initiate: a quarter of all its questions right, stopped or not (those not reached count as
-  // wrong). Its texture and animation, anywhere.
+  // wrong). Its effects (the embers, the logo on fire, Play charged), anywhere, in the colour picked.
   if (state.gordian && state.results.filter(r => r.ok).length >= Math.ceil(state.planned * 0.25) && earn('effects')) {
     state.won.push('effects');
     applySettings();
@@ -1508,21 +1508,16 @@ function paintSettings() {
   const mine = settings.accents[settings.theme];
   // The five, then any colour earned in The Gordian Knot (crimson, multicolour), only once earned.
   $('#set-accent').innerHTML = accentsOpen().map(a => `<button type="button" data-accent="${a}" aria-pressed="${mine === a}" title="${ACCENTS[a].label}" aria-label="${ACCENTS[a].label}" style="--sw:${a === 'multicolour' ? SPECTRUM : settings.theme === 'dark' ? ACCENTS[a].dark : ACCENTS[a].light}"></button>`).join('');
-  // The Gordian Knot's texture and animation, anywhere: only once a quarter of it has been answered right.
-  for (const k of ['texture', 'animation'] as const) {
-    $(`#set-fx-${k}-row`).hidden = !earned('effects');
-    $(`#set-fx-${k}`).setAttribute('aria-checked', String(fxOn(k)));
-  }
+  // The Gordian Knot's effects, anywhere: only once a quarter of it has been answered right.
+  $('#set-fx-row').hidden = !earned('effects');
+  $('#set-fx').setAttribute('aria-checked', String(fxOn()));
 }
 ui.settings.addEventListener('click', e => {
   const t = (e.target as HTMLElement).closest<HTMLButtonElement>('button');
   if (!t) return;
   if (t.dataset.pick) { sound.set({ pick: t.dataset.pick as Pick }); paintSettings(); return; }
   if (t.id === 'set-auto') settings.auto = !settings.auto;
-  else if (t.id === 'set-fx-texture' || t.id === 'set-fx-animation') {
-    const k = t.id === 'set-fx-texture' ? 'texture' : 'animation';
-    settings.fx = { texture: fxOn('texture'), animation: fxOn('animation'), [k]: !fxOn(k) };
-  }
+  else if (t.id === 'set-fx') settings.fx = !fxOn();
   else if (t.dataset.theme) settings.theme = t.dataset.theme as Theme;
   else if (t.dataset.accent) settings.accents[settings.theme] = t.dataset.accent as Accent;
   else return;
